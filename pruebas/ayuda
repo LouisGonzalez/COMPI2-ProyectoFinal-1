@@ -1,0 +1,74 @@
+    CUERPO_METODO ::= VARIABLES CUERPO_METODO
+    |                 FOR CUERPO_METODO
+    |                 WHILE CUERPO_METODO
+    |                 IF CUERPO_METODO 
+    |                 BORRAR CUERPO_METODO
+    |                 MENSAJES CUERPO_METODO
+    |                 METODO CUERPO_METODO {: /*PENDIENTE PRODUCCION LECTURA_DATOS*/ :}
+    |                 condPass
+;
+
+
+CONDICION -> genera clavo
+
+
+%ignorecase
+
+    CONTENIDO ::= VARIABLES CONTENIDO
+    |             ASIGNACIONES CONTENIDO
+    |             IF CONTENIDO 
+    |             SELECT CONTENIDO
+    |             DO_WHILE CONTENIDO
+    |             WHILE CONTENIDO
+    |             FOR CONTENIDO
+    |             MENSAJE CONTENIDO
+    |             LECTURA_DATO CONTENIDO
+    |
+;
+
+
+los comentarios, son iguales en todos los lenguajes?, o también se toman, su forma de escritura?
+Modulos en Visual Basic, como se usan?, si en el programa principal, no hay una forma estandar de llamarlos
+Objetos en java, se usan lo mismo para llamarlo en java?, o si se usa la notación java para crear objetos, suponiendo que clases de java pueden llamar a otras clases de java.
+o en java no se hace llamado a objetos?
+
+
+
+CREATE INDEX IDX_CUSTOMER_LAST_NAME
+ON Customer (Last_Name);
+CREATE INDEX "NOMBRE_ÍNDICE" ON "NOMBRE_TABLA" (NOMBRE_COLUMNA);
+
+CREATE TABLE Costos_historial_medico ( id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, id_historial_medico INT NOT NULL, evento VARCHAR(70) NOT NULL, total DEC(7,2) NOT NULL, id_evento_historial INT NOT NULL, INDEX (id_evento_historial), INDEX (id_historial_medico), FOREIGN KEY (id_evento_historial) REFERENCES Historial_medico(id), FOREIGN KEY (id_historial_medico) REFERENCES No_historial_medico(id) );
+
+
+/*************************************************************************************************************************
+
+Public Sub Saludo()
+    Dim hss As Integer
+    Console.write("Segundo Proyecto de Compiladores 2")
+
+End Sub 
+
+
+public Function Factorial(N As Integer) as Integer
+
+    Dim Fact As Integer, Num As Integer
+    Num = N
+    N = intinput("ingrese un numero")
+    If N = 0 Then
+	Fact = 1
+	Dim h As decimal
+	h = 1 + 2.5
+    Else
+        Fact = 1
+        Do
+            Fact = Fact * N
+	    N = N - 1
+       Loop While N > 1
+	Fact = Fact
+    End If
+    return '2'	
+End Function
+
+
+

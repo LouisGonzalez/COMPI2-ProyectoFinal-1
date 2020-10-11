@@ -1,0 +1,124 @@
+    CONTENIDO ::= CONTENIDO VARIABLES 
+    |             CONTENIDO ASIGNACIONES 
+    |             CONTENIDO:b IF:a  {: if(parser.jerarquia==0){ if(!a.getContElse() && a.getContReturn()){ System.out.println("el contenido despues del if no es permitido"); } } :}  CONTENIDO:b  
+    |             CONTENIDO SELECT  
+    |             CONTENIDO DO_WHILE 
+    |             CONTENIDO FOR 
+    |             CONTENIDO MENSAJE 
+    |             CONTENIDO WHILE 
+    |             CONTENIDO LECTURA_DATOS 
+    |                           
+;
+    IF ::= condIf {: parser.jerarquia++; :} CONDICION condThen ENTER CONTENIDO RETURN:a  {: parser.jerarquia--; :} ELSE:b  fin condIf ENTER {:  if(b.getContReturn()!= null){ if(b.getContReturn()){ if(a != null){ ReturnIf res = new ReturnIf(); res.setContReturn(true); res.setContElse(b.getContElse()); RESULT=res;  } else { ReturnIf res = new ReturnIf(); res.setContReturn(false); RESULT=res; } } else { if(a==null){ ReturnIf res = new ReturnIf(); res.setContReturn(true); res.setContElse(b.getContElse()); RESULT=res; } else { ReturnIf res = new ReturnIf(); res.setContReturn(false); RESULT=res; } } } else { System.out.println("error"); }   :}
+;                               
+    ELSE ::= condElse {: parser.jerarquia++; :} ENTER CONTENIDO RETURN:a {: if(a != null){ ReturnIf res = new ReturnIf(); res.setContReturn(true); res.setContElse(true); RESULT=res; } else { ReturnIf res = new ReturnIf(); res.setContReturn(false); res.setContElse(false); RESULT=res; }  parser.jerarquia--; :}
+    |        condElseIf {: parser.jerarquia++; :} CONDICION condThen ENTER CONTENIDO RETURN:a {: parser.jerarquia--; :} ELSE:b {: if(b.getContReturn() != null){ if(b.getContReturn()){ if(a!=null){ ReturnIf res = new ReturnIf(); res.setContReturn(true); res.setContElse(b.getContElse()); RESULT=res; } else { ReturnIf res = new ReturnIf();  RESULT=res; } } else { if(a==null){ ReturnIf res = new ReturnIf(); res.setContReturn(false); RESULT=res; } else { ReturnIf res = new ReturnIf();  RESULT=res; } } } else { ReturnIf res = new ReturnIf(); RESULT=res; } :}
+    |       {: RESULT = new ReturnIf(); :}
+;
+
+
+
+/*ESTO PARA EL MANEJO DE RETURN EN EL LENGUAJE JAVA*/
+
+
+/------------------------------------------------------------------------------------------------------------------------------------------
+
+public class algo {
+
+	
+	public int holaMundo() {
+		System.out.println("asasasd");
+		int a = 1;
+		int b = 2;
+		if(a > b){
+			return 4;
+		}else if(a < b){
+    			if(a > b) {
+         			if(a == b){
+					return 8;
+				} else {
+					return 3;
+				}
+			}else{
+        		 	return 1;
+     			}
+		}else{
+     			return 5;
+		}	
+		
+	}
+
+
+}
+
+
+
+/------------------------------------------------------------------------------------------------------------------------------------------------
+
+#include "VB"
+#include "PY"
+
+const int constante1 = 10;
+
+
+void main()
+{
+  int base, exp, i, resultado;
+  
+  clrscr();
+  
+  printf("Bienvenido");
+
+  VB.Saludo();
+
+  printf("Ingrese el primer valor entero");
+  scanf("%d",&base);
+  printf("Ingrese el segudo valor entero");
+  scanf("%d",&exp);
+
+  // Factorial
+  resultado = VB.Factorial(i);
+ 
+  printf("El factorial de %d es %d",a,resultado);
+    
+  printf("Conversion de años a meses");
+
+	/*asfsaihf pv as fauhf wef iuwepi
+fsaf
+asf
+safa
+sfs*/
+  PY.edadmeses();
+
+  // Arreglo
+  Arreglo1[1][1] = 0;
+  
+  // inicio for
+  for(i = 0; i <= exp; i = i + 1)
+  {
+	resultado = resultado * base;
+	
+  } // fin for
+  
+  printf("%d ",base);
+  printf("^ %d",exp);
+  printf(" = %d",resultado);
+
+  getch();
+}
+
+
+
+VARIABLES ::= VAR id C CONC_VAR
+	|     id igual OPERACION CONC_VAR
+;
+CONC_VAR ::= coma VARIABLES
+	| puntoComa
+;
+
+C ::= = OPERACION
+	|
+;
+
+
+

@@ -1,0 +1,99 @@
+%%VB
+
+Public Sub Saludo()
+
+    Print("Segundo Proyecto de Compiladores 2")
+
+End Sub 
+
+
+Function Factorial(N As Integer) as integer
+
+    Dim Fact, Num As Integer
+    Num = N
+    If N = 0 Then
+	Factorial = 1
+    Else
+        Fact = 1
+        Do
+            Fact = Fact * N
+            N = N - 1
+       Loop While N > 1
+	Factorial = Fact
+    End If
+End Function
+
+%%JAVA
+public class algo {
+
+	public int holaMundo() {
+		System.out.println("asasasd");
+	}
+}
+
+%%PY
+
+def edadmeses(edad, meses):
+	edad = intinput("Ingrese su edad:")
+	meses = edad * 12
+	print("meses = ",meses)
+	intinput("")
+
+
+
+%%PROGRAMA
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "VB"
+#include "PY"
+
+// Constantes
+const int constante1 = 10;
+
+// Variables globales
+int Arreglo1[1][4];
+
+void main()
+{
+  int base, exp, i, resultado;
+  
+  clrscr();
+  
+  printf("Bienvenido");
+
+  VB.Saludo();
+
+  printf("Ingrese el primer valor entero");
+  scanf("%d",&base);
+  printf("Ingrese el segudo valor entero");
+  scanf("%d",&exp);
+
+  // Factorial
+  resultado = VB.Factorial(i);
+ 
+  printf("El factorial de %d es %d",&a,&resultado);
+    
+  printf("Conversion de años a meses");
+
+  PY.edadmeses();
+
+  // Arreglo
+  Arreglo1[1][1] = 0;
+  
+  // inicio for
+  for(i = 0; i <= exp; i = i + 1)
+  {
+	resultado = resultado * base;
+	
+  } // fin for
+  
+  printf("%d ",base);
+  printf("^ %d",exp);
+  printf(" = %d",resultado);
+
+  getch();
+}
+
+
+

@@ -1,0 +1,125 @@
+%%VB
+Public Sub Saludo()
+
+    Console.write("Segundo Proyecto de Compiladores 2")
+
+End Sub 
+
+
+Public Function Factorial(N As Integer) as integer
+    Dim Fact as integer
+    Dim Num As Integer	
+    Dim C As Chart
+    Num = N
+	
+	for i as Integer = 0 to	20 step 1
+		Dim vvv as integer
+		vvv = 23
+	next
+
+
+End Function
+
+
+
+
+%%JAVA
+public class algo {
+
+	
+	public void hola(){
+		int a = 12;
+		/*char cx,ch = 'd';*/
+		switch(a){
+			case 1:
+				int c = 23;
+				break;
+			case 1:
+				int c = 23;
+				break;
+			case 1:
+				int c = 23;
+				break;
+			default:
+				int d = 2222;
+				break;	
+		}		
+			
+	}		
+}
+%%PY
+def edadmeses(edad, meses):
+	edad = 2
+	edad = intinput("Ingrese su edad:")
+	cc = 'as'
+	ccb = 'a'
+	aa,bb,cc = 1,2,3
+	print("meses = ",meses)
+	intinput("")
+	ccb = charinput("Ingrese variable")
+	if 1 == 1:
+		print("Hola mundo")
+	elif 1 == 2.3:
+		print("hola mundox2")
+		if 3 == 3:
+			print("hola mundo x3")
+			print("hola mundo x4")
+	for i in range(1,2,3):
+			print("quepasiones")
+
+def edadmeses2(edad, meses):
+	edad = 12
+	edad = intinput("Ingrese su edad:")
+	aa,bb,cc = 1,2,3
+	print("meses = ",meses)
+	intinput("")
+
+%%PROGRAMA
+#include "VB"
+#include "PY"
+
+const int constante1 = 10;
+
+int Arreglo1[1][4];
+
+void main()
+{
+  int base, exp, i, resultado;
+  float fl = 2.3;
+  clrscr();
+  printf("Bienvenido");
+  VB.Saludo();
+  exp = 2;
+  printf("Ingrese el primer valor entero");
+  scanf("%d",&base);
+  printf("Ingrese el segudo valor entero");
+  scanf("%d",&exp);
+  
+  // Factorial
+  resultado = VB.Factorial(i);
+  
+  printf("El factorial de %d es %d",&a,&resultado);
+    
+  printf("Conversion de años a meses");
+
+  // Arreglo
+  Arreglo1[1][1] = 0;
+  
+  // inicio for
+  for(i = 3; i <= exp; i = i + 1)
+  {
+	resultado = resultado * base;
+	
+  } // fin for
+
+  
+  printf("%d ",base);
+  printf("^ %d",exp);
+  scanf("as %f",&fl);
+  printf(" = %d",resultado);
+
+  i = getch();
+}
+
+
+

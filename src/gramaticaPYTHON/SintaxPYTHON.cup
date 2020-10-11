@@ -1,0 +1,319 @@
+package gramaticaPYTHON;
+import java_cup.runtime.*;
+import java.util.*;
+import Operaciones.*;
+import verificaciones.*;
+import Tablas.*;
+
+parser code {:
+
+    public TablaSimbolos tabla;
+
+    //tabs de guia para las lines de instrucciones
+    public ArrayList<Integer> instrucciones = new ArrayList<>();
+    //tabs de guia que agarran el valor en la primer linea luego de una instruccion
+    public ArrayList<Integer> lineasGuias = new ArrayList<>();
+
+    public static int jerarquia = 0;
+    public static Boolean primerLinea = null;
+
+    public OperacionesPY op = new OperacionesPY();
+    public VerifPY verif = new VerifPY();
+
+    public SintaxPYTHON(AnalizadorLexico2 lex, TablaSimbolos tabla){
+        super(lex);
+        this.tabla = tabla;
+    }
+
+    public void setAccion(String tipo, String mensaje, String accion){
+        System.out.println(tipo+" "+mensaje);
+    }
+
+    public void syntax_error(Symbol s){
+        setAccion("ERROR", "Error sintaxis columna: "+s.right+" fila: "+s.left,"");        
+    }
+
+
+:}
+
+    terminal coma, punto, mas, menos, por, div, porcentaje, parentesis_a, parentesis_b, llave_a, llave_b, agrupacion_a, 
+             agrupacion_b, dosPuntos, comilla, comillaSimple, admiracion, igual, menor, mayor, menorIgual, mayorIgual,
+             and, or, not, mensaje, f, condElse, condReturn, condFor, condIn, condRange,
+             condWhile, condIf, condElif, intInput, charInput, floatInput, condDef, numero, id, resto, condEnd, 
+             condDel, tab, condPass, enter, comentario_a, comentario_b, comentario_c;
+
+    non terminal INICIO, METODOS, RETURN, RETORNO,  
+                 CUERPO_METODO, VARIABLES, 
+                 VARIABLES2, VARS, VARS3, FOR, WHILE, 
+                 OP, IF, NOT, ELSE, BORRAR, MENSAJES, CONC, TEXTO, ID, ADM, END, LECTURA_DATOS,
+                 ENTER, VARIABLES3, COMENTARIO_A, COMENTARIO_B;
+
+    non terminal String TEXTO2, OPERACION, TIPO_VAL, TIPO_VAL2, TIPO_INPUT, CONDICION, TEXTO3;
+
+    non terminal ArrayList<String> VARS4, LADO2;
+    
+    non terminal ArrayList<String> LADO1, VARS2;
+
+    non terminal ArrayList<String> PARAMETROS, PARAMETROS2;
+    
+    non terminal Integer TAB;
+
+    non terminal Boolean RANGE, EXT;
+
+    non terminal Boolean RESTO_MENSAJE, VAR_MENSAJE;
+
+    precedence left mas, menos;
+    precedence left por, div, porcentaje;
+
+    precedence left or;
+    precedence left and;
+
+    start with INICIO;
+
+    INICIO ::= INICIO METODOS
+    |          INICIO VARIABLES
+    |
+;   
+    METODOS ::= condDef {: parser.jerarquia++; :} id:a parentesis_a PARAMETROS:b parentesis_b dosPuntos ENTER {: parser.op.agregarMetodo(parser.tabla.getObPython(), a.toString(), b, parser.jerarquia); parser.primerLinea=false;  parser.instrucciones.add(0); :} CUERPO_METODO RETURN {: parser.jerarquia--; :}
+;
+    PARAMETROS ::= id:a PARAMETROS2:b {: b.add(a.toString()); RESULT=b; :}
+    | {: RESULT = new ArrayList<>(); :}
+;
+    PARAMETROS2 ::= coma id:a PARAMETROS2:b {:  b.add(a.toString()); RESULT=b; :}
+    | {: RESULT = new ArrayList<>(); :}
+;
+    RETURN ::= condReturn RETORNO:a ENTER {: parser.op.agregarRetornoMetodo(parser.tabla.getObPython(), a.toString()); :}
+    |          {: parser.op.agregarRetornoMetodo(parser.tabla.getObPython(), ""); :}
+;
+    RETORNO ::= OPERACION:a {: RESULT=a; :}
+;
+    OPERACION ::= parentesis_a OPERACION:a parentesis_b {: RESULT=a; :}
+    |             OPERACION:a mas OPERACION:b {: if(!a.equals("") && !b.equals("")) { RESULT=parser.verif.verificarTipoOperacion(parser.tabla.getObPython(), a, b); } else { RESULT=""; } :}
+    |             OPERACION:a menos OPERACION:b {: if(!a.equals("") && !b.equals("")){ RESULT=parser.verif.verificarTipoOperacion(parser.tabla.getObPython(), a, b); } else { RESULT=""; } :}
+    |             OPERACION:a por OPERACION:b {: if(!a.equals("") && !b.equals("")){ RESULT=parser.verif.verificarTipoOperacion(parser.tabla.getObPython(), a, b); } else { RESULT=""; } :}
+    |             OPERACION:a div OPERACION:b {: if(!a.equals("") && !b.equals("")){ RESULT=parser.verif.verificarTipoOperacion(parser.tabla.getObPython(), a, b); } else { RESULT=""; } :}
+    |             OPERACION:a porcentaje OPERACION:b {: if(!a.equals("") && !b.equals("")){ RESULT=parser.verif.verificarTipoOperacion(parser.tabla.getObPython(), a, b); } else { RESULT=""; } :}
+    |             TIPO_VAL:a {: RESULT=a; :}
+;
+    TIPO_VAL ::= id:a {: RESULT=parser.op.buscarVariable(parser.tabla.getObPython(), a.toString(), parser.jerarquia); :}
+    |            numero {: RESULT="Integer"; :}
+    |            numero punto numero {: RESULT="Float"; :}
+    |            comillaSimple id comillaSimple {: RESULT="Char"; :}
+    |            menos id:a {: RESULT=parser.op.buscarVariable(parser.tabla.getObPython(), a.toString(), parser.jerarquia); :}
+    |            menos numero {: RESULT="Integer"; :}
+    |            menos numero punto numero {: RESULT="Float"; :}
+;
+    TIPO_VAL2 ::= comilla id comilla {: RESULT="Char"; :}
+    |             id:a {: RESULT=parser.op.buscarVariable(parser.tabla.getObPython(), a.toString(), parser.jerarquia); :}
+    |             numero {: RESULT="Integer"; :}
+    |             numero punto numero {: RESULT="Float"; :}
+;
+    CUERPO_METODO ::= VARIABLES3 CUERPO_METODO
+    |                 FOR CUERPO_METODO
+    |                 WHILE CUERPO_METODO
+    |                 IF CUERPO_METODO
+    |                 BORRAR CUERPO_METODO
+    |                 MENSAJES CUERPO_METODO
+    |                 LECTURA_DATOS CUERPO_METODO
+    |                 ELSE CUERPO_METODO
+    |                 condPass ENTER CUERPO_METODO
+    |                 COMENTARIO_B CUERPO_METODO
+    |                 COMENTARIO_A CUERPO_METODO
+    |                
+;
+    VARIABLES ::= id:a igual OPERACION:b {: parser.op.asignarVariables(parser.tabla.getObPython(), a.toString(), b); :} VARIABLES2
+    |             LADO1:a igual LADO2:b {: parser.op.asignacionesMultiples(parser.tabla.getObPython(), a, b, parser.jerarquia); :}
+;
+    VARIABLES3 ::= TAB:a id:b igual OPERACION:c {: parser.op.asignarVariables(parser.tabla.getObPython(), b.toString(), c); :} VARIABLES2 {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, false); :}
+    |             TAB:a LADO1:b igual LADO2:c {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, false); parser.op.asignacionesMultiples(parser.tabla.getObPython(), b, c, parser.jerarquia); :}
+;
+    VARIABLES2 ::= coma id:a igual OPERACION:b {: parser.op.asignarVariables(parser.tabla.getObPython(), a.toString(), b); :} VARIABLES2
+    |              igual OPERACION VARIABLES2
+    |              ENTER
+;
+    LADO1 ::= id:a coma id:b VARS2:c {: c.add(a.toString()); c.add(b.toString()); RESULT=c; :}
+;
+    VARS2 ::= coma id:a VARS2:b {: b.add(a.toString()); RESULT=b; :}
+    |   {: RESULT=new ArrayList<>(); :}
+;
+    LADO2 ::= OPERACION:a coma OPERACION:b VARS4:c {: if(c!=null){ if(!a.equals("") && !b.equals("")){ c.add(a); c.add(b); RESULT=c; } else { RESULT=null; } } :}
+;
+    VARS4 ::= coma OPERACION:a VARS4:b {: if(b!=null){ if(!a.equals("")){ b.add(a); RESULT=b; } else { RESULT=null; } } :}
+    |  ENTER {: RESULT=new ArrayList<>(); :}
+;
+    FOR ::= TAB:a condFor id:b condIn OPERACION:c dosPuntos ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(),parser.instrucciones, parser.lineasGuias, a, true);  parser.verif.comprobacionFor(parser.tabla.getObPython(), b.toString(), c.toString(), false, "tipo1", parser.op, parser.jerarquia); :}
+    |       TAB:a condFor id:b condIn condRange parentesis_a RANGE:c parentesis_b dosPuntos ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, true); parser.verif.comprobacionFor(parser.tabla.getObPython(), b.toString(), "", c, "tipo2", parser.op, parser.jerarquia); :}
+;
+    RANGE ::= OPERACION:a {: if(a.equals("Integer")){ RESULT=true; } else{ RESULT=false; } :}
+    |         OPERACION:a coma OPERACION:b {: if(a.equals("Integer") && b.equals("Integer")){ RESULT=true; } else { RESULT=false; } :}
+    |         OPERACION:a coma OPERACION:b coma OPERACION:c {: if(a.equals("Integer") && b.equals("Integer") && c.equals("Integer")){ RESULT=true; } else { RESULT=false; } :}
+;
+    WHILE ::= TAB:a condWhile EXT dosPuntos ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, true); :}
+;
+    EXT ::= EXT:a and EXT:b {: if(a && b){ RESULT=true; } else { RESULT=false; }   :}                                                     
+    |       EXT:a or EXT:b {: if(a && b){ RESULT=true; } else { RESULT=false; }  :}                                                
+    |       CONDICION:a {: if(!a.equals("")){ RESULT=true; } else { RESULT=false; } :} 
+    |       not parentesis_a CONDICION:a parentesis_b {: if(!a.equals("")){ RESULT=true; } else { RESULT=false; } :}
+    |       not CONDICION:a {: if(!a.equals("")){ RESULT=true; } else { RESULT=false; } :}
+;                                                                                                   
+    CONDICION ::= OPERACION:a OP OPERACION:b {: if(!a.equals("") && !b.equals("")){ RESULT=parser.verif.verificarTipoOperacion(parser.tabla.getObPython(), a, b); } else { RESULT=""; } :}
+;
+    OP ::= igual igual                                                                                    
+    |      mayor                                                                                    
+    |      menor                                                                                    
+    |      mayorIgual                                                               
+    |      menorIgual           
+    |      admiracion igual                                                         
+;                                                                   
+    IF ::= TAB:a  condIf EXT dosPuntos ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, true); :}     
+;                                                                                                                                                                         
+    ELSE ::= TAB:a condElse ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, true); :}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+    |        TAB:a condElif EXT dosPuntos ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(),parser.instrucciones, parser.lineasGuias, a, true); :}
+;                                                                           
+    BORRAR ::= TAB:a condDel id:b ENTER  {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, false);  parser.op.borrarVariable(parser.tabla.getObPython(), b.toString(), parser.jerarquia); :}                                                                                           
+;                       
+    LECTURA_DATOS ::= TAB:a id:b igual TIPO_INPUT:c parentesis_a comilla TEXTO2 comilla parentesis_b ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, false); String tipoVar = parser.op.buscarVariable(parser.tabla.getObPython(), b.toString(), parser.jerarquia);  parser.verif.verifVarInput(parser.tabla.getObPython(), tipoVar, c, b.toString()); :}
+    |                 TAB:a id:b igual TIPO_INPUT:c parentesis_a parentesis_b ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, false);  String tipoVar = parser.op.buscarVariable(parser.tabla.getObPython(), b.toString(), parser.jerarquia); parser.verif.verifVarInput(parser.tabla.getObPython(), tipoVar, c, b.toString()); :}
+    |                 TAB:a TIPO_INPUT parentesis_a comilla TEXTO2 comilla parentesis_b ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, false); :}
+    |                 TAB:a TIPO_INPUT parentesis_a parentesis_b ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(),parser.instrucciones, parser.lineasGuias, a, false); :}
+;
+    TIPO_INPUT ::= intInput {: RESULT="Integer"; :}
+    |              charInput {: RESULT="Char"; :}
+    |              floatInput {: RESULT="Float"; :}
+;
+    MENSAJES ::= TAB:a mensaje parentesis_a VAR_MENSAJE:b RESTO_MENSAJE:c END parentesis_b ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, false); parser.verif.verifMensaje(b, c, "tipo1"); :}                             
+    |            TAB:a mensaje parentesis_a TEXTO RESTO_MENSAJE:b END parentesis_b ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, false); parser.verif.verifMensaje(false, b, "tipo2"); :}
+    |            TAB:a mensaje parentesis_a parentesis_b ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, false); :}
+; 
+    RESTO_MENSAJE ::= CONC VAR_MENSAJE:a RESTO_MENSAJE:b {: if(a && b){ RESULT=true; } else { RESULT=false; } :}
+    |                 CONC TEXTO RESTO_MENSAJE:b {: RESULT=true; :}
+    |                 {: RESULT=true; :}
+;
+    CONC ::= coma
+    |        mas
+;
+    TEXTO ::= f comilla llave_a id ID llave_b ADM comilla 
+    |         comilla TEXTO2  comilla
+;
+    ID ::= coma id ID
+    |
+;
+    ADM ::= admiracion
+    |
+;
+    END ::= condEnd igual comilla comilla
+    |       condEnd igual f comilla llave_a id ID llave_b ADM comilla
+    |
+;   
+    VAR_MENSAJE ::= id:a {: RESULT=parser.verif.verifVarMensaje(parser.tabla.getObPython(), a.toString(), parser.jerarquia); :}
+    |               numero:a {: RESULT=true; :}
+
+;
+    ENTER ::= ENTER enter
+    |        enter
+;
+    TAB ::= TAB:a tab {: RESULT = a+1; :}
+    |       tab  {: RESULT = 1; :}     
+;
+    COMENTARIO_A ::= comentario_a TEXTO3 ENTER
+;
+    COMENTARIO_B ::= comentario_b TEXTO2 comentario_c
+;
+    TEXTO2 ::= TEXTO2:a coma:b {: RESULT=a + b.toString(); :}
+    |          TEXTO2:a punto:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a mas:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a menos:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a por:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a div:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a porcentaje:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a parentesis_a:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a parentesis_b:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a llave_a:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a llave_b:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a agrupacion_a:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a agrupacion_b:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a dosPuntos:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a comillaSimple:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a admiracion:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a igual:b {: RESULT = a + b.toString(); :} 
+    |          TEXTO2:a menor:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a mayor:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a menorIgual:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a mayorIgual:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a and:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a or:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a not:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a mensaje:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a f:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a condElse:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a condReturn:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a condFor:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a condIn:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a condRange:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a condWhile:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a condIf:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a condElif:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a intInput:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a charInput:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a floatInput:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a condDef:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a condDel:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a condPass:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a condEnd:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a tab {: RESULT = a + "\t"; :}
+    |          TEXTO2:a enter {: RESULT = a + "\n"; :}
+    |          TEXTO2:a numero:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a id:b {: RESULT = a + b.toString(); :}
+    |          TEXTO2:a resto:b {: RESULT = a + b.toString(); :}
+    |          {: RESULT=""; :}
+;
+    TEXTO3 ::= TEXTO3:a coma:b {: RESULT=a + b.toString(); :}
+    |          TEXTO3:a punto:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a mas:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a menos:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a por:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a div:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a porcentaje:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a parentesis_a:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a parentesis_b:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a llave_a:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a llave_b:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a agrupacion_a:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a agrupacion_b:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a dosPuntos:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a comillaSimple:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a admiracion:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a igual:b {: RESULT = a + b.toString(); :} 
+    |          TEXTO3:a menor:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a mayor:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a menorIgual:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a mayorIgual:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a and:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a or:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a not:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a mensaje:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a f:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a condElse:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a condReturn:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a condFor:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a condIn:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a condRange:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a condWhile:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a condIf:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a condElif:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a intInput:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a charInput:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a floatInput:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a condDef:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a condDel:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a condPass:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a condEnd:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a tab {: RESULT = a + "\t"; :}
+    |          TEXTO3:a numero:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a id:b {: RESULT = a + b.toString(); :}
+    |          TEXTO3:a resto:b {: RESULT = a + b.toString(); :}
+    |          {: RESULT=""; :}
+;
+
+
+    
