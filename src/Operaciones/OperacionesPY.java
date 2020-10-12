@@ -5,12 +5,16 @@
  */
 package Operaciones;
 
+import cuartetos.Nodo;
 import gramaticaPYTHON.SintaxPYTHON;
 import java.util.ArrayList;
+import manejoCuartetos.ManejoCondiciones;
+import manejoCuartetos.ManejoPython;
 import objetos.Metodo;
 import objetos.ObjetosPYTHON;
 import objetos.Parametro;
 import objetos.Variable;
+import objetosApoyo.NodoBoolean;
 import verificaciones.VerifPY;
 
 /**
@@ -19,7 +23,9 @@ import verificaciones.VerifPY;
  */
 public class OperacionesPY {
 
-    public void verificarTabs(ObjetosPYTHON py, ArrayList<Integer> instrucciones, ArrayList<Integer> lineasGuias, int tabsLinea, boolean instruccion) {
+    public void verificarTabs(ObjetosPYTHON py, ArrayList<ArrayList<Nodo>> pilaCuarpeta, ArrayList<ArrayList<Nodo>> pilaFalsas, ArrayList<Integer> instrucciones, ArrayList<Integer> lineasGuias, int tabsLinea, boolean instruccion, ArrayList<String> tipoInstruccion) {
+        ManejoCondiciones manejo = new ManejoCondiciones();
+        ManejoPython manejoPY = new ManejoPython();
         //Significa que somos la primer linea luego de una instruccion
         if (!SintaxPYTHON.primerLinea) {
             lineasGuias.add(tabsLinea);
@@ -28,8 +34,45 @@ public class OperacionesPY {
             if (tabsLinea > lineasGuias.get(lineasGuias.size() - 1)) {
                 System.out.println("ERROR");
             } else if (tabsLinea < lineasGuias.get(lineasGuias.size() - 1)) {
+                lineasGuias.remove(lineasGuias.size() - 1);
                 Integer iterador = null;
                 for (int i = instrucciones.size() - 1; i >= 0; i--) {
+                    /*AQUI DEBE IR LA SEGUNDA PARTE DE LAS CONDICIONALES: IF - FOR - WHILE */
+
+                    if (!tipoInstruccion.isEmpty()) {
+                        if (tipoInstruccion.get(tipoInstruccion.size() - 1).equals("IF")) {
+                            if (manejoPY.ultimaEtiquetaFinal(py, SintaxPYTHON.jerarquia) != null) {
+                                py.setContEtFin(py.getContEtFin() - 1);
+                            }
+                            manejo.irEtiquetaFinPY(py, SintaxPYTHON.jerarquia);
+                            manejoPY.segundoChequeoIf(py, pilaCuarpeta, pilaFalsas);
+                            manejo.agregarEtiquetaFinPY(py, SintaxPYTHON.jerarquia);
+                        } else if (tipoInstruccion.get(tipoInstruccion.size() - 1).equals("ELSEIF")) {
+                            if (manejoPY.ultimaEtiquetaFinal(py, SintaxPYTHON.jerarquia) != null) {
+                                int nodo = manejoPY.ultimaEtiquetaFinal(py, SintaxPYTHON.jerarquia);
+                                py.getCuarpeta().remove(nodo);
+                                py.setContEtFin(py.getContEtFin() - 1);
+                            }
+                            manejo.irEtiquetaFinPY(py, SintaxPYTHON.jerarquia);
+                            manejoPY.segundoChequeoIf(py, pilaCuarpeta, pilaFalsas);
+                            manejo.agregarEtiquetaFinPY(py, SintaxPYTHON.jerarquia);
+                        } else if (tipoInstruccion.get(tipoInstruccion.size() - 1).equals("ELSE")) {
+                            if (manejoPY.ultimaEtiquetaFinal(py, SintaxPYTHON.jerarquia) != null) {
+                                int nodo = manejoPY.ultimaEtiquetaFinal(py, SintaxPYTHON.jerarquia);
+                                py.getCuarpeta().remove(nodo);
+                                py.setContEtFin(py.getContEtFin() - 1);
+                            }
+                            manejo.irEtiquetaFinPY(py, SintaxPYTHON.jerarquia);
+                            manejo.agregarEtiquetaFinPY(py, SintaxPYTHON.jerarquia);
+                        } else if (tipoInstruccion.get(tipoInstruccion.size() - 1).equals("WHILE")) {
+
+                        } else if (tipoInstruccion.get(tipoInstruccion.size() - 1).equals("FOR")) {
+
+                        }
+                        System.out.println(tipoInstruccion.get(tipoInstruccion.size() - 1) + "      " + tipoInstruccion.size());
+                        tipoInstruccion.remove(tipoInstruccion.size() - 1);
+                    }
+
                     eliminarVarAmbitos(py, SintaxPYTHON.jerarquia);
                     SintaxPYTHON.jerarquia--;
                     if (tabsLinea == instrucciones.get(i)) {
@@ -42,10 +85,11 @@ public class OperacionesPY {
                 }
                 if (iterador != null) {
                     for (int i = instrucciones.size() - 1; i >= iterador; i--) {
+
                         instrucciones.remove(i);
                     }
                 }
-                SintaxPYTHON.primerLinea = false;
+
             }
         }
         if (instruccion) {
@@ -82,10 +126,11 @@ public class OperacionesPY {
     }
 
     //verifica si una variable ya existe dentro del archivo
-    public void asignarVariables(ObjetosPYTHON py, String id, String tipo) {
+    public boolean asignarVariables(ObjetosPYTHON py, String id, String tipo) {
+        boolean existe = false;
         if (!tipo.equals("")) {
             VerifPY verif = new VerifPY();
-            if (SintaxPYTHON.jerarquia == 0) {
+            /*if (SintaxPYTHON.jerarquia == 0) {
                 if (verif.verifVarGlobal(py, id)) {
                     py.getGlobales().get(VerifPY.iteradorVar).getListAsignaciones().add(SintaxPYTHON.jerarquia);
                     py.getGlobales().get(VerifPY.iteradorVar).setValor(true);
@@ -94,24 +139,26 @@ public class OperacionesPY {
                     py.getGlobales().add(new Variable(id, tipo, true, SintaxPYTHON.jerarquia));
                     py.getGlobales().get(py.getGlobales().size() - 1).getListAsignaciones().add(SintaxPYTHON.jerarquia);
                 }
+            } else {*/
+            if (verif.verifVarLocal(py, id)) {
+                existe = true;
+                py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().get(VerifPY.iteradorVar).getListAsignaciones().add(SintaxPYTHON.jerarquia);
+                py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().get(VerifPY.iteradorVar).setValor(true);
+                py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().get(VerifPY.iteradorVar).setTipo(tipo);
             } else {
-                if (verif.verifVarLocal(py, id)) {
-                    py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().get(VerifPY.iteradorVar).getListAsignaciones().add(SintaxPYTHON.jerarquia);
-                    py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().get(VerifPY.iteradorVar).setValor(true);
-                    py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().get(VerifPY.iteradorVar).setTipo(tipo);
-                } else {
-                    //si no existe agrega la variable a las variables del metodo    
-                    py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().add(new Variable(id, tipo, true, SintaxPYTHON.jerarquia));
-                    py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().get(py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().size() - 1).getListAsignaciones().add(SintaxPYTHON.jerarquia);
-                }
+                //si no existe agrega la variable a las variables del metodo    
+                py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().add(new Variable(id, tipo, true, SintaxPYTHON.jerarquia));
+                py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().get(py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().size() - 1).getListAsignaciones().add(SintaxPYTHON.jerarquia);
             }
+            //}
         } else {
             System.out.println("Error de asignacion en variable: " + id);
         }
+        return existe;
     }
 
     //metodo para las asignaciones de tipo: a,b,c = 1,2,3
-    public void asignacionesMultiples(ObjetosPYTHON py, ArrayList<String> identificadores, ArrayList<String> tipos, int jerarquia) {
+    public void asignacionesMultiples(ObjetosPYTHON py, ArrayList<String> identificadores, ArrayList<NodoBoolean> tipos, int jerarquia) {
         if (tipos != null) {
             VerifPY verif = new VerifPY();
             if (identificadores.size() == tipos.size()) {
@@ -120,10 +167,10 @@ public class OperacionesPY {
                     if (jerarquia == 0) {
                         if (verif.verifVarGlobal(py, identificadores.get(i))) {
                             py.getGlobales().get(VerifPY.iteradorVar).getListAsignaciones().add(jerarquia);
-                            py.getGlobales().get(VerifPY.iteradorVar).setTipo(tipos.get(i));
+                            py.getGlobales().get(VerifPY.iteradorVar).setTipo(tipos.get(i).getTipo());
                             py.getGlobales().get(VerifPY.iteradorVar).setValor(true);
                         } else {
-                            py.getGlobales().add(new Variable(identificadores.get(i), tipos.get(i), true, jerarquia));
+                            py.getGlobales().add(new Variable(identificadores.get(i), tipos.get(i).getTipo(), true, jerarquia));
                             py.getGlobales().get(py.getGlobales().size() - 1).getListAsignaciones().add(jerarquia);
                             py.getGlobales().get(py.getGlobales().size() - 1).setValor(true);
                         }
@@ -131,10 +178,10 @@ public class OperacionesPY {
                         int itMetodo = py.getMisMetodos().size() - 1;
                         if (verif.verifVarLocal(py, identificadores.get(i))) {
                             py.getMisMetodos().get(itMetodo).getMisVariables().get(VerifPY.iteradorVar).getListAsignaciones().add(jerarquia);
-                            py.getMisMetodos().get(itMetodo).getMisVariables().get(VerifPY.iteradorVar).setTipo(tipos.get(i));
+                            py.getMisMetodos().get(itMetodo).getMisVariables().get(VerifPY.iteradorVar).setTipo(tipos.get(i).getTipo());
                             py.getMisMetodos().get(itMetodo).getMisVariables().get(VerifPY.iteradorVar).setValor(true);
                         } else {
-                            py.getMisMetodos().get(itMetodo).getMisVariables().add(new Variable(identificadores.get(i), tipos.get(i), true, jerarquia));
+                            py.getMisMetodos().get(itMetodo).getMisVariables().add(new Variable(identificadores.get(i), tipos.get(i).getTipo(), true, jerarquia));
                             py.getMisMetodos().get(itMetodo).getMisVariables().get(py.getMisMetodos().get(itMetodo).getMisVariables().size() - 1).getListAsignaciones().add(jerarquia);
                             py.getMisMetodos().get(itMetodo).getMisVariables().get(py.getMisMetodos().get(itMetodo).getMisVariables().size() - 1).setValor(true);
                         }
@@ -155,14 +202,14 @@ public class OperacionesPY {
         if (jerarquia == 0) {
             if (verif.verifVarGlobal(py, id)) {
                 tipo = py.getGlobales().get(VerifPY.iteradorVar).getTipo();
-            } 
+            }
         } else {
             int itMetodo = py.getMisMetodos().size() - 1;
             if (verif.verifVarLocal(py, id)) {
                 tipo = py.getMisMetodos().get(itMetodo).getMisVariables().get(VerifPY.iteradorVar).getTipo();
             } else if (verif.verifVarGlobal(py, id)) {
                 tipo = py.getGlobales().get(VerifPY.iteradorVar).getTipo();
-            } 
+            }
         }
         return tipo;
     }
@@ -187,46 +234,44 @@ public class OperacionesPY {
             } else {
                 py.getMisMetodos().add(new Metodo(id, false, null));
                 for (int i = 0; i < parametros.size(); i++) {
-                    py.getMisMetodos().get(py.getMisMetodos().size()-1).getMisParametros().add(new Parametro(py.getMisMetodos().get(py.getMisMetodos().size()-1).getMisParametros().size()-1, null));
-                    py.getMisMetodos().get(py.getMisMetodos().size()-1).getMisVariables().add(new Variable(parametros.get(i), "Float", true, jerarquia));
-                    py.getMisMetodos().get(py.getMisMetodos().size()-1).getMisVariables().get(py.getMisMetodos().get(py.getMisMetodos().size()-1).getMisVariables().size()-1).getListAsignaciones().add(jerarquia);
+                    py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisParametros().add(new Parametro(py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisParametros().size() - 1, null));
+                    py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().add(new Variable(parametros.get(i), "Float", true, jerarquia));
+                    py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().get(py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().size() - 1).getListAsignaciones().add(jerarquia);
                 }
             }
         } else {
-            System.out.println("Nombres de parametros iguales en metodo: "+id);
+            System.out.println("Nombres de parametros iguales en metodo: " + id);
         }
     }
-    
-    public void agregarRetornoMetodo(ObjetosPYTHON py, String tipo){
-        if(!tipo.equals("")){
-            py.getMisMetodos().get(py.getMisMetodos().size()-1).setTipo(false);
-            py.getMisMetodos().get(py.getMisMetodos().size()-1).setRetorno(tipo);
+
+    public void agregarRetornoMetodo(ObjetosPYTHON py, String tipo) {
+        if (!tipo.equals("")) {
+            py.getMisMetodos().get(py.getMisMetodos().size() - 1).setTipo(false);
+            py.getMisMetodos().get(py.getMisMetodos().size() - 1).setRetorno(tipo);
         } else {
-            py.getMisMetodos().get(py.getMisMetodos().size()-1).setTipo(false);
+            py.getMisMetodos().get(py.getMisMetodos().size() - 1).setTipo(false);
         }
     }
-    
+
     //borra una variable gracias al comando "DEL"
-    public void borrarVariable(ObjetosPYTHON py, String id, int jerarquia){
+    public void borrarVariable(ObjetosPYTHON py, String id, int jerarquia) {
         VerifPY verif = new VerifPY();
-        if(jerarquia == 0){
-            if(verif.verifVarGlobal(py, id)){
+        if (jerarquia == 0) {
+            if (verif.verifVarGlobal(py, id)) {
                 int aRemover = VerifPY.iteradorVar;
                 py.getGlobales().remove(aRemover);
             }
         } else {
-            if(verif.verifVarLocal(py, id)){
+            if (verif.verifVarLocal(py, id)) {
                 int aRemover = VerifPY.iteradorVar;
-                py.getMisMetodos().get(py.getMisMetodos().size()-1).getMisVariables().remove(aRemover);
-            } else if(verif.verifVarLocal(py, id)){
+                py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().remove(aRemover);
+            } else if (verif.verifVarLocal(py, id)) {
                 int aRemover = VerifPY.iteradorVar;
                 py.getGlobales().remove(aRemover);
             } else {
-                System.out.println("No existe la variable: "+id+" dentro del archivo como para usar el comando: del");
+                System.out.println("No existe la variable: " + id + " dentro del archivo como para usar el comando: del");
             }
         }
     }
-    
-    
 
 }

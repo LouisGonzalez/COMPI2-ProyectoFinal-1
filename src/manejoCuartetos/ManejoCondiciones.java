@@ -7,7 +7,9 @@ package manejoCuartetos;
 
 import cuartetos.Nodo;
 import java.util.ArrayList;
+import objetos.ObjetosC;
 import objetos.ObjetosJAVA;
+import objetos.ObjetosPYTHON;
 import objetos.ObjetosVB;
 
 /**
@@ -164,11 +166,7 @@ public class ManejoCondiciones {
         int suma = jv.getContEt() + 1;
         jv.setContEt(suma);
         et = "et_" + suma;
-        /*   } else {  
-            
-            System.out.println("ENTRO AOFASUFOSAUFOSAOI");
-            et = "et_"+0;
-        }*/
+        
         return et;
     }
 
@@ -201,24 +199,24 @@ public class ManejoCondiciones {
         agregarPrimerosIf(jv, bool, jerarquia, "if");
     }
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
     public void irEtiquetaFin(ObjetosJAVA jv, int jerarquia) {
         String etFin = "etFin_" + jv.getContEtFin();
         jv.getCuarpeta().add(new Nodo("GOTO", null, null, etFin, jerarquia));
     }
-    
-    
-    public void irEtiquetaFinVB(ObjetosVB vb, int jerarquia){
-        String etFin = "etFin_"+vb.getContEtFin();
+
+    public void irEtiquetaFinVB(ObjetosVB vb, int jerarquia) {
+        String etFin = "etFin_" + vb.getContEtFin();
         vb.getCuarpeta().add(new Nodo("GOTO", null, null, etFin, jerarquia));
+    }
+
+    public void irEtiquetaFinPY(ObjetosPYTHON py, int jerarquia) {
+        String etFin = "etFin_" + py.getContEtFin();
+        py.getCuarpeta().add(new Nodo("GOTO", null, null, etFin, jerarquia));
+    }
+
+    public void irEtiquetaFinC(ObjetosC c, int jerarquia) {
+        String etFin = "etFin_" + c.getContEtFin();
+        c.getCuarpeta().add(new Nodo("GOTO", null, null, etFin, jerarquia));
     }
     
     
@@ -235,22 +233,40 @@ public class ManejoCondiciones {
     
     
     
-
+    
+    
+    
+    
+    
+    
     public void agregarEtiquetaFin(ObjetosJAVA jv, int jerarquia) {
         String etFin = "etFin_" + jv.getContEtFin();
         jv.setContEtFin(jv.getContEtFin() + 1);
         jv.getCuarpeta().add(new Nodo("ETIQUETA", etFin, null, null, jerarquia));
     }
 
-    
-    public void agregarEtiquetaFinVB(ObjetosVB vb, int jerarquia){
-        String etFin = "etFin_"+vb.getContEtFin();
-        vb.setContEtFin(vb.getContEtFin()+1);
+    public void agregarEtiquetaFinVB(ObjetosVB vb, int jerarquia) {
+        String etFin = "etFin_" + vb.getContEtFin();
+        vb.setContEtFin(vb.getContEtFin() + 1);
         vb.getCuarpeta().add(new Nodo("ETIQUETA", etFin, null, null, jerarquia));
     }
     
+    public void agregarEtiquetaFinPY(ObjetosPYTHON py, int jerarquia){
+        String etFin = "etFin_" + py.getContEtFin();
+        py.setContEtFin(py.getContEtFin()+1);
+        py.getCuarpeta().add(new Nodo("ETIQUETA", etFin, null, null, jerarquia));
+    }
+    
+    public void agregarEtiquetaFinC(ObjetosC c, int jerarquia){
+        String etFin = "etFin_" + c.getContEtFin();
+        c.setContEtFin(c.getContEtFin()+1);
+        c.getCuarpeta().add(new Nodo("ETIQUETA", etFin, null, null, jerarquia));
+    }    
     
     
+    
+    
+
     /*WHILE*/
     public void agregarWhile(ObjetosJAVA jv, String bool, int jerarquia) {
         String etWhile = "etWhile_" + jv.getContWhile();
@@ -405,8 +421,8 @@ public class ManejoCondiciones {
             }
         }
     }
-    
-     public void eliminarEtiquetasVB(ObjetosVB vb, ArrayList<Nodo> aux, ArrayList<Nodo> etFalsas) {
+
+    public void eliminarEtiquetasVB(ObjetosVB vb, ArrayList<Nodo> aux, ArrayList<Nodo> etFalsas) {
         for (int i = 0; i < etFalsas.size(); i++) {
             String etiqueta = etFalsas.get(i).getDato1().toString();
             boolean encontrado = false;
@@ -436,4 +452,68 @@ public class ManejoCondiciones {
             }
         }
     }
+
+    public void eliminarEtiquetasPY(ObjetosPYTHON py, ArrayList<Nodo> aux, ArrayList<Nodo> etFalsas) {
+        for (int i = 0; i < etFalsas.size(); i++) {
+            String etiqueta = etFalsas.get(i).getDato1().toString();
+            boolean encontrado = false;
+            for (int j = 0; j < py.getCuarpeta().size(); j++) {
+                if (py.getCuarpeta().get(j).getOperacion().equals("ETIQUETA")) {
+                    if (py.getCuarpeta().get(j).getDato1().equals(etiqueta)) {
+                        encontrado = true;
+                        break;
+                    }
+                }
+            }
+            if (!encontrado) {
+                if (aux != null) {
+                    for (int j = 0; j < aux.size(); j++) {
+                        if (aux.get(j).getOperacion().equals("ETIQUETA")) {
+                            if (aux.get(j).getDato1().equals(etiqueta)) {
+                                encontrado = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+                
+            if (encontrado) {
+                etFalsas.remove(i);
+                i--;
+            }
+        }
+    }
+    
+        public void eliminarEtiquetasC(ObjetosC vb, ArrayList<Nodo> aux, ArrayList<Nodo> etFalsas) {
+        for (int i = 0; i < etFalsas.size(); i++) {
+            String etiqueta = etFalsas.get(i).getDato1().toString();
+            boolean encontrado = false;
+            for (int j = 0; j < vb.getCuarpeta().size(); j++) {
+                if (vb.getCuarpeta().get(j).getOperacion().equals("ETIQUETA")) {
+                    if (vb.getCuarpeta().get(j).getDato1().equals(etiqueta)) {
+                        encontrado = true;
+                        break;
+                    }
+                }
+            }
+            if (!encontrado) {
+                if (aux != null) {
+                    for (int j = 0; j < aux.size(); j++) {
+                        if (aux.get(j).getOperacion().equals("ETIQUETA")) {
+                            if (aux.get(j).getDato1().equals(etiqueta)) {
+                                encontrado = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (encontrado) {
+                etFalsas.remove(i);
+                i--;
+            }
+        }
+    }
+
 }

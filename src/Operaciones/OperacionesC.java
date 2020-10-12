@@ -23,8 +23,7 @@ import verificaciones.VerifC;
  */
 public class OperacionesC {
 
-    private VerifC verif = new VerifC();
-
+ 
     //activa un lenguaje para poder usar sus clases y/o metodos en el lenguaje principal
     public void activarLenguaje(String lenguaje, TablaSimbolos tabla, String clase) {
         if (lenguaje.equals("JAVA")) {
@@ -99,6 +98,7 @@ public class OperacionesC {
 
     //agrega una nueva variable a la tabla de C
     public void agregarNuevaVar(ObjetosC c, String id, String tipoDato, String tipoVar, int nivel, boolean valor, String idClase, Integer dimension) {
+        VerifC verif = new VerifC();
         boolean existe = false;
         if (nivel > 0) {
             existe = verif.verificarExistenciaVar(c, nivel, id);

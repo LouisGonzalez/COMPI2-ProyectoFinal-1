@@ -1,0 +1,2 @@
+gramaticaPYTHON.SintaxPYTHON
+gramaticaPYTHON.CUP$SintaxPYTHON$actions

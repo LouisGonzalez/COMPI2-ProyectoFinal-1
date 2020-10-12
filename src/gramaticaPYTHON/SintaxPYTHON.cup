@@ -4,6 +4,9 @@ import java.util.*;
 import Operaciones.*;
 import verificaciones.*;
 import Tablas.*;
+import manejoCuartetos.*;
+import objetosApoyo.*;
+import cuartetos.*;
 
 parser code {:
 
@@ -13,12 +16,18 @@ parser code {:
     public ArrayList<Integer> instrucciones = new ArrayList<>();
     //tabs de guia que agarran el valor en la primer linea luego de una instruccion
     public ArrayList<Integer> lineasGuias = new ArrayList<>();
-
+    public ArrayList<String> tipoInstruccion = new ArrayList<>();
     public static int jerarquia = 0;
     public static Boolean primerLinea = null;
-
     public OperacionesPY op = new OperacionesPY();
     public VerifPY verif = new VerifPY();
+
+    /*MANEJO CUARTETOS*/
+    public ManejoPython manejoPY = new ManejoPython();
+    public static String aux2 = "", aux3 = "", etInst = "";
+    public static boolean inst = false;
+    public ArrayList<ArrayList<Nodo>> pilaFalsas = new ArrayList<>();
+    public ArrayList<ArrayList<Nodo>> pilaCuarpeta = new ArrayList<>();
 
     public SintaxPYTHON(AnalizadorLexico2 lex, TablaSimbolos tabla){
         super(lex);
@@ -45,12 +54,14 @@ parser code {:
     non terminal INICIO, METODOS, RETURN, RETORNO,  
                  CUERPO_METODO, VARIABLES, 
                  VARIABLES2, VARS, VARS3, FOR, WHILE, 
-                 OP, IF, NOT, ELSE, BORRAR, MENSAJES, CONC, TEXTO, ID, ADM, END, LECTURA_DATOS,
+                 IF, NOT, ELSE, BORRAR, MENSAJES, CONC, TEXTO, ID, ADM, END, LECTURA_DATOS,
                  ENTER, VARIABLES3, COMENTARIO_A, COMENTARIO_B;
 
-    non terminal String TEXTO2, OPERACION, TIPO_VAL, TIPO_VAL2, TIPO_INPUT, CONDICION, TEXTO3;
+    non terminal String TEXTO2, TIPO_VAL2, TIPO_INPUT, TEXTO3, OP;
+ 
+    non terminal ArrayList<Nodo> CONDICION, EXT;
 
-    non terminal ArrayList<String> VARS4, LADO2;
+    non terminal ArrayList<NodoBoolean> VARS4, LADO2;
     
     non terminal ArrayList<String> LADO1, VARS2;
 
@@ -58,9 +69,11 @@ parser code {:
     
     non terminal Integer TAB;
 
-    non terminal Boolean RANGE, EXT;
+    non terminal Boolean RANGE;
 
     non terminal Boolean RESTO_MENSAJE, VAR_MENSAJE;
+
+    non terminal NodoBoolean OPERACION, TIPO_VAL;
 
     precedence left mas, menos;
     precedence left por, div, porcentaje;
@@ -71,7 +84,6 @@ parser code {:
     start with INICIO;
 
     INICIO ::= INICIO METODOS
-    |          INICIO VARIABLES
     |
 ;   
     METODOS ::= condDef {: parser.jerarquia++; :} id:a parentesis_a PARAMETROS:b parentesis_b dosPuntos ENTER {: parser.op.agregarMetodo(parser.tabla.getObPython(), a.toString(), b, parser.jerarquia); parser.primerLinea=false;  parser.instrucciones.add(0); :} CUERPO_METODO RETURN {: parser.jerarquia--; :}
@@ -85,24 +97,35 @@ parser code {:
     RETURN ::= condReturn RETORNO:a ENTER {: parser.op.agregarRetornoMetodo(parser.tabla.getObPython(), a.toString()); :}
     |          {: parser.op.agregarRetornoMetodo(parser.tabla.getObPython(), ""); :}
 ;
-    RETORNO ::= OPERACION:a {: RESULT=a; :}
+    RETORNO ::= OPERACION:a {: RESULT=a.getTipo(); :}
 ;
     OPERACION ::= parentesis_a OPERACION:a parentesis_b {: RESULT=a; :}
-    |             OPERACION:a mas OPERACION:b {: if(!a.equals("") && !b.equals("")) { RESULT=parser.verif.verificarTipoOperacion(parser.tabla.getObPython(), a, b); } else { RESULT=""; } :}
-    |             OPERACION:a menos OPERACION:b {: if(!a.equals("") && !b.equals("")){ RESULT=parser.verif.verificarTipoOperacion(parser.tabla.getObPython(), a, b); } else { RESULT=""; } :}
-    |             OPERACION:a por OPERACION:b {: if(!a.equals("") && !b.equals("")){ RESULT=parser.verif.verificarTipoOperacion(parser.tabla.getObPython(), a, b); } else { RESULT=""; } :}
-    |             OPERACION:a div OPERACION:b {: if(!a.equals("") && !b.equals("")){ RESULT=parser.verif.verificarTipoOperacion(parser.tabla.getObPython(), a, b); } else { RESULT=""; } :}
-    |             OPERACION:a porcentaje OPERACION:b {: if(!a.equals("") && !b.equals("")){ RESULT=parser.verif.verificarTipoOperacion(parser.tabla.getObPython(), a, b); } else { RESULT=""; } :}
+    |             OPERACION:a mas OPERACION:b {: RESULT = parser.manejoPY.concatenarOperacion(parser.tabla.getObPython(), a, b, "suma");  :}
+    |             OPERACION:a menos OPERACION:b {: RESULT = parser.manejoPY.concatenarOperacion(parser.tabla.getObPython(), a, b, "resta"); :}
+    |             OPERACION:a por OPERACION:b {: RESULT = parser.manejoPY.concatenarOperacion(parser.tabla.getObPython(), a, b, "mult"); :}
+    |             OPERACION:a div OPERACION:b {: RESULT = parser.manejoPY.concatenarOperacion(parser.tabla.getObPython(), a, b, "div"); :}
+    |             OPERACION:a porcentaje OPERACION:b {: RESULT = parser.manejoPY.concatenarOperacion(parser.tabla.getObPython(), a, b, "modulo"); :}
     |             TIPO_VAL:a {: RESULT=a; :}
 ;
-    TIPO_VAL ::= id:a {: RESULT=parser.op.buscarVariable(parser.tabla.getObPython(), a.toString(), parser.jerarquia); :}
-    |            numero {: RESULT="Integer"; :}
-    |            numero punto numero {: RESULT="Float"; :}
-    |            comillaSimple id comillaSimple {: RESULT="Char"; :}
-    |            menos id:a {: RESULT=parser.op.buscarVariable(parser.tabla.getObPython(), a.toString(), parser.jerarquia); :}
-    |            menos numero {: RESULT="Integer"; :}
-    |            menos numero punto numero {: RESULT="Float"; :}
+    TIPO_VAL ::= id:a {: String tip = parser.op.buscarVariable(parser.tabla.getObPython(), a.toString(), parser.jerarquia);   RESULT = new NodoBoolean(tip, a.toString());   :}
+    |            numero:a {: RESULT = new NodoBoolean("Integer", a.toString()); :}
+    |            numero:a punto:b numero:c {: RESULT = new NodoBoolean("Float", a.toString()+b.toString()+c.toString()); :}
+    |            comillaSimple:a id:b comillaSimple:c {: RESULT = new NodoBoolean("Char", a.toString()+b.toString()+c.toString()); :}
+    |            menos:b id:a {: String tip=parser.op.buscarVariable(parser.tabla.getObPython(), a.toString(), parser.jerarquia); RESULT = new NodoBoolean(tip, b.toString()+a.toString()); :}
+    |            menos:a numero:b {: RESULT = new NodoBoolean("Integer", a.toString()+b.toString()); :}
+    |            menos:a numero:b punto:c numero:d {: RESULT = new NodoBoolean("Float", a.toString()+b.toString()+c.toString()+d.toString()); :}
 ;
+
+
+
+
+
+
+
+
+
+
+
     TIPO_VAL2 ::= comilla id comilla {: RESULT="Char"; :}
     |             id:a {: RESULT=parser.op.buscarVariable(parser.tabla.getObPython(), a.toString(), parser.jerarquia); :}
     |             numero {: RESULT="Integer"; :}
@@ -121,13 +144,10 @@ parser code {:
     |                 COMENTARIO_A CUERPO_METODO
     |                
 ;
-    VARIABLES ::= id:a igual OPERACION:b {: parser.op.asignarVariables(parser.tabla.getObPython(), a.toString(), b); :} VARIABLES2
-    |             LADO1:a igual LADO2:b {: parser.op.asignacionesMultiples(parser.tabla.getObPython(), a, b, parser.jerarquia); :}
+    VARIABLES3 ::= TAB:a id:b igual OPERACION:c {: parser.manejoPY.agregarVariable(parser.tabla.getObPython(), b.toString(), c);  parser.op.asignarVariables(parser.tabla.getObPython(), b.toString(), c.getTipo()); :} VARIABLES2 {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion); :}
+    |             TAB:a LADO1:b igual LADO2:c {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion);    parser.manejoPY.asignacionesMultiples(parser.tabla.getObPython(), b, c);    parser.op.asignacionesMultiples(parser.tabla.getObPython(), b, c, parser.jerarquia); :}
 ;
-    VARIABLES3 ::= TAB:a id:b igual OPERACION:c {: parser.op.asignarVariables(parser.tabla.getObPython(), b.toString(), c); :} VARIABLES2 {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, false); :}
-    |             TAB:a LADO1:b igual LADO2:c {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, false); parser.op.asignacionesMultiples(parser.tabla.getObPython(), b, c, parser.jerarquia); :}
-;
-    VARIABLES2 ::= coma id:a igual OPERACION:b {: parser.op.asignarVariables(parser.tabla.getObPython(), a.toString(), b); :} VARIABLES2
+    VARIABLES2 ::= coma id:a igual OPERACION:b {: parser.manejoPY.agregarVariable(parser.tabla.getObPython(), a.toString(), b);  parser.op.asignarVariables(parser.tabla.getObPython(), a.toString(), b.getTipo()); :} VARIABLES2
     |              igual OPERACION VARIABLES2
     |              ENTER
 ;
@@ -136,54 +156,54 @@ parser code {:
     VARS2 ::= coma id:a VARS2:b {: b.add(a.toString()); RESULT=b; :}
     |   {: RESULT=new ArrayList<>(); :}
 ;
-    LADO2 ::= OPERACION:a coma OPERACION:b VARS4:c {: if(c!=null){ if(!a.equals("") && !b.equals("")){ c.add(a); c.add(b); RESULT=c; } else { RESULT=null; } } :}
+    LADO2 ::= OPERACION:a coma OPERACION:b VARS4:c {: if(c!=null){ if(!a.getTipo().equals("") && !b.getTipo().equals("")){ c.add(a); c.add(b); RESULT=c; } else { RESULT=null; } } :}
 ;
-    VARS4 ::= coma OPERACION:a VARS4:b {: if(b!=null){ if(!a.equals("")){ b.add(a); RESULT=b; } else { RESULT=null; } } :}
+    VARS4 ::= coma OPERACION:a VARS4:b {: if(b!=null){ if(!a.getTipo().equals("")){ b.add(a); RESULT=b; } else { RESULT=null; } } :}
     |  ENTER {: RESULT=new ArrayList<>(); :}
 ;
-    FOR ::= TAB:a condFor id:b condIn OPERACION:c dosPuntos ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(),parser.instrucciones, parser.lineasGuias, a, true);  parser.verif.comprobacionFor(parser.tabla.getObPython(), b.toString(), c.toString(), false, "tipo1", parser.op, parser.jerarquia); :}
-    |       TAB:a condFor id:b condIn condRange parentesis_a RANGE:c parentesis_b dosPuntos ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, true); parser.verif.comprobacionFor(parser.tabla.getObPython(), b.toString(), "", c, "tipo2", parser.op, parser.jerarquia); :}
+    FOR ::= TAB:a condFor id:b condIn OPERACION:c dosPuntos ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, true, parser.tipoInstruccion);  parser.verif.comprobacionFor(parser.tabla.getObPython(), b.toString(), c.getTipo(), false, "tipo1", parser.op, parser.jerarquia); :}
+    |       TAB:a condFor id:b condIn condRange parentesis_a RANGE:c parentesis_b dosPuntos ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, true, parser.tipoInstruccion); parser.verif.comprobacionFor(parser.tabla.getObPython(), b.toString(), "", c, "tipo2", parser.op, parser.jerarquia); :}
 ;
-    RANGE ::= OPERACION:a {: if(a.equals("Integer")){ RESULT=true; } else{ RESULT=false; } :}
-    |         OPERACION:a coma OPERACION:b {: if(a.equals("Integer") && b.equals("Integer")){ RESULT=true; } else { RESULT=false; } :}
-    |         OPERACION:a coma OPERACION:b coma OPERACION:c {: if(a.equals("Integer") && b.equals("Integer") && c.equals("Integer")){ RESULT=true; } else { RESULT=false; } :}
+    RANGE ::= OPERACION:a {: if(a.getTipo().equals("Integer")){ RESULT=true; } else{ RESULT=false; } :}
+    |         OPERACION:a coma OPERACION:b {: if(a.getTipo().equals("Integer") && b.getTipo().equals("Integer")){ RESULT=true; } else { RESULT=false; } :}
+    |         OPERACION:a coma OPERACION:b coma OPERACION:c {: if(a.getTipo().equals("Integer") && b.getTipo().equals("Integer") && c.getTipo().equals("Integer")){ RESULT=true; } else { RESULT=false; } :}
 ;
-    WHILE ::= TAB:a condWhile EXT dosPuntos ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, true); :}
+    WHILE ::= TAB:a condWhile EXT dosPuntos ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.pilaCuarpeta, parser.pilaFalsas,  parser.instrucciones, parser.lineasGuias, a, true, parser.tipoInstruccion); :}
 ;
-    EXT ::= EXT:a and EXT:b {: if(a && b){ RESULT=true; } else { RESULT=false; }   :}                                                     
-    |       EXT:a or EXT:b {: if(a && b){ RESULT=true; } else { RESULT=false; }  :}                                                
-    |       CONDICION:a {: if(!a.equals("")){ RESULT=true; } else { RESULT=false; } :} 
-    |       not parentesis_a CONDICION:a parentesis_b {: if(!a.equals("")){ RESULT=true; } else { RESULT=false; } :}
-    |       not CONDICION:a {: if(!a.equals("")){ RESULT=true; } else { RESULT=false; } :}
+    EXT ::= EXT:a and EXT:b {: RESULT = parser.manejoPY.manejoAnd(a, b);   :}                                                     
+    |       EXT:a or {: parser.aux3 = parser.aux2; :} EXT:b {: parser.manejoPY.manejoOr(parser.tabla.getObPython(), parser.pilaCuarpeta, a, b); :}                                                  
+    |       CONDICION:a {: RESULT = a; :} 
+    |       not parentesis_a CONDICION:a parentesis_b {: RESULT = a; :}
+    |       not CONDICION:a {: RESULT = a; :}
 ;                                                                                                   
-    CONDICION ::= OPERACION:a OP OPERACION:b {: if(!a.equals("") && !b.equals("")){ RESULT=parser.verif.verificarTipoOperacion(parser.tabla.getObPython(), a, b); } else { RESULT=""; } :}
+    CONDICION ::= OPERACION:a OP:c OPERACION:b {: RESULT = parser.manejoPY.agregarBooleans(parser.tabla.getObPython(), parser.pilaFalsas, a, b, c);  :}
 ;
-    OP ::= igual igual                                                                                    
-    |      mayor                                                                                    
-    |      menor                                                                                    
-    |      mayorIgual                                                               
-    |      menorIgual           
-    |      admiracion igual                                                         
+    OP ::= igual igual {: RESULT = "=="; :}                                                                                    
+    |      mayor {: RESULT=">"; :}                                                                                   
+    |      menor  {: RESULT = "<"; :}                                                                                  
+    |      mayorIgual {: RESULT = ">="; :}                                                               
+    |      menorIgual {: RESULT = "<="; :}          
+    |      admiracion igual {: RESULT = "!="; :}                                                         
 ;                                                                   
-    IF ::= TAB:a  condIf EXT dosPuntos ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, true); :}     
+    IF ::= TAB:a  condIf {:  parser.op.verificarTabs(parser.tabla.getObPython(), parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, true, parser.tipoInstruccion); parser.tipoInstruccion.add("IF");   parser.pilaFalsas.add(new ArrayList<>()); :} EXT:h {: parser.manejoPY.primerChequeoIf(parser.tabla.getObPython(), h); :} dosPuntos ENTER   
 ;                                                                                                                                                                         
-    ELSE ::= TAB:a condElse ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, true); :}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
-    |        TAB:a condElif EXT dosPuntos ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(),parser.instrucciones, parser.lineasGuias, a, true); :}
-;                                                                           
-    BORRAR ::= TAB:a condDel id:b ENTER  {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, false);  parser.op.borrarVariable(parser.tabla.getObPython(), b.toString(), parser.jerarquia); :}                                                                                           
+    ELSE ::= TAB:a condElse  {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, true, parser.tipoInstruccion);    parser.tipoInstruccion.add("ELSE");   :} dosPuntos ENTER                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+    |        TAB:a condElif {:  parser.op.verificarTabs(parser.tabla.getObPython(), parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, true, parser.tipoInstruccion); parser.tipoInstruccion.add("ELSEIF");    parser.pilaFalsas.add(new ArrayList<>());  :} EXT:h {: parser.manejoPY.primerChequeoIf(parser.tabla.getObPython(), h); :} dosPuntos ENTER 
+;                                                                            
+    BORRAR ::= TAB:a condDel id:b ENTER  {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion);  parser.op.borrarVariable(parser.tabla.getObPython(), b.toString(), parser.jerarquia); :}                                                                                           
 ;                       
-    LECTURA_DATOS ::= TAB:a id:b igual TIPO_INPUT:c parentesis_a comilla TEXTO2 comilla parentesis_b ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, false); String tipoVar = parser.op.buscarVariable(parser.tabla.getObPython(), b.toString(), parser.jerarquia);  parser.verif.verifVarInput(parser.tabla.getObPython(), tipoVar, c, b.toString()); :}
-    |                 TAB:a id:b igual TIPO_INPUT:c parentesis_a parentesis_b ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, false);  String tipoVar = parser.op.buscarVariable(parser.tabla.getObPython(), b.toString(), parser.jerarquia); parser.verif.verifVarInput(parser.tabla.getObPython(), tipoVar, c, b.toString()); :}
-    |                 TAB:a TIPO_INPUT parentesis_a comilla TEXTO2 comilla parentesis_b ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, false); :}
-    |                 TAB:a TIPO_INPUT parentesis_a parentesis_b ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(),parser.instrucciones, parser.lineasGuias, a, false); :}
+    LECTURA_DATOS ::= TAB:a id:b igual TIPO_INPUT:c parentesis_a comilla TEXTO2 comilla parentesis_b ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion); String tipoVar = parser.op.buscarVariable(parser.tabla.getObPython(), b.toString(), parser.jerarquia);  parser.verif.verifVarInput(parser.tabla.getObPython(), tipoVar, c, b.toString()); :}
+    |                 TAB:a id:b igual TIPO_INPUT:c parentesis_a parentesis_b ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion);  String tipoVar = parser.op.buscarVariable(parser.tabla.getObPython(), b.toString(), parser.jerarquia); parser.verif.verifVarInput(parser.tabla.getObPython(), tipoVar, c, b.toString()); :}
+    |                 TAB:a TIPO_INPUT parentesis_a comilla TEXTO2 comilla parentesis_b ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion); :}
+    |                 TAB:a TIPO_INPUT parentesis_a parentesis_b ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion); :}
 ;
     TIPO_INPUT ::= intInput {: RESULT="Integer"; :}
     |              charInput {: RESULT="Char"; :}
     |              floatInput {: RESULT="Float"; :}
 ;
-    MENSAJES ::= TAB:a mensaje parentesis_a VAR_MENSAJE:b RESTO_MENSAJE:c END parentesis_b ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, false); parser.verif.verifMensaje(b, c, "tipo1"); :}                             
-    |            TAB:a mensaje parentesis_a TEXTO RESTO_MENSAJE:b END parentesis_b ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, false); parser.verif.verifMensaje(false, b, "tipo2"); :}
-    |            TAB:a mensaje parentesis_a parentesis_b ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.instrucciones, parser.lineasGuias, a, false); :}
+    MENSAJES ::= TAB:a mensaje parentesis_a VAR_MENSAJE:b RESTO_MENSAJE:c END parentesis_b ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion); parser.verif.verifMensaje(b, c, "tipo1"); :}                             
+    |            TAB:a mensaje parentesis_a TEXTO RESTO_MENSAJE:b END parentesis_b ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion); parser.verif.verifMensaje(false, b, "tipo2"); :}
+    |            TAB:a mensaje parentesis_a parentesis_b ENTER {: parser.op.verificarTabs(parser.tabla.getObPython(), parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion); :}
 ; 
     RESTO_MENSAJE ::= CONC VAR_MENSAJE:a RESTO_MENSAJE:b {: if(a && b){ RESULT=true; } else { RESULT=false; } :}
     |                 CONC TEXTO RESTO_MENSAJE:b {: RESULT=true; :}

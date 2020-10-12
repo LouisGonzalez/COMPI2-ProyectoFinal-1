@@ -512,11 +512,10 @@ public class VerifC {
     }
 
     //verifica que todas en el for esten de forma correcta
-    public void verificarFor(ObjetosC c, int jerarquia, boolean cond1, String boolean2, String var1, String var2, String tipoActual, boolean cond3, String tipoVar1, String id1) {
+    public void verificarFor(ObjetosC c, int jerarquia, boolean cond1, String var1, String var2, String tipoActual, boolean cond3, String tipoVar1, String id1) {
         boolean condVar1 = verificarIdOperacion(c, var1, jerarquia, tipoActual);
         boolean condVar2 = verificarIdOperacion(c, var2, jerarquia, tipoActual);
-        boolean cond2 = !boolean2.equals("");
-        if (cond1 && condVar1 && condVar2 && cond3 && cond2) {
+        if (cond1 && condVar1 && condVar2 && cond3) {
             System.out.println("todo correcto en el for");
         } else {
             System.out.println("ERROR for");

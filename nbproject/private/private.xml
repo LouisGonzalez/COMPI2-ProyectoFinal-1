@@ -5,24 +5,26 @@
         <group>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/objetos/ObjetosVB.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/gramaticaC/AnalizadorLexico4.java</file>
+            <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/manejoCuartetos/ManejoCondiciones.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/gramaticaVB/SintaxVB.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/objetos/ObjetosJAVA.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/verificaciones/VerifJAVA.java</file>
-            <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/gramaticaPYTHON/SintaxPYTHON.java</file>
-            <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/gramaticaC/LexerC.flex</file>
+            <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/verificaciones/VerifPY.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/gramaticaPYTHON/SintaxPYTHON.cup</file>
+            <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/Operaciones/OperacionesPY.java</file>
+            <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/manejoCuartetos/ManejoJava.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/objetos/Clase.java</file>
-            <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/gramaticaJAVA/SintaxJAVA.cup</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/objetos/Arreglo.java</file>
-            <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/gramaticaJAVA/LexerJAVA.flex</file>
+            <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/gramaticaJAVA/SintaxJAVA.cup</file>
+            <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/objetosApoyo/NodoBoolean.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/objetos/Metodo.java</file>
+            <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/gramaticaVB/SintaxVB.cup</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/verificaciones/VerifVB.java</file>
-            <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/principal/main.java</file>
-            <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/gramaticaC/SintaxC.cup</file>
-            <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/gramaticaJAVA/SintaxJAVA.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/objetos/ObjetosC.java</file>
+            <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/gramaticaJAVA/SintaxJAVA.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/interfaz/PanelPrincipal.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/manejoReturn/ReturnIf.java</file>
+            <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/manejoCuartetos/ManejoVb.java</file>
         </group>
     </open-files>
 </project-private>

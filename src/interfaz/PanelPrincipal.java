@@ -112,20 +112,31 @@ public class PanelPrincipal extends javax.swing.JPanel {
             System.out.println(codigoVb);*/
             //--------------------------------------------------------------------------------------------------------------
             // System.out.println(codigoVb);
-            new SintaxVB(lexer3, tabla.getObVb(), tabla).parse();
-           // new SintaxPYTHON(lexer2, tabla).parse();
-         //   new SintaxJAVA(lexer, tabla).parse();
-            //new SintaxC(lexer4, tabla).parse();
-
+        //   new SintaxVB(lexer3, tabla.getObVb(), tabla).parse();
+       //  new SintaxPYTHON(lexer2, tabla).parse();
+         //  new SintaxJAVA(lexer, tabla).parse();
+           new SintaxC(lexer4, tabla).parse();
             //CUARPETA JAVA    
-           /* for (int i = 0; i < tabla.getObJava().getCuarpeta().size(); i++) {
+           for (int i = 0; i < tabla.getObJava().getCuarpeta().size(); i++) {
                 System.out.println(tabla.getObJava().getCuarpeta().get(i).getOperacion()+" - "+tabla.getObJava().getCuarpeta().get(i).getDato1()+" - "+tabla.getObJava().getCuarpeta().get(i).getDato2()+" - "+tabla.getObJava().getCuarpeta().get(i).getVar()+" - "+tabla.getObJava().getCuarpeta().get(i).getNivel());
-            }*/
+            }
 
             //CUARPETA VB
             for (int i = 0; i < tabla.getObVb().getCuarpeta().size(); i++) {
                 System.out.println(tabla.getObVb().getCuarpeta().get(i).getOperacion()+" - "+tabla.getObVb().getCuarpeta().get(i).getDato1()+ " - "+tabla.getObVb().getCuarpeta().get(i).getDato2()+" - "+tabla.getObVb().getCuarpeta().get(i).getVar()+" - "+tabla.getObVb().getCuarpeta().get(i).getNivel());
             }
+            
+            //CUARPETA PYYHON
+          /*  for (int i = 0; i < tabla.getObPython().getCuarpeta().size(); i++) {
+                System.out.println(tabla.getObPython().getCuarpeta().get(i).getOperacion()+" - "+tabla.getObPython().getCuarpeta().get(i).getDato1()+ " - "+tabla.getObPython().getCuarpeta().get(i).getDato2()+" - "+tabla.getObPython().getCuarpeta().get(i).getVar()+" - "+tabla.getObPython().getCuarpeta().get(i).getNivel());
+            }*/
+            
+            //CUARPETA C
+            for (int i = 0; i < tabla.getObC().getCuarpeta().size(); i++) {
+                System.out.println(tabla.getObC().getCuarpeta().get(i).getOperacion()+" - "+tabla.getObC().getCuarpeta().get(i).getDato1()+ " - "+tabla.getObC().getCuarpeta().get(i).getDato2()+" - "+tabla.getObC().getCuarpeta().get(i).getVar()+" - "+tabla.getObC().getCuarpeta().get(i).getNivel());
+            }
+            
+            
             
         } catch (Exception ex) {
             Logger.getLogger(PanelPrincipal.class.getName()).log(Level.SEVERE, null, ex);

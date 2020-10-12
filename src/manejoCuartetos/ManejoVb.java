@@ -114,8 +114,7 @@ public class ManejoVb {
     /*--------------------------------------------- OR --------------------------------------------------------*/
     
     public void manejoOr(ObjetosVB vb, ArrayList<ArrayList<Nodo>> pilaCuarpeta, ArrayList<Nodo> ladoA, ArrayList<Nodo> ladoB, int jerarquia) {
-        if (!SintaxVB.inst) {
-            String ultimoGoto = obtenerUltimoGoTo(pilaCuarpeta.get(pilaCuarpeta.size() - 1), jerarquia);
+        if (SintaxVB.inst) {
             if (ladoA == null) {
                 pilaCuarpeta.get(pilaCuarpeta.size() - 1).add(new Nodo("ETIQUETA", SintaxVB.aux3, null, null, jerarquia));
                 SintaxVB.aux3 = "";
