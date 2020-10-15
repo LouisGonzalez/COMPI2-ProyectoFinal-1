@@ -5,6 +5,7 @@
  */
 package Operaciones;
 
+import interfaz.PanelPrincipal;
 import objetos.Clase;
 import objetos.Metodo;
 import objetos.ObjetosJAVA;
@@ -21,18 +22,18 @@ public class OperacionesJAVA {
     private VerifJAVA verif = new VerifJAVA();
 
     //agrega una nueva clase
-    public void agregarNuevaClase(ObjetosJAVA jv, String idClase) {
+    public void agregarNuevaClase(ObjetosJAVA jv, String idClase, int fila, int columna) {
         if (verif.verificarIdClase(idClase, jv)) {
-            System.out.println("ya existe una clase con el identificador: " + idClase);
+            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe una clase con el id" + idClase + " dentro del archivo JAVA\n";
         } else {
             jv.getMisClases().add(new Clase(idClase));
         }
     }
 
     //agrega un nuevo metodo
-    public void agregarNuevoMetodo(String idMetodo, ObjetosJAVA jv, int iterador, String retorno) {
+    public void agregarNuevoMetodo(String idMetodo, ObjetosJAVA jv, int iterador, String retorno, int fila, int columna) {
         if (verif.verificarIdMetodo(idMetodo, jv, iterador)) {
-            System.out.println("ya existe un metodo con el identificador: " + idMetodo);
+            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe un metodo con el id" + idMetodo + " dentro del archivo JAVA\n";
         } else {
             if (retorno.equals("void")) {
                 jv.getMisClases().get(iterador).getMisMetodos().add(new Metodo(idMetodo, false, null));
@@ -41,67 +42,65 @@ public class OperacionesJAVA {
             }
         }
     }
-    
-    public void agregarNuevoConstructor(ObjetosJAVA jv, String id){
-        if(jv.getMisClases().get(jv.getMisClases().size()-1).getId().equals(id)){
-            jv.getMisClases().get(jv.getMisClases().size()-1).getMisMetodos().add(new Metodo(id, false, null));
+
+    public void agregarNuevoConstructor(ObjetosJAVA jv, String id, int fila, int columna) {
+        if (jv.getMisClases().get(jv.getMisClases().size() - 1).getId().equals(id)) {
+            jv.getMisClases().get(jv.getMisClases().size() - 1).getMisMetodos().add(new Metodo(id, false, null));
         } else {
-            System.out.println("Nombre equivocado para creacion de constructor: "+id);
+            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Nombre equivocado para creacion de constructor\n";
+
         }
     }
 
     //agrega el parametro al metodo
-    public void agregarParametrosMetodo(String id, ObjetosJAVA jv, String tipo) {
+    public void agregarParametrosMetodo(String id, ObjetosJAVA jv, String tipo, int fila, int columna) {
         int itClase = jv.getMisClases().size() - 1;
         int itMetodo = jv.getMisClases().get(jv.getMisClases().size() - 1).getMisMetodos().size() - 1;
-        if (verif.verifVarLocal(jv, id)) {
-            System.out.println("Dentro dde los parametros ya existe una variable con el id: " + id);
-        } else {
-            jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisParametros().add(new Parametro(jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisParametros().size() - 1, tipo));
-        }
+        jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisParametros().add(new Parametro(jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisParametros().size() - 1, tipo));
+        
     }
 
     //agrega la nueva variable dentro de los parametros al metodo en cuestion
-    public void agregarVarMetodo(String id, ObjetosJAVA jv, String tipo, boolean param, int nivel) {
+    public void agregarVarMetodo(String id, ObjetosJAVA jv, String tipo, boolean param, int nivel, int fila, int columna) {
         int itClase = jv.getMisClases().size() - 1;
         int itMetodo = jv.getMisClases().get(jv.getMisClases().size() - 1).getMisMetodos().size() - 1;
         if (verif.verifVarLocal(jv, id)) {
-            System.out.println("ya existe una variable con el id: " + id);
+            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe una variable con el id" + id + " dentro del archivo JAVA\n";
         } else {
             jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().add(new Variable(id, tipo, param, nivel));
-            jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().size()-1).getListAsignaciones().add(nivel);
-            jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().size()-1).setValor(true);
-            jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisParametros().add(new Parametro(jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisParametros().size() - 1, tipo));
+            jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().size() - 1).getListAsignaciones().add(nivel);
+            jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().size() - 1).setValor(true);
         }
     }
 
     //agrega una nueva variable a la clase 
-    public void agregarVariable(ObjetosJAVA jv, int jerarquia, String id, String tipo, boolean valor) {
+    public void agregarVariable(ObjetosJAVA jv, int jerarquia, String id, String tipo, boolean valor, int fila, int columna) {
         int itClase = jv.getMisClases().size() - 1;
         if (jerarquia == 0) {
             if (verif.verifVarGlobal(jv, id)) {
-                System.out.println("ya existe una variable global con el id: " + id);
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe una variable global con el id" + id + " dentro del archivo JAVA\n";
+
             } else {
                 jv.getMisClases().get(itClase).getGlobales().add(new Variable(id, tipo, valor, jerarquia));
-                if(valor){
-                    jv.getMisClases().get(itClase).getGlobales().get(jv.getMisClases().get(itClase).getGlobales().size()-1).getListAsignaciones().add(jerarquia);
+                if (valor) {
+                    jv.getMisClases().get(itClase).getGlobales().get(jv.getMisClases().get(itClase).getGlobales().size() - 1).getListAsignaciones().add(jerarquia);
                 }
             }
         } else {
             int itMetodo = jv.getMisClases().get(itClase).getMisMetodos().size() - 1;
             if (verif.verifVarLocal(jv, id)) {
-                System.out.println("ya existe una variable con el id: " + id);
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe una variable con el id" + id + " dentro del archivo JAVA\n";
             } else {
                 jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().add(new Variable(id, tipo, valor, jerarquia));
-                if(valor){
-                    jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().size()-1).getListAsignaciones().add(jerarquia);
+                if (valor) {
+                    jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().size() - 1).getListAsignaciones().add(jerarquia);
                 }
             }
         }
     }
 
     //devuelve el tipo de variable de un id si es que este existe
-    public String devolverTipoVar(ObjetosJAVA jv, String idVar, int jerarquia, int itClase) {
+    public String devolverTipoVar(ObjetosJAVA jv, String idVar, int jerarquia, int itClase, int fila, int columna) {
         String tipo = "";
         boolean encontrado = false;
         if (jerarquia == 0) {
@@ -132,7 +131,8 @@ public class OperacionesJAVA {
             }
         }
         if (!encontrado) {
-            System.out.println("La variable " + idVar + " no existe dentro del archivo.");
+            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe una variable con el id" + idVar + " dentro del archivo JAVA\n";
+
         }
         return tipo;
     }
@@ -172,18 +172,18 @@ public class OperacionesJAVA {
         }
         for (int i = 0; i < jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().size(); i++) {
             for (int j = 0; j < jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(i).getListAsignaciones().size(); j++) {
-                if(jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(i).getListAsignaciones().get(j) == jerarquia){
+                if (jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(i).getListAsignaciones().get(j) == jerarquia) {
                     jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(i).getListAsignaciones().remove(j);
                     j--;
                 }
             }
         }
         for (int i = 0; i < jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().size(); i++) {
-            if(jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(i).getListAsignaciones().isEmpty()){
+            if (jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(i).getListAsignaciones().isEmpty()) {
                 jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(i).setValor(false);
             }
         }
-        
+
     }
 
     //envia un boolean dependiendo si hay returns dentro de un switch y sus case
@@ -222,7 +222,7 @@ public class OperacionesJAVA {
     }
 
     //comprueba al final de un metodo la validacion de los returns
-    public void comprobarReturnMetodo(ObjetosJAVA jv, Boolean cuerpo, Boolean retorno) {
+    public void comprobarReturnMetodo(ObjetosJAVA jv, Boolean cuerpo, Boolean retorno, String idMetodo, String tipo) {
         if (cuerpo != null) {
             if (cuerpo && retorno) {
                 System.out.println("ERROR, returns multiples");
@@ -231,13 +231,14 @@ public class OperacionesJAVA {
                 if (jv.getMisClases().get(jv.getMisClases().size() - 1).getMisMetodos().get(itMetodo).isTipo()) {
                     System.out.println("todo correcto en el manejo de returns");
                 } else {
-                    System.out.println("Error, metodo void no puede retornar un valor");
+                    PanelPrincipal.errores += "Tipo de error: SEMANTICO - Causa: Metodo " + idMetodo + " no puede retornar un valor por ser de tipo void\n";
                 }
             } else if (!cuerpo && !retorno) {
-                System.out.println("ERROR, falta de parametro return en metodo");
+                if(!tipo.equals("void"))
+                    PanelPrincipal.errores += "Tipo de error: SEMANTICO - Causa: Falta de parametro return en metodo " + idMetodo + ", archivo JAVA\n";
             }
         } else {
-            System.out.println("Error en return");
+            PanelPrincipal.errores += "Tipo de error: SEMANTICO - Causa: Error en manejo de returns, metodo " + idMetodo + "\n";
         }
 
     }
@@ -268,13 +269,13 @@ public class OperacionesJAVA {
         return aDevolver;
     }
 
-    public String buscarVariable(ObjetosJAVA jv, String id, int jerarquia) {
+    public String buscarVariable(ObjetosJAVA jv, String id, int jerarquia, int fila, int columna) {
         String tipo = "";
         if (jerarquia == 0) {
             if (verif.verifVarGlobal(jv, id)) {
                 tipo = jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(VerifJAVA.iterador).getTipo();
             } else {
-                System.out.println("La variable: " + id + " no existe dentro del archivo");
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe una variable con el id" + id + " dentro del archivo JAVA\n";
             }
         } else {
             if (verif.verifVarLocal(jv, id)) {
@@ -283,7 +284,7 @@ public class OperacionesJAVA {
             } else if (verif.verifVarGlobal(jv, id)) {
                 tipo = jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(VerifJAVA.iterador).getTipo();
             } else {
-                System.out.println("La variable: " + id + " no existe dentro del archivo");
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe una variable con el id" + id + " dentro del archivo JAVA\n";
             }
         }
         return tipo;

@@ -7,6 +7,7 @@ import cuartetos.*;
 import objetosApoyo.*;
 import manejoCuartetos.*;
 import java.util.*;
+import interfaz.*;
 
 parser code {:
 
@@ -30,6 +31,7 @@ parser code {:
     public ArrayList<ArrayList<Nodo>> pilaFor = new ArrayList<>();
     public ArrayList<ArrayList<Nodo>> pilaCuarpeta = new ArrayList<>();
     public ArrayList<ArrayList<Nodo>> pilaFalsas = new ArrayList<>();
+    public ArrayList<Boolean> usoPila = new ArrayList<>();
 
     public static boolean inst = false;
     public ArrayList<String> pilaEtInst = new ArrayList<>();
@@ -43,6 +45,7 @@ parser code {:
     public SintaxJAVA(AnalizadorLexico lex, TablaSimbolos tabla){
         super(lex);
         this.tabla = tabla;
+        contVars = tabla.getObJava().getContVars();
     }
 
     public void setAccion(String tipo, String mensaje, String accion){
@@ -50,8 +53,15 @@ parser code {:
     }
 
     public void syntax_error(Symbol s){
-        setAccion("ERROR", "Error sintaxis columna: "+s.right+" fila: "+s.left,"");        
+        int fila = s.left + PanelPrincipal.totalLineas;
+        setAccion("ERROR", "Error sintaxis columna: "+s.right+" fila: "+fila,"");   
+        PanelPrincipal.errores += "Fila: "+fila+" Columna:"+s.right+" Tipo de error: SINTACTICO.\n";
     }
+
+   /* public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception {
+        int fila = s.left + PanelPrincipal.totalLineas;
+        PanelPrincipal.errores += "Fila: "+fila+" Columna:"+s.right+" Tipo de error: SINTACTICO.\n";
+    }*/
 
 :}
 
@@ -60,16 +70,18 @@ parser code {:
              admiracion, igual, mas, menos, por, div, porcentaje, ampersand, pleca, comilla, guionBajo,
              numero, id, resto, mayor, menor, comillaSimple, quiebre, parentesis_a, parentesis_b, noCase, def,
              retorno, mensaje, mensaje2, intInput, charInput, floatInput, condReturn, condFalse, condTrue, and, or,
-             comentario_a, comentario_b, comentario_c;
+             comentario_a, comentario_b, comentario_c, condThis, enter;
                  
     non terminal AA, A, B, VARIABLES, METODOS, VARIABLES2, OPERACION2,  
                  MENSAJE, CONC_VAR_DEF, CONC_VAR_AS, PARAM_CONSTRUCTOR, PARAM_CONSTRUCTOR2,
-                 AND, OR, PARAMETROS, CONSTRUCTOR, ASIGNACIONES, EXT,
-                 PARAMETROS2, TEXTO, TEXTO2, LECTURA_DATOS, COMENTARIO_A, COMENTARIO_B;
+                 AND, OR, CONSTRUCTOR, ASIGNACIONES, EXT, ENTER, ENTER2, 
+                  LECTURA_DATOS, COMENTARIO_A, COMENTARIO_B;
 
-    non terminal String TEXTO_PLANO, VAR, TIPO_INPUT, INT, TIPO_METODO;
+    non terminal String TEXTO, TEXTO2, VAL_TEXTO, TEXTO_PLANO, VAR, TIPO_INPUT, INT, TIPO_METODO, TEXTO_PLANO2;
 
-    non terminal Boolean VAL_TEXTO, CUERPO_METODO;
+    non terminal String PARAMETROS, PARAMETROS2;
+
+    non terminal Boolean CUERPO_METODO;
 
     non terminal String BOOLEAN, VAL_FOR;
 
@@ -91,26 +103,30 @@ parser code {:
                                     
     start with AA;
                  
-    AA ::= A     
+    AA ::= ENTER2 A     
 ;                
-    A ::= A tipoPublic clase id:a {: parser.op.agregarNuevaClase(parser.tabla.getObJava(), a.toString()); :} llave_a B llave_b
+    A ::= A tipoPublic clase id:a {: parser.op.agregarNuevaClase(parser.tabla.getObJava(), a.toString(), aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas, aright); :} llave_a ENTER B llave_b ENTER
     |               
 ;                       
-    B ::= B VARIABLES  
-    |     B METODOS 
-    |     B CONSTRUCTOR
-    |     B ASIGNACIONES
-    |                   
+    B ::= VARIABLES B  
+    |     METODOS B
+    |     CONSTRUCTOR B
+    |     ASIGNACIONES B
+    |     COMENTARIO_A B
+    |     COMENTARIO_B B
+    |         
+    |     error B
 ;                   
-    VARIABLES ::= VAR:a id:b {: parser.tipoActual = a; :} C:c {: if(c!=null){   /*VER ESTE IF Y REVISAR QUE PROCEDE*/                                       parser.tabla.getObJava().getCuarpeta().add(new Nodo("asig", c, null, b.toString(), null));     parser.op.agregarVariable(parser.tabla.getObJava(), parser.jerarquia, b.toString(), a.toString(), true);  } else { parser.op.agregarVariable(parser.tabla.getObJava(), parser.jerarquia, b.toString(), a.toString(), false); } :} CONC_VAR_DEF
+    VARIABLES ::= VAR:a id:b {: parser.tipoActual = a; :} C:c {: if(c!=null){   /*VER ESTE IF Y REVISAR QUE PROCEDE*/                                       parser.tabla.getObJava().getCuarpeta().add(new Nodo("asig", c, null, b.toString(), null));     parser.op.agregarVariable(parser.tabla.getObJava(), parser.jerarquia, b.toString(), a.toString(), true, bleft+PanelPrincipal.totalLineas, bright);  } else { parser.op.agregarVariable(parser.tabla.getObJava(), parser.jerarquia, b.toString(), a.toString(), false, bleft+PanelPrincipal.totalLineas, bright); } :} CONC_VAR_DEF
 ;
-    ASIGNACIONES ::= id:a igual {: parser.tipoActual = ""; parser.tipoActual = parser.op.devolverTipoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1); :} VALOR:b {: parser.tabla.getObJava().getCuarpeta().add(new Nodo("asig", b, null, a.toString(), null));  parser.op.agregarValorVar(parser.tabla.getObJava(), parser.jerarquia, a.toString());  :} CONC_VAR_AS
+    ASIGNACIONES ::= id:a igual {: parser.tipoActual = ""; parser.tipoActual = parser.op.devolverTipoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, aleft+PanelPrincipal.totalLineas, aright); :} VALOR:b {: parser.tabla.getObJava().getCuarpeta().add(new Nodo("asig", b, null, a.toString(), null));  parser.op.agregarValorVar(parser.tabla.getObJava(), parser.jerarquia, a.toString());  :} CONC_VAR_AS
+    |               condThis punto id:a igual {: parser.tipoActual = ""; parser.tipoActual = parser.op.devolverTipoVar(parser.tabla.getObJava(), a.toString(), 0, parser.tabla.getObJava().getMisClases().size()-1, aleft+PanelPrincipal.totalLineas, aright); :} VALOR:b {: parser.tabla.getObJava().getCuarpeta().add(new Nodo("asig", b, null, a.toString(), null));  parser.op.agregarValorVar(parser.tabla.getObJava(), 0, a.toString());  :} CONC_VAR_AS
 ;
-    CONC_VAR_DEF ::= coma id:a C:c {: if(c!=null){ parser.tabla.getObJava().getCuarpeta().add(new Nodo("asig", c, null, a.toString(), null)); parser.op.agregarVariable(parser.tabla.getObJava(), parser.jerarquia, a.toString(), parser.tipoActual, true); }  else { parser.op.agregarVariable(parser.tabla.getObJava(), parser.jerarquia, a.toString(), parser.tipoActual, false); } :} CONC_VAR_DEF
-    |           puntoComa
+    CONC_VAR_DEF ::= coma id:a C:c {: if(c!=null){ parser.tabla.getObJava().getCuarpeta().add(new Nodo("asig", c, null, a.toString(), null)); parser.op.agregarVariable(parser.tabla.getObJava(), parser.jerarquia, a.toString(), parser.tipoActual, true, aleft+PanelPrincipal.totalLineas, aright); }  else { parser.op.agregarVariable(parser.tabla.getObJava(), parser.jerarquia, a.toString(), parser.tipoActual, false, aleft+PanelPrincipal.totalLineas, aright); } :} CONC_VAR_DEF
+    |           puntoComa ENTER
 ;
-    CONC_VAR_AS ::= id:a igual {: parser.tipoActual=""; parser.tipoActual = parser.op.devolverTipoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1); :} VALOR:b {: parser.tabla.getObJava().getCuarpeta().add(new Nodo("asig", b, null, a.toString(), null)); parser.op.agregarValorVar(parser.tabla.getObJava(), parser.jerarquia, a.toString()); :} CONC_VAR_AS
-    |           puntoComa
+    CONC_VAR_AS ::= id:a igual {: parser.tipoActual=""; parser.tipoActual = parser.op.devolverTipoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, aleft+PanelPrincipal.totalLineas, aright); :} VALOR:b {: parser.tabla.getObJava().getCuarpeta().add(new Nodo("asig", b, null, a.toString(), null)); parser.op.agregarValorVar(parser.tabla.getObJava(), parser.jerarquia, a.toString()); :} CONC_VAR_AS
+    |           puntoComa ENTER
 ;
     C ::= igual VALOR:a {: RESULT=a; :}
     |     {: RESULT= null; :}
@@ -129,54 +145,58 @@ parser code {:
     |             OPERACION:a porcentaje OPERACION:b {: String var = "t"+parser.contVars; parser.contVars++; parser.tabla.getObJava().getCuarpeta().add(new Nodo("modulo", a, b, var, null)); RESULT=var; :}
     |             TIPO_VAL:a {: RESULT=a; :}
 ;                         
-    TIPO_VAL ::= id:a {: parser.verif.verificarTipadoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, parser.tipoActual); RESULT=a.toString(); :}
-    |            numero:a {:  String tipo ="Integer";  parser.verif.verificarNumero(tipo, parser.tabla.getObJava(), parser.tipoActual, a.toString());  RESULT=a.toString(); :}
-    |            numero:a punto:b numero:c {: String tipo="Float"; parser.verif.verificarNumero(tipo, parser.tabla.getObJava(), parser.tipoActual, a.toString()+b.toString()+c.toString()); RESULT=a.toString()+b.toString()+c.toString(); :}  
+    TIPO_VAL ::= id:a {: parser.verif.verificarTipadoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, parser.tipoActual, aleft+PanelPrincipal.totalLineas, aright); RESULT=a.toString(); :}
+    |            numero:a {:  String tipo ="Integer";  parser.verif.verificarNumero(tipo, parser.tabla.getObJava(), parser.tipoActual, a.toString(), aleft+PanelPrincipal.totalLineas, aright);  RESULT=a.toString(); :}
+    |            numero:a punto:b numero:c {: String tipo="Float"; parser.verif.verificarNumero(tipo, parser.tabla.getObJava(), parser.tipoActual, a.toString()+b.toString()+c.toString(), aleft+PanelPrincipal.totalLineas, aright); RESULT=a.toString()+b.toString()+c.toString(); :}  
     |            comillaSimple:a id:b comillaSimple:c {: RESULT=a.toString()+b.toString()+c.toString();  :}
     |            comillaSimple:a numero:b comillaSimple:c {: RESULT=a.toString()+b.toString()+c.toString();  :}
-    |            menos:a id:b {: parser.verif.verificarTipadoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, parser.tipoActual); RESULT=a.toString()+b.toString(); :}
-    |            menos:a numero:b {:  String tipo ="Integer";  parser.verif.verificarNumero(tipo, parser.tabla.getObJava(), parser.tipoActual, a.toString()); RESULT=a.toString()+b.toString(); :}
-    |            menos:a numero:b punto:c numero:d {: String tipo="Float"; parser.verif.verificarNumero(tipo, parser.tabla.getObJava(), parser.tipoActual, a.toString()+b.toString()+c.toString()); RESULT=a.toString()+b.toString()+c.toString()+d.toString(); :}  
+    |            menos:d comillaSimple:a id:b comillaSimple:c {: RESULT=d.toString()+a.toString()+b.toString()+c.toString();  :}
+    |            menos:d comillaSimple:a numero:b comillaSimple:c {: RESULT=d.toString()+a.toString()+b.toString()+c.toString();  :}
+    |            menos:a id:b {: parser.verif.verificarTipadoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, parser.tipoActual, bleft+PanelPrincipal.totalLineas, bright); RESULT=a.toString()+b.toString(); :}
+    |            menos:a numero:b {:  String tipo ="Integer";  parser.verif.verificarNumero(tipo, parser.tabla.getObJava(), parser.tipoActual, a.toString(), bleft+PanelPrincipal.totalLineas, bright); RESULT=a.toString()+b.toString(); :}
+    |            menos:a numero:b punto:c numero:d {: String tipo="Float"; parser.verif.verificarNumero(tipo, parser.tabla.getObJava(), parser.tipoActual, a.toString()+b.toString()+c.toString(), bleft+PanelPrincipal.totalLineas, bright); RESULT=a.toString()+b.toString()+c.toString()+d.toString(); :}  
 ;
-    METODOS ::= tipoPublic TIPO_METODO:a id:b parentesis_a {: parser.tipoMetodo=a; parser.jerarquia++; parser.op.agregarNuevoMetodo(b.toString(), parser.tabla.getObJava(), parser.tabla.getObJava().getMisClases().size()-1, a.toString()); :} PARAMETROS parentesis_b  llave_a CUERPO_METODO:f RETORNO:g {: parser.op.comprobarReturnMetodo(parser.tabla.getObJava(), f, g); :} llave_b {: parser.jerarquia--; :}
-    |           tipoPublic TIPO_METODO:a id:b parentesis_a parentesis_b {: parser.tipoMetodo=a; parser.jerarquia++; parser.op.agregarNuevoMetodo(b.toString(), parser.tabla.getObJava(), parser.tabla.getObJava().getMisClases().size()-1, a.toString()); :} llave_a CUERPO_METODO:f RETORNO:g {: parser.op.comprobarReturnMetodo(parser.tabla.getObJava(), f, g); :} llave_b {: parser.jerarquia--; :}
+    METODOS ::= tipoPublic TIPO_METODO:a id:b parentesis_a {: parser.tipoMetodo=a; parser.jerarquia++; parser.op.agregarNuevoMetodo(b.toString(), parser.tabla.getObJava(), parser.tabla.getObJava().getMisClases().size()-1, a.toString(), bleft+PanelPrincipal.totalLineas, bright); :} PARAMETROS:h parentesis_b  {: parser.manejoJV.crearMetodo(parser.tabla.getObJava(), b.toString(), h, a);  :}  llave_a ENTER CUERPO_METODO:f RETORNO:g {: parser.op.comprobarReturnMetodo(parser.tabla.getObJava(), f, g, b.toString(), a); :} llave_b ENTER {:  parser.manejoJV.finMetodo(parser.tabla.getObJava());  parser.jerarquia--; :}
+    |           tipoPublic TIPO_METODO:a id:b parentesis_a parentesis_b {: parser.tipoMetodo=a; parser.jerarquia++; parser.op.agregarNuevoMetodo(b.toString(), parser.tabla.getObJava(), parser.tabla.getObJava().getMisClases().size()-1, a.toString(), bleft+PanelPrincipal.totalLineas, bright);  parser.manejoJV.crearMetodo(parser.tabla.getObJava(), b.toString(), "", a);    :} llave_a ENTER CUERPO_METODO:f RETORNO:g {: parser.op.comprobarReturnMetodo(parser.tabla.getObJava(), f, g, b.toString(), a); :} llave_b ENTER {:  parser.manejoJV.finMetodo(parser.tabla.getObJava());  parser.jerarquia--; :}
 ;       
-    CONSTRUCTOR ::= tipoPublic id:a parentesis_a {: parser.op.agregarNuevoConstructor(parser.tabla.getObJava(), a.toString()); :} PARAMETROS parentesis_b llave_a CUERPO_METODO:b {:  if(b){ System.out.println("Constructor incapaz de retornar un valor"); }   :} llave_b
-    |               tipoPublic id:a parentesis_a {: parser.op.agregarNuevoConstructor(parser.tabla.getObJava(), a.toString()); :} parentesis_b llave_a CUERPO_METODO:b {:  if(b){ System.out.println("Constructor incapaz de retornar un valor"); }   :} llave_b
+    CONSTRUCTOR ::= tipoPublic id:a parentesis_a {: parser.jerarquia++;  parser.op.agregarNuevoConstructor(parser.tabla.getObJava(), a.toString(), aleft+PanelPrincipal.totalLineas, aright); :} PARAMETROS:h parentesis_b {:   parser.manejoJV.crearMetodo(parser.tabla.getObJava(), a.toString(), h, "void");  :} llave_a ENTER CUERPO_METODO:b {:  if(b){ System.out.println("Constructor incapaz de retornar un valor"); }   :} llave_b ENTER {: parser.manejoJV.finMetodo(parser.tabla.getObJava()); parser.jerarquia--; :}
+    |               tipoPublic id:a parentesis_a {: parser.jerarquia++; parser.op.agregarNuevoConstructor(parser.tabla.getObJava(), a.toString(), aleft+PanelPrincipal.totalLineas, aright); :} parentesis_b {: parser.manejoJV.crearMetodo(parser.tabla.getObJava(), a.toString(), "", "void");  :} llave_a ENTER CUERPO_METODO:b {:  if(b){ System.out.println("Constructor incapaz de retornar un valor"); }   :} llave_b ENTER {: parser.manejoJV.finMetodo(parser.tabla.getObJava()); parser.jerarquia--;  :}
 ;
-    PARAMETROS ::= PARAMETROS2 VAR:b id:c {: parser.op.agregarVarMetodo(c.toString(), parser.tabla.getObJava(), b, true, parser.jerarquia); /*parser.op.agregarParametrosMetodo(c.toString(), parser.tabla.getObJava(), b);*/ :}
+    PARAMETROS ::= PARAMETROS2:a VAR:b id:c {: parser.op.agregarVarMetodo(c.toString(), parser.tabla.getObJava(), b, true, parser.jerarquia, cleft+PanelPrincipal.totalLineas, cright);  RESULT = a+"_"+b.toString(); parser.op.agregarParametrosMetodo(c.toString(), parser.tabla.getObJava(), b, cleft+PanelPrincipal.totalLineas, cright); :}
 ;                      
-    PARAMETROS2 ::= PARAMETROS2 VAR:b id:c coma {: parser.op.agregarVarMetodo(c.toString(), parser.tabla.getObJava(), b, true, parser.jerarquia); /*parser.op.agregarParametrosMetodo(c.toString(), parser.tabla.getObJava(), b);*/ :} 
-    |                   
+    PARAMETROS2 ::= PARAMETROS2:a VAR:b id:c coma {: parser.op.agregarVarMetodo(c.toString(), parser.tabla.getObJava(), b, true, parser.jerarquia, cleft+PanelPrincipal.totalLineas, cright);   RESULT = a+"_"+b.toString();     parser.op.agregarParametrosMetodo(c.toString(), parser.tabla.getObJava(), b, cleft+PanelPrincipal.totalLineas, cright); :} 
+    |                   {: RESULT=""; :}
 ;
-    TIPO_METODO ::= tipoChar {: RESULT="Char"; :}
-    |               tipoFloat {: RESULT="Float"; :}
-    |               tipoInt {: RESULT="Integer"; :}
-    |               tipoVoid {: RESULT="void"; :}
+    TIPO_METODO ::= tipoChar    {: RESULT="Char"; :}
+    |               tipoFloat   {: RESULT="Float"; :}
+    |               tipoInt     {: RESULT="Integer"; :}
+    |               tipoVoid    {: RESULT="void"; :}
 ;
-    CUERPO_METODO ::= CUERPO_METODO:a VARIABLES {: if(a!=null){ if(a){ System.out.println("ERROR, lineas escritas luego de return"); } else { RESULT=a; } } else { RESULT=null; } :}
-    |                 CUERPO_METODO:a ASIGNACIONES {: if(a!=null){ if(a){ System.out.println("ERROR, lineas escritas luego de return"); } else { RESULT=a; } } else { RESULT=null; } :}
-    |                 CUERPO_METODO:a IF:b {: if(a != null){ if(a){ System.out.println("ERROR, lineas escritas luego de return"); } else { RESULT=b; } } else { RESULT=null; } :}
-    |                 CUERPO_METODO:a FOR:b {: if(a != null){ if(a){ System.out.println("ERROR, lineas escritas luego de return"); } else { RESULT=b; } } else { RESULT=null; } :}
-    |                 CUERPO_METODO:a WHILE:b {: if(a != null){ if(a){ System.out.println("ERROR, lineas escritas luego de return"); } else { RESULT=b; } } else { RESULT=null; } :}
-    |                 CUERPO_METODO:a DO_WHILE:b  {: if(a != null){ if(a){ System.out.println("ERROR, lineas escritas luego de return"); } else { RESULT=b; } } else { RESULT=null; } :}
-    |                 CUERPO_METODO:a MENSAJE {: if(a!=null){ if(a){ System.out.println("ERROR, lineas escritas luego de return"); } else { RESULT=a; } } else { RESULT=null; } :} 
-    |                 CUERPO_METODO:a SWITCH:b {: if(a != null){ if(a){ System.out.println("ERROR, lineas escritas luego de return"); } else { RESULT=b; } } else { RESULT=null; } :} 
-    |                 CUERPO_METODO:a LECTURA_DATOS {: if(a!=null){ if(a){ System.out.println("ERROR, lineas escritas luego de return"); } else { RESULT=a; } } else { RESULT=null; } :}
-    |                 CUERPO_METODO COMENTARIO_B
-    |                 {: RESULT=false; :}
+    CUERPO_METODO ::= CUERPO_METODO:a VARIABLES         {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=a; } } else { RESULT=null; } :}
+    |                 CUERPO_METODO:a ASIGNACIONES      {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=a; } } else { RESULT=null; } :}
+    |                 CUERPO_METODO:a IF:b              {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=b; } } else { RESULT=null; } :}
+    |                 CUERPO_METODO:a FOR:b             {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=b; } } else { RESULT=null; } :}
+    |                 CUERPO_METODO:a WHILE:b           {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=b; } } else { RESULT=null; } :}
+    |                 CUERPO_METODO:a DO_WHILE:b        {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=b; } } else { RESULT=null; } :}
+    |                 CUERPO_METODO:a MENSAJE           {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=a; } } else { RESULT=null; } :} 
+    |                 CUERPO_METODO:a SWITCH:b          {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=b; } } else { RESULT=null; } :} 
+    |                 CUERPO_METODO:a LECTURA_DATOS     {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=a; } } else { RESULT=null; } :}
+    |                 CUERPO_METODO:a COMENTARIO_B      {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=a; } } else { RESULT=null; } :}
+    |                 CUERPO_METODO:a COMENTARIO_A      {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=a; } } else { RESULT=null; } :}
+    |                                                   {: RESULT=false; :}
+    |                 CUERPO_METODO:a error             {: RESULT = a; :}
 ;
-    RETORNO ::= retorno {: parser.tipoActual = parser.tipoMetodo; :} OPERACION:a puntoComa {: RESULT=true; :}
+    RETORNO ::= retorno {: parser.tipoActual = parser.tipoMetodo; :} OPERACION:a puntoComa ENTER {:  parser.manejoJV.crearReturn(parser.tabla.getObJava(), a);  RESULT=true; :}
     |           {: RESULT=false; :}
 ;
 
-    IF ::= condIf parentesis_a {:parser.pilaFalsas.add(new ArrayList<>()); :} EXT2:h  {: parser.jerarquia++; parser.manejoJV.primerChequeoIf(parser.tabla.getObJava(), h);  :} parentesis_b  llave_a CUERPO_METODO:a RETORNO:b llave_b {:   parser.manejo.irEtiquetaFin(parser.tabla.getObJava(), parser.jerarquia);     parser.manejoJV.segundoChequeoIf(parser.tabla.getObJava(), parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);      parser.op.eliminarAmbito(parser.tabla.getObJava(), parser.jerarquia); parser.jerarquia--; :} ELSE:c {: RESULT=parser.op.retornoIf(a, b, c); :}
+    IF ::= condIf parentesis_a {:parser.pilaFalsas.add(new ArrayList<>()); parser.usoPila.add(false); :} EXT2:h  {: parser.jerarquia++; parser.manejoJV.primerChequeoIf(parser.tabla.getObJava(), h);  :} parentesis_b  llave_a ENTER CUERPO_METODO:a RETORNO:b llave_b {:   parser.manejo.irEtiquetaFin(parser.tabla.getObJava(), parser.jerarquia);     parser.manejoJV.segundoChequeoIf(parser.tabla.getObJava(), parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);      parser.op.eliminarAmbito(parser.tabla.getObJava(), parser.jerarquia); parser.jerarquia--; :} ELSE:c {: RESULT=parser.op.retornoIf(a, b, c); :}
 ;
-    ELSE ::= condElse condIf parentesis_a {: parser.pilaFalsas.add(new ArrayList<>()); :} EXT2:h {: parser.jerarquia++;  parser.manejoJV.primerChequeoIf(parser.tabla.getObJava(), h); :} parentesis_b  llave_a CUERPO_METODO:a RETORNO:b llave_b {: parser.manejo.irEtiquetaFin(parser.tabla.getObJava(), parser.jerarquia); parser.manejoJV.segundoChequeoIf(parser.tabla.getObJava(), parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);  parser.op.eliminarAmbito(parser.tabla.getObJava(), parser.jerarquia); parser.jerarquia--; :} ELSE:c {: RESULT=parser.op.retornoIf(a, b, c); :}
-    |        condElse {: parser.jerarquia++; :} llave_a CUERPO_METODO:a RETORNO:b llave_b {: parser.manejo.irEtiquetaFin(parser.tabla.getObJava(), parser.jerarquia); parser.manejo.agregarEtiquetaFin(parser.tabla.getObJava(), parser.jerarquia); parser.op.eliminarAmbito(parser.tabla.getObJava(), parser.jerarquia); parser.jerarquia--; if(a != null){ if(a && b){ RESULT=null; } else if((!a && b) || (a && !b)){ RESULT=true; } else if(!a && !b){ RESULT=false; } } else { RESULT=null; } :}
-    |       {:   parser.manejo.agregarEtiquetaFin(parser.tabla.getObJava(), parser.jerarquia);  RESULT=false; :}
+    ELSE ::= condElse condIf parentesis_a {: parser.usoPila.add(false); parser.pilaFalsas.add(new ArrayList<>()); :} EXT2:h {: parser.jerarquia++;  parser.manejoJV.primerChequeoIf(parser.tabla.getObJava(), h); :} parentesis_b  llave_a ENTER CUERPO_METODO:a RETORNO:b llave_b {: parser.manejo.irEtiquetaFin(parser.tabla.getObJava(), parser.jerarquia); parser.manejoJV.segundoChequeoIf(parser.tabla.getObJava(), parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);  parser.op.eliminarAmbito(parser.tabla.getObJava(), parser.jerarquia); parser.jerarquia--; :} ELSE:c {: RESULT=parser.op.retornoIf(a, b, c); :}
+    |        condElse {: parser.jerarquia++; :} llave_a ENTER CUERPO_METODO:a RETORNO:b llave_b ENTER {: parser.manejo.irEtiquetaFin(parser.tabla.getObJava(), parser.jerarquia); parser.manejo.agregarEtiquetaFin(parser.tabla.getObJava(), parser.jerarquia); parser.op.eliminarAmbito(parser.tabla.getObJava(), parser.jerarquia); parser.jerarquia--; if(a != null){ if(a && b){ RESULT=null; } else if((!a && b) || (a && !b)){ RESULT=true; } else if(!a && !b){ RESULT=false; } } else { RESULT=null; } :}
+    |       ENTER {:   parser.manejo.agregarEtiquetaFin(parser.tabla.getObJava(), parser.jerarquia);  RESULT=false; :}
 ;
-    FOR ::= condFor {: parser.jerarquia++; parser.pilaFor.add(new ArrayList<>()); parser.pilaFalsas.add(new ArrayList<>()); :} parentesis_a INT:a id:b {: parser.verif.agregarVarFor(parser.tabla.getObJava(), b.toString(), a, parser.jerarquia); :} igual VAL_FOR:c puntoComa EXT2:d puntoComa id:f INC:g parentesis_b {: parser.manejoJV.agregarFor(parser.tabla.getObJava(), b.toString(), c, d, parser.jerarquia);  boolean idInc = parser.verif.verificarTipadoVar(parser.tabla.getObJava(), f.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, "Integer");  parser.verif.comprobarFor(parser.tabla.getObJava(), b.toString(), a.toString(), parser.jerarquia); :} llave_a CUERPO_METODO:j llave_b {: parser.manejoJV.retornoFor(parser.tabla.getObJava(), parser.pilaFor, f.toString(), parser.pilaCuarpeta, parser.pilaFalsas, g, parser.jerarquia);  parser.op.eliminarAmbito(parser.tabla.getObJava(), parser.jerarquia);  parser.jerarquia--;  if(j!=null){ RESULT=false; } else { RESULT=null; }  :}
+    FOR ::= condFor {: parser.usoPila.add(false); parser.jerarquia++; parser.pilaFor.add(new ArrayList<>()); parser.pilaFalsas.add(new ArrayList<>()); :} parentesis_a INT:a id:b {: parser.verif.agregarVarFor(parser.tabla.getObJava(), b.toString(), a, parser.jerarquia, bleft+PanelPrincipal.totalLineas, bright); :} igual VAL_FOR:c puntoComa EXT2:d puntoComa id:f INC:g parentesis_b {: parser.manejoJV.agregarFor(parser.tabla.getObJava(), b.toString(), c, d, parser.jerarquia);  boolean idInc = parser.verif.verificarTipadoVar(parser.tabla.getObJava(), f.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, "Integer", fleft+PanelPrincipal.totalLineas, fright);  parser.verif.comprobarFor(parser.tabla.getObJava(), b.toString(), a.toString(), parser.jerarquia); :} llave_a ENTER CUERPO_METODO:j llave_b ENTER {: parser.manejoJV.retornoFor(parser.tabla.getObJava(), parser.usoPila, parser.pilaFor, f.toString(), parser.pilaCuarpeta, parser.pilaFalsas, g, parser.jerarquia);  parser.op.eliminarAmbito(parser.tabla.getObJava(), parser.jerarquia);  parser.jerarquia--;  if(j!=null){ RESULT=false; } else { RESULT=null; }  :}
 ;
     INT ::= tipoInt {: RESULT="Integer"; :}
     | {: RESULT=""; :}
@@ -191,14 +211,14 @@ parser code {:
     |             OP_FOR:a porcentaje OP_FOR:b {: String var = "t"+parser.contVars; parser.contVars++; parser.pilaFor.get(parser.pilaFor.size()-1).add(new Nodo("modulo", a, b, var, null)); RESULT=var; :}
     |             TIPO_FOR:a {: RESULT=a; :}
 ;                         
-    TIPO_FOR ::= id:a {: parser.verif.verificarTipadoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, parser.tipoActual); RESULT=a.toString(); :}
-    |            numero:a {:  String tipo ="Integer";  parser.verif.verificarNumero(tipo, parser.tabla.getObJava(), parser.tipoActual, a.toString());  RESULT=a.toString(); :}
-    |            numero:a punto:b numero:c {: String tipo="Float"; parser.verif.verificarNumero(tipo, parser.tabla.getObJava(), parser.tipoActual, a.toString()+b.toString()+c.toString()); RESULT=a.toString()+b.toString()+c.toString(); :}  
+    TIPO_FOR ::= id:a {: parser.verif.verificarTipadoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, parser.tipoActual, aleft+PanelPrincipal.totalLineas, aright); RESULT=a.toString(); :}
+    |            numero:a {:  String tipo ="Integer";  parser.verif.verificarNumero(tipo, parser.tabla.getObJava(), parser.tipoActual, a.toString(), aleft+PanelPrincipal.totalLineas, aright);  RESULT=a.toString(); :}
+    |            numero:a punto:b numero:c {: String tipo="Float"; parser.verif.verificarNumero(tipo, parser.tabla.getObJava(), parser.tipoActual, a.toString()+b.toString()+c.toString(), aleft+PanelPrincipal.totalLineas, aright); RESULT=a.toString()+b.toString()+c.toString(); :}  
     |            comillaSimple:a id:b comillaSimple:c {: RESULT=a.toString()+b.toString()+c.toString();  :}
     |            comillaSimple:a numero:b comillaSimple:c {: RESULT=a.toString()+b.toString()+c.toString();  :}
-    |            menos:a id:b {: parser.verif.verificarTipadoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, parser.tipoActual); RESULT=a.toString()+b.toString(); :}
-    |            menos:a numero:b {:  String tipo ="Integer";  parser.verif.verificarNumero(tipo, parser.tabla.getObJava(), parser.tipoActual, a.toString()); RESULT=a.toString()+b.toString(); :}
-    |            menos:a numero:b punto:c numero:d {: String tipo="Float"; parser.verif.verificarNumero(tipo, parser.tabla.getObJava(), parser.tipoActual, a.toString()+b.toString()+c.toString()); RESULT=a.toString()+b.toString()+c.toString()+d.toString(); :}  
+    |            menos:a id:b {: parser.verif.verificarTipadoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, parser.tipoActual, bleft+PanelPrincipal.totalLineas, bright); RESULT=a.toString()+b.toString(); :}
+    |            menos:a numero:b {:  String tipo ="Integer";  parser.verif.verificarNumero(tipo, parser.tabla.getObJava(), parser.tipoActual, a.toString(), bleft+PanelPrincipal.totalLineas, bright); RESULT=a.toString()+b.toString(); :}
+    |            menos:a numero:b punto:c numero:d {: String tipo="Float"; parser.verif.verificarNumero(tipo, parser.tabla.getObJava(), parser.tipoActual, a.toString()+b.toString()+c.toString(), bleft+PanelPrincipal.totalLineas, bright); RESULT=a.toString()+b.toString()+c.toString()+d.toString(); :}  
 ;
     OP ::= menor igual {: RESULT = "<="; :}
     |      menor {: RESULT = "<"; :}
@@ -208,57 +228,40 @@ parser code {:
     |      igual igual {: RESULT = "=="; :}
     |      admiracion igual {: RESULT = "!="; :}
 ;
-    VAL_FOR ::= id:a {: parser.verif.verificarTipadoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, "Integer"); RESULT=a.toString(); :}
-    |           menos:a id:b {: parser.verif.verificarTipadoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, "Integer"); RESULT=a.toString()+b.toString(); :}
+    VAL_FOR ::= id:a {: parser.verif.verificarTipadoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, "Integer", aleft+PanelPrincipal.totalLineas, aright); RESULT=a.toString(); :}
+    |           menos:a id:b {: parser.verif.verificarTipadoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, "Integer", bleft+PanelPrincipal.totalLineas, bright); RESULT=a.toString()+b.toString(); :}
     |           numero:a {: RESULT=a.toString();  :}
     |           menos:a numero:b {: RESULT=a.toString()+b.toString(); :}
 ;
-    WHILE ::= condWhile {: parser.jerarquia++; parser.pilaFalsas.add(new ArrayList<>()); :} parentesis_a EXT2:h {:  parser.manejoJV.agregarWhile(parser.tabla.getObJava(), h, parser.jerarquia);     :} parentesis_b llave_a CUERPO_METODO:a RETORNO:b llave_b {: parser.manejoJV.retornoWhile(parser.tabla.getObJava(), parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);  parser.op.eliminarAmbito(parser.tabla.getObJava(), parser.jerarquia); parser.jerarquia--;  if(a != null){ RESULT=false; } else { RESULT=null; } :}
+    WHILE ::= condWhile {: parser.usoPila.add(false); parser.jerarquia++; parser.pilaFalsas.add(new ArrayList<>()); :} parentesis_a EXT2:h {:  parser.manejoJV.agregarWhile(parser.tabla.getObJava(), h, parser.jerarquia);     :} parentesis_b llave_a ENTER  CUERPO_METODO:a RETORNO:b llave_b ENTER {: parser.manejoJV.retornoWhile(parser.tabla.getObJava(), parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);  parser.op.eliminarAmbito(parser.tabla.getObJava(), parser.jerarquia); parser.jerarquia--;  if(a != null){ RESULT=false; } else { RESULT=null; } :}
 ;
-    DO_WHILE ::= condDo {: parser.jerarquia++; parser.pilaFalsas.add(new ArrayList<>());  parser.manejoJV.agregarDoWhile(parser.tabla.getObJava(), parser.jerarquia);      /*parser.manejo.agregarDoWhile(parser.tabla.getObJava(), parser.jerarquia);*/ :} llave_a CUERPO_METODO:a RETORNO:b llave_b condWhile parentesis_a EXT2:h parentesis_b puntoComa {:  parser.manejoJV.agregarCondicionWhile(parser.tabla.getObJava(), h, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);  parser.op.eliminarAmbito(parser.tabla.getObJava(), parser.jerarquia); parser.jerarquia--; if(a != null){ RESULT=false; } else { RESULT=null; } :}
+    DO_WHILE ::= condDo {:parser.usoPila.add(false);  parser.jerarquia++; parser.pilaFalsas.add(new ArrayList<>());  parser.manejoJV.agregarDoWhile(parser.tabla.getObJava(), parser.jerarquia);      /*parser.manejo.agregarDoWhile(parser.tabla.getObJava(), parser.jerarquia);*/ :} llave_a ENTER CUERPO_METODO:a RETORNO:b llave_b condWhile parentesis_a EXT2:h parentesis_b puntoComa ENTER {:  parser.manejoJV.agregarCondicionWhile(parser.tabla.getObJava(), parser.usoPila, h, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);  parser.op.eliminarAmbito(parser.tabla.getObJava(), parser.jerarquia); parser.jerarquia--; if(a != null){ RESULT=false; } else { RESULT=null; } :}
 ;
-    MENSAJE ::= mensaje parentesis_a TEXTO parentesis_b puntoComa
-    |           mensaje2 parentesis_a TEXTO parentesis_b puntoComa
+    MENSAJE ::= mensaje parentesis_a TEXTO:a parentesis_b puntoComa ENTER {: parser.manejoJV.mostrarMensaje(parser.tabla.getObJava(), a); :}
+    |           mensaje2 parentesis_a TEXTO:a parentesis_b puntoComa ENTER {: parser.manejoJV.mostrarMensaje(parser.tabla.getObJava(), a);  :}
 ;
-    SWITCH ::= condSwitch {: parser.jerarquia++; :} parentesis_a VAL_SWITCH:a {:  parser.arrayFinales.add("etFinal_"+parser.contFinales); parser.contFinales++;  parser.idSwitch = a; :} parentesis_b llave_a CASOS_SWITCH llave_b {: parser.tabla.getObJava().getCuarpeta().add(new Nodo("ETIQUETA", parser.arrayFinales.get(parser.arrayFinales.size()-1), null, null, parser.jerarquia)); parser.arrayFinales.remove(parser.arrayFinales.size()-1); parser.op.eliminarAmbito(parser.tabla.getObJava(), parser.jerarquia); parser.jerarquia--; :}
+    SWITCH ::= condSwitch {: parser.jerarquia++; :} parentesis_a VAL_SWITCH:a {:  parser.arrayFinales.add("etFinal_"+parser.contFinales); parser.contFinales++;  parser.idSwitch = a; :} parentesis_b llave_a ENTER CASOS_SWITCH llave_b ENTER {: parser.tabla.getObJava().getCuarpeta().add(new Nodo("ETIQUETA", parser.arrayFinales.get(parser.arrayFinales.size()-1), null, null, parser.jerarquia)); parser.arrayFinales.remove(parser.arrayFinales.size()-1); parser.op.eliminarAmbito(parser.tabla.getObJava(), parser.jerarquia); parser.jerarquia--; :}
 ;
-    CASOS_SWITCH ::= noCase VAL_SWITCH:h dosPuntos {: parser.jerarquia++; parser.manejoJV.agregarCaseSwitch(parser.tabla.getObJava(), parser.jerarquia, parser.idSwitch, h, "==");  :} CUERPO_METODO:a RETORNO_SWITCH:b puntoComa {: parser.manejoJV.agregarFinCase(parser.tabla.getObJava(), parser.arrayFinales, parser.jerarquia);  parser.op.eliminarAmbito(parser.tabla.getObJava(), parser.jerarquia); parser.jerarquia--; :} CASOS_SWITCH:c {: RESULT=parser.op.retornarBoolCase(a, b, c); :}
-    |                def dosPuntos {: parser.jerarquia++; :} CUERPO_METODO RETORNO_SWITCH:a {: parser.op.eliminarAmbito(parser.tabla.getObJava(), parser.jerarquia); parser.jerarquia--; :} puntoComa {: RESULT=a; :}
+    CASOS_SWITCH ::= noCase VAL_SWITCH:h dosPuntos ENTER {: parser.jerarquia++; parser.manejoJV.agregarCaseSwitch(parser.tabla.getObJava(), parser.jerarquia, parser.idSwitch, h, "==");  :} CUERPO_METODO:a RETORNO_SWITCH:b {: parser.manejoJV.agregarFinCase(parser.tabla.getObJava(), parser.arrayFinales, parser.jerarquia);  parser.op.eliminarAmbito(parser.tabla.getObJava(), parser.jerarquia); parser.jerarquia--; :} CASOS_SWITCH:c {: RESULT=parser.op.retornarBoolCase(a, b, c); :}
+    |                def dosPuntos ENTER {: parser.jerarquia++; :} CUERPO_METODO RETORNO_SWITCH:a {: parser.op.eliminarAmbito(parser.tabla.getObJava(), parser.jerarquia); parser.jerarquia--;  RESULT=a; :}                  
+    |                {: RESULT = false; :}
 ;
-    RETORNO_SWITCH ::= quiebre {: RESULT=false; :}
+    RETORNO_SWITCH ::= quiebre puntoComa ENTER {: RESULT=false; :}
     |                  RETORNO:a {: RESULT=a; :}
 ;
-    VAL_SWITCH ::= id:a {: parser.verif.verifVarSwitch(parser.tabla.getObJava(), a.toString()); RESULT=a.toString();  :}
+    VAL_SWITCH ::= id:a {: parser.verif.verifVarSwitch(parser.tabla.getObJava(), a.toString(), aleft+PanelPrincipal.totalLineas, aright); RESULT=a.toString();  :}
     |              comillaSimple:a id:b comillaSimple:c {: RESULT=a.toString()+b.toString()+c.toString();  :}
     |              numero:a {: RESULT=a.toString(); :}
 ;   
-    EXT ::= EXT:a and EXT:b {: System.out.println("entro al and primero"); String var = "t"+parser.contVars; parser.contVars++; parser.tabla.getObJava().getCuarpeta().add(new Nodo("AND", a, b, var, null)); RESULT=var; :}
-    |       EXT:a or EXT:b {: System.out.println("entro al or primero"); String var = "t"+parser.contVars; parser.contVars++; parser.tabla.getObJava().getCuarpeta().add(new Nodo("OR", a, b, var, null)); RESULT=var; :}
-    |       BOOLEAN:a {: RESULT=a; :}
-    |       admiracion parentesis_a BOOLEAN:a parentesis_b {: String var = "t"+parser.contVars; parser.contVars++; parser.tabla.getObJava().getCuarpeta().add(new Nodo("!", a, null, var, null)); RESULT=var; :} 
-    |       admiracion BOOLEAN:a {: String var = "t"+parser.contVars; parser.contVars++; parser.tabla.getObJava().getCuarpeta().add(new Nodo("!", a, null, var, null)); RESULT=var;  :}
-;
-    BOOLEAN ::= OP_COND:a OP2:c OP_COND:b {: String var = "t"+parser.contVars; parser.contVars++;  if(!a.getTipo().equals("") && !b.getTipo().equals("")){ String tip=parser.verif.verificarTipoOperacion(parser.tabla.getObJava(), a.getTipo(), b.getTipo()); parser.tabla.getObJava().getCuarpeta().add(new Nodo(c, a.getId(), b.getId(), var,null)); RESULT=var; } else { parser.tabla.getObJava().getCuarpeta().add(new Nodo(c, a.getId(), b.getId(), var, null)); System.out.println("aqui se escribe algo del errorxd");  RESULT=var; } :}
-;
-
-
-
-
-
-
-    
-
     EXT2 ::= EXT2:a and EXT2:b {: RESULT = parser.manejoJV.manejoAnd(a, b); :}
-    |       EXT2:a or {: parser.aux3 = parser.aux2; :} EXT2:b {: parser.manejoJV.manejoOr(parser.tabla.getObJava(), parser.pilaCuarpeta, a, b, parser.jerarquia);  :}
-    |       BOOLEAN3:a {: RESULT=a;  :}
-    |       admiracion parentesis_a BOOLEAN3:a parentesis_b {: RESULT=a; :}
-    |       admiracion BOOLEAN3:a {: RESULT=a; :} 
+    |        EXT2:a or {: parser.aux3 = parser.aux2; :} EXT2:b {: parser.manejoJV.manejoOr(parser.tabla.getObJava(), parser.usoPila, parser.pilaCuarpeta,  a, b, parser.jerarquia);  :}
+    |        BOOLEAN3:a {: RESULT=a;  :}
+    |        admiracion parentesis_a BOOLEAN3:a parentesis_b {: RESULT = parser.manejoJV.cambiarGotos(a); :}
+    |        admiracion BOOLEAN3:a {: RESULT = parser.manejoJV.cambiarGotos(a); :} 
 ;
 
     BOOLEAN3 ::= OP_COND:a OP2:c OP_COND:b {: RESULT=parser.manejoJV.agregarBooleans(parser.tabla.getObJava(), parser.pilaFalsas, a, b, c, parser.jerarquia);  :}
 ;
-
-
     OP_COND ::= parentesis_a OP_COND:a parentesis_b {: RESULT=a; :}
     |           OP_COND:a mas OP_COND:b {: String var = "t"+parser.contVars; parser.contVars++; if(!a.getTipo().equals("") &&  !b.getTipo().equals("")){ String tip=parser.verif.verificarTipoOperacion(parser.tabla.getObJava(), a.getTipo(), b.getTipo()); parser.tabla.getObJava().getCuarpeta().add(new Nodo("suma", a.getId(), b.getId(), var, null));  RESULT=new NodoBoolean(tip, var); } else { parser.tabla.getObJava().getCuarpeta().add(new Nodo("suma", a.getId(), b.getId(), var, null)); RESULT=new NodoBoolean("", var); } :}
     |           OP_COND:a menos OP_COND:b {: String var = "t"+parser.contVars; parser.contVars++; if(!a.getTipo().equals("") && !b.getTipo().equals("")){ String tip=parser.verif.verificarTipoOperacion(parser.tabla.getObJava(), a.getTipo(), b.getTipo());  parser.tabla.getObJava().getCuarpeta().add(new Nodo("resta", a.getId(), b.getId(), var, null)); RESULT=new NodoBoolean(tip, var); } else { parser.tabla.getObJava().getCuarpeta().add(new Nodo("suma", a.getId(), b.getId(), var, null)); RESULT=new NodoBoolean("", var); } :}
@@ -267,12 +270,14 @@ parser code {:
     |           OP_COND:a porcentaje OP_COND:b {: String var = "t"+parser.contVars; parser.contVars++; if(!a.getTipo().equals("") && !b.getTipo().equals("")){ String tip=parser.verif.verificarTipoOperacion(parser.tabla.getObJava(), a.getTipo(), b.getTipo()); parser.tabla.getObJava().getCuarpeta().add(new Nodo("mod", a.getId(), b.getId(), var, null)); RESULT=new NodoBoolean(tip, var); } else { parser.tabla.getObJava().getCuarpeta().add(new Nodo("suma", a.getId(), b.getId(), var, null)); RESULT=new NodoBoolean("", var); } :} 
     |           VAL_COND:a {: RESULT=a; :}
 ;  
-    VAL_COND ::= id:a {:   String tip = parser.op.buscarVariable(parser.tabla.getObJava(), a.toString(), parser.jerarquia); RESULT = new NodoBoolean(tip, a.toString()); :}
+    VAL_COND ::= id:a {:   String tip = parser.op.buscarVariable(parser.tabla.getObJava(), a.toString(), parser.jerarquia, aleft+PanelPrincipal.totalLineas, aright); RESULT = new NodoBoolean(tip, a.toString()); :}
     |            numero:a {: RESULT = new NodoBoolean("Integer", a.toString()); :}
     |            numero:a punto:b numero:c {: RESULT = new NodoBoolean("Float", a.toString()+b.toString()+c.toString()); :} 
     |            comillaSimple:a id:b comillaSimple:c {: RESULT = new NodoBoolean("Char", a.toString()+b.toString()+c.toString()); :}
     |            comillaSimple:a numero:b comillaSimple:c {: RESULT = new NodoBoolean("Char", a.toString()+b.toString()+c.toString());  :}
-    |            menos:a id:b {: String tip=parser.op.buscarVariable(parser.tabla.getObJava(), a.toString(), parser.jerarquia);  RESULT = new NodoBoolean(tip, a.toString()+b.toString()); :}
+    |            menos:d comillaSimple:a id:b comillaSimple:c {: RESULT = new NodoBoolean("Char", d.toString()+a.toString()+b.toString()+c.toString()); :}
+    |            menos:d comillaSimple:a numero:b comillaSimple:c {: RESULT = new NodoBoolean("Char", d.toString()+a.toString()+b.toString()+c.toString());  :}
+    |            menos:a id:b {: String tip=parser.op.buscarVariable(parser.tabla.getObJava(), a.toString(), parser.jerarquia, bleft+PanelPrincipal.totalLineas, bright);  RESULT = new NodoBoolean(tip, a.toString()+b.toString()); :}
     |            menos:a numero:b {:  RESULT = new NodoBoolean("Integer", a.toString()+b.toString()); :}
     |            menos:a numero:b punto:c numero:d {: RESULT = new NodoBoolean("Float", a.toString()+b.toString()+c.toString()+d.toString());  :} 
 ;
@@ -283,27 +288,38 @@ parser code {:
     |       igual igual {: RESULT="=="; :}             
     |       admiracion igual {: RESULT="!="; :}
 ;
-    LECTURA_DATOS ::= id:a igual TIPO_INPUT:b parentesis_a TEXTO parentesis_b puntoComa {: parser.verif.verifInput(parser.tabla.getObJava(), a.toString(), b); :}
-    |                 id:a igual TIPO_INPUT:b parentesis_a parentesis_b puntoComa {: parser.verif.verifInput(parser.tabla.getObJava(), a.toString(), b); :}
-    |                 TIPO_INPUT parentesis_a TEXTO parentesis_b puntoComa
-    |                 TIPO_INPUT parentesis_a parentesis_b puntoComa
+    LECTURA_DATOS ::= id:a igual TIPO_INPUT:b parentesis_a TEXTO:c parentesis_b puntoComa {: parser.manejoJV.mostrarMensaje(parser.tabla.getObJava(), c); parser.manejoJV.crearScanf(parser.tabla.getObJava(), a.toString(), b);  parser.verif.verifInput(parser.tabla.getObJava(), a.toString(), b, aleft+PanelPrincipal.totalLineas, aright); :} ENTER 
+    |                 id:a igual TIPO_INPUT:b parentesis_a parentesis_b puntoComa  {: parser.manejoJV.crearScanf(parser.tabla.getObJava(), a.toString(), b);   parser.verif.verifInput(parser.tabla.getObJava(), a.toString(), b, aleft+PanelPrincipal.totalLineas, aright); :} ENTER 
+    |                 TIPO_INPUT:a parentesis_a TEXTO:c parentesis_b puntoComa  {: parser.manejoJV.mostrarMensaje(parser.tabla.getObJava(), c);   parser.manejoJV.crearScanf(parser.tabla.getObJava(), "", a); :} ENTER 
+    |                 TIPO_INPUT:a parentesis_a parentesis_b puntoComa  {: parser.manejoJV.crearScanf(parser.tabla.getObJava(), "", a); :} ENTER 
 ;
     TIPO_INPUT ::= intInput:a {: RESULT="Integer"; :}
     |              charInput:a {: RESULT="Char"; :}
     |              floatInput:a {: RESULT="Float"; :}
 ;
-    TEXTO ::= VAL_TEXTO TEXTO2
-    |         comilla TEXTO_PLANO comilla TEXTO2
+    TEXTO ::= VAL_TEXTO:a TEXTO2:b {: RESULT = parser.manejoJV.concatenarMensaje(parser.tabla.getObJava(), a, b); :}
+    |         comilla:a TEXTO_PLANO:b comilla:c TEXTO2:d {: RESULT = parser.manejoJV.concatenarMensaje(parser.tabla.getObJava(), a.toString()+b.toString()+c.toString(), d); :}
 ;
-    VAL_TEXTO ::= id:a {: RESULT = parser.verif.verificarTipadoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, "Float"); :}
-    |           numero:a {: RESULT=true;  :}
+    VAL_TEXTO ::= id:a {: parser.verif.verificarTipadoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, "Float", aleft+PanelPrincipal.totalLineas, aright); RESULT=a.toString(); :}
+    |           numero:a {: RESULT=a.toString();  :}
+    |           numero:a punto:b numero:c {: RESULT = a.toString()+b.toString()+c.toString(); :}
+    |           menos:b id:a {: parser.verif.verificarTipadoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, "Float", aleft+PanelPrincipal.totalLineas, aright); RESULT=b.toString()+a.toString(); :}
+    |           menos:a numero:b {: RESULT = a.toString()+b.toString(); :}
+    |           menos:a numero:b punto:c numero:d {: RESULT = a.toString()+b.toString()+c.toString()+d.toString(); :}
 ;
-    TEXTO2 ::= mas TEXTO
-    |
+    TEXTO2 ::= mas TEXTO:a {: RESULT = a; :}
+    |   {: RESULT = ""; :}
 ;
-    COMENTARIO_A ::= comentario_a TEXTO_PLANO
+    COMENTARIO_A ::= comentario_a TEXTO_PLANO ENTER
 ;
-    COMENTARIO_B ::= comentario_b TEXTO_PLANO comentario_c
+    COMENTARIO_B ::= comentario_b TEXTO_PLANO2 comentario_c ENTER
+;
+    ENTER ::= ENTER enter
+    |         enter
+;
+    ENTER2 ::= ENTER enter
+    |          enter
+    |          
 ;
     TEXTO_PLANO ::= TEXTO_PLANO:a coma:b {: RESULT = a + b.toString(); :}
     |               TEXTO_PLANO:a punto:b {: RESULT = a + b.toString(); :}
@@ -316,9 +332,11 @@ parser code {:
     |               TEXTO_PLANO:a condDo:b {: RESULT = a + b.toString(); :}
     |               TEXTO_PLANO:a condSwitch:b {: RESULT = a + b.toString(); :}
     |               TEXTO_PLANO:a noCase:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO:a condWhile:b {: RESULT = a + b.toString(); :}
     |               TEXTO_PLANO:a quiebre:b {: RESULT = a + b.toString(); :}
     |               TEXTO_PLANO:a def:b {: RESULT = a + b.toString(); :}
     |               TEXTO_PLANO:a retorno:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO:a condFor:b {: RESULT = a + b.toString(); :}
     |               TEXTO_PLANO:a mensaje:b {: RESULT = a + b.toString(); :}
     |               TEXTO_PLANO:a mensaje2:b {: RESULT = a + b.toString(); :}
     |               TEXTO_PLANO:a tipoPublic:b {: RESULT = a + b.toString(); :}
@@ -328,6 +346,7 @@ parser code {:
     |               TEXTO_PLANO:a agrupacion_a:b {: RESULT = a + b.toString(); :}
     |               TEXTO_PLANO:a agrupacion_b:b {: RESULT = a + b.toString(); :}
     |               TEXTO_PLANO:a parentesis_a:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO:a condThis:b {: RESULT = a + b.toString(); :}
     |               TEXTO_PLANO:a parentesis_b:b {: RESULT = a + b.toString(); :}
     |               TEXTO_PLANO:a puntoComa:b {: RESULT = a + b.toString(); :}
     |               TEXTO_PLANO:a dosPuntos:b {: RESULT = a + b.toString(); :}
@@ -352,7 +371,56 @@ parser code {:
     |               {: RESULT=""; :}
  
 ;
-    
+    TEXTO_PLANO2 ::= TEXTO_PLANO2:a coma:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a punto:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a tipoInt:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a tipoChar:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a tipoFloat:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a tipoVoid:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a condIf:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a condElse:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a condFor:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a condDo:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a condSwitch:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a noCase:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a condWhile:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a quiebre:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a def:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a retorno:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a mensaje:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a condThis:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a mensaje2:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a tipoPublic:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a clase:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a llave_a:b {: RESULT = a + b.toString(); :} 
+    |               TEXTO_PLANO2:a llave_b:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a agrupacion_a:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a agrupacion_b:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a parentesis_a:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a parentesis_b:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a puntoComa:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a dosPuntos:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a admiracion:b {: RESULT = a + b.toString(); :} 
+    |               TEXTO_PLANO2:a igual:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a mas:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a menos:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a por:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a div:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a porcentaje:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a menor:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a mayor:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a ampersand:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a pleca:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a comillaSimple:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a guionBajo:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a numero:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a id:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a enter {: RESULT = a + "\n"; :}
+    |               TEXTO_PLANO2:a condFalse:b {: RESULT= a + b.toString(); :}
+    |               TEXTO_PLANO2:a condTrue:b {: RESULT = a + b.toString(); :}
+    |               TEXTO_PLANO2:a resto:b {: RESULT = a + b.toString(); :}
+    |               {: RESULT=""; :}
+;    
 
 
 

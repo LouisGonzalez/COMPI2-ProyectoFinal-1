@@ -6,6 +6,7 @@
 package verificaciones;
 
 import Operaciones.OperacionesPY;
+import interfaz.PanelPrincipal;
 import java.util.Objects;
 import objetos.ObjetosPYTHON;
 import objetos.Variable;
@@ -45,7 +46,7 @@ public class VerifPY {
     }
 
     //verifica el tipo de dato que representara a una operacion
-    public String verificarTipoOperacion(ObjetosPYTHON py, String dato1, String dato2) {
+    public String verificarTipoOperacion(ObjetosPYTHON py, String dato1, String dato2, int fila, int columna) {
         String tipo = "";
         Integer nivelDato1 = null, nivelDato2 = null;
         for (int i = 0; i < py.getTablaTipos().getTipos().size(); i++) {
@@ -70,6 +71,9 @@ public class VerifPY {
             if (verificarPadre(py, dato1, dato2)) {
                 tipo = dato2;
             }
+        }
+        if(tipo.equals("")){
+            PanelPrincipal.errores += "Fila: "+fila+" Columna: "+columna+" Tipo de error: SEMANTICO - Causa: Error al momento de comparar el tipo de 2 variables incompatibles.\n";
         }
         return tipo;
     }
@@ -105,7 +109,7 @@ public class VerifPY {
     }
 
     //verifica que un id corresponda al tipo que se pide en el input
-    public void verifVarInput(ObjetosPYTHON py, String tipoVar, String tipoInput, String id) {
+    public void verifVarInput(ObjetosPYTHON py, String tipoVar, String tipoInput, String id, int fila, int columna) {
         if (!tipoVar.equals(tipoInput)) {
             String padre = null;
             for (int i = 0; i < py.getTablaTipos().getTipos().size(); i++) {
@@ -116,89 +120,80 @@ public class VerifPY {
             if (padre != null) {
                 if (!verificarPadre(py, padre, tipoVar)) {
                     System.out.println("Variable: " + id + " incompatible para el input de tipo: " + tipoInput);
+                    PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Variable " + id + " incompatible para un input de tipo " + tipoInput + ".\n";
                 }
             } else {
                 System.out.println("Variable: " + id + " incompatible para el input de tipo: " + tipoInput);
-
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Variable " + id + " incompatible para un input de tipo " + tipoInput + ".\n";
             }
         }
     }
 
-    public void comprobacionFor(ObjetosPYTHON py, String id, String operacion, boolean range, String tipo, OperacionesPY op, int jerarquia) {
+    public void comprobacionFor(ObjetosPYTHON py, String id, String operacion, boolean range, String tipo, OperacionesPY op, int jerarquia, int fila, int columna, int fila2, int columna2) {
         String tipoId = op.buscarVariable(py, id, jerarquia);
-        if (tipo.equals("tipo1")) {
-            if (tipoId.equals("")) {
-                py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().add(new Variable(id, "Integer", true, jerarquia));
-                py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().get(py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().size() - 1).getListAsignaciones().add(jerarquia);
-            } else if (tipoId.equals("Integer")) {
-                if (!operacion.equals("Integer")) {
-                    System.out.println("Error en asignacion de operacion");
-                }
-            } else {
-                System.out.println("Variable: " + id + " con tipo incorrecto para usar");
-            }
-        } else if (tipo.equals("tipo2")) {
+        if (tipo.equals("tipo2")) {
             if (tipoId.equals("")) {
                 py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().add(new Variable(id, "Integer", true, jerarquia));
                 py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().get(py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().size() - 1).getListAsignaciones().add(jerarquia);
             } else if (tipoId.equals("Integer")) {
                 if (!range) {
                     System.out.println("Error en orden: range()");
+                    PanelPrincipal.errores += "Fila: " + fila2 + " Columna: " + columna2 + " Tipo de error: SEMANTICO - Causa: Rangos en range definidos de forma incorrecta.\n";
                 }
             } else {
                 System.out.println("Variable: " + id + " con tipo incorrecto para usar");
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Variable " + id + " incompatible dentro del ciclo for.\n";
+
             }
         }
     }
 
     //verifica que la variable dentro de un mensaje exista y tenga un valor ddentro
-    public Boolean verifVarMensaje(ObjetosPYTHON py, String id, int jerarquia) {
+    public Boolean verifVarMensaje(ObjetosPYTHON py, String id, int jerarquia, int fila, int columna) {
         boolean todoCorrecto = false;
         if (jerarquia == 0) {
             if (verifVarGlobal(py, id)) {
                 if (py.getGlobales().get(iteradorVar).getValor()) {
                     todoCorrecto = true;
                 } else {
-                    System.out.println("La variable: " + id + " no contiene ningun valor dentro");
+                    PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
+
                 }
             } else {
-                System.out.println("La variable: " + id + " no existe dentro del archivo python");
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no existe dentro del archivo PYTHON.\n";
             }
         } else {
             if (verifVarLocal(py, id)) {
                 if (py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().get(iteradorVar).getValor()) {
                     todoCorrecto = true;
                 } else {
-                    System.out.println("La variable: " + id + " no contiene ningun valor dentro");
+                    PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
                 }
             } else if (verifVarGlobal(py, id)) {
                 if (py.getGlobales().get(iteradorVar).getValor()) {
                     todoCorrecto = true;
                 } else {
-                    System.out.println("La variable: " + id + " no contiene ningun valor dentro");
+                    PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
                 }
             } else {
-                System.out.println("La variable: " + id + " no eixste dentro del archivo python");
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no existe dentro del archivo PYTHON.\n";
             }
         }
         return todoCorrecto;
     }
 
     //verifica que en un mensaje todo este en ordden
-    public void verifMensaje(Boolean a, Boolean b, String tipo) {
+    public void verifMensaje(Boolean a, Boolean b, String tipo, int fila, int columna) {
         if (tipo.equals("tipo1")) {
             if (a && b) {
             } else {
-                System.out.println(a);
-                System.out.println(b);
-                System.out.println("tipo1");
                 System.out.println("ERROR en definicion de instruccion print. py");
+                PanelPrincipal.errores += "Fila: "+fila+" Columna: "+columna+" Tipo de error: SEMANTICO - Causa: Error en definicion print().\n";
+        
             }
         } else if (tipo.equals("tipo2")) {
             if (!b) {
-                System.out.println(b);
-                System.out.println("tipo2");
-                System.out.println("Error en definicion de instruccion print, py");
+                PanelPrincipal.errores += "Fila: "+fila+" Columna: "+columna+" Tipo de error: SEMANTICO - Causa: Error en definicion print().\n";
             }
         }
     }

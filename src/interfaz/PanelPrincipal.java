@@ -4,9 +4,9 @@
  * and open the template in the editor.
  */
 package interfaz;
-
-import Tablas.DatosVar;
 import Tablas.TablaSimbolos;
+import cuartetos.CreacionCodigo;
+import cuartetos.Nodo;
 import gramaticaC.AnalizadorLexico4;
 import gramaticaC.SintaxC;
 import gramaticaJAVA.AnalizadorLexico;
@@ -17,8 +17,10 @@ import gramaticaVB.AnalizadorLexico3;
 import gramaticaVB.SintaxVB;
 import hojas.NumeracionLineas;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -27,22 +29,46 @@ import java.util.logging.Logger;
 public class PanelPrincipal extends javax.swing.JPanel {
 
     private NumeracionLineas numeracion;
+    private NumeracionLineas numeracion2;
     private TablaSimbolos tabla = new TablaSimbolos();
     private ManejoTexto divTexto = new ManejoTexto();
+    public static int totalLineas = 0;
+    public static int lineasVb = 0;
+    public static int lineasPython = 0;
+    public static int lineasJava = 0;
+    public static int lineasC = 0;
+    
+    private String codigo = "";
+    private ArrayList<Nodo> cuarpeta = new ArrayList<>();
+    private CreacionCodigo creacion = new CreacionCodigo();
 
     public static String codigoPython = "";
     public static String codigoJava = "";
     public static String codigoVb = "";
     public static String codigoC = "";
+    
+    public static String errores = "";
 
+    private ArrayList<String> textos = new ArrayList<>();
+    private int itTab;
+    
     /**
      * Creates new form PanelPrincipal
      */
-    public PanelPrincipal(String texto, String path) {
+    public PanelPrincipal(String texto, String path, ArrayList<String> textos, int itTab) {
         initComponents();
         txtTexto.setText(texto);
+        this.textos = textos;
+        this.itTab = itTab;
+        if(textos.size() <= itTab){
+            textos.add(texto);
+        } else {
+            textos.set(itTab, texto);
+        }
         numeracion = new NumeracionLineas(txtTexto);
         jScrollPane1.setRowHeaderView(numeracion);
+        numeracion2 = new NumeracionLineas(txt3d);
+        jScrollPane2.setRowHeaderView(numeracion2);
     }
 
     /**
@@ -57,15 +83,29 @@ public class PanelPrincipal extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         txtTexto = new javax.swing.JTextArea();
         jButton1 = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        txt3d = new javax.swing.JTextArea();
+        btnErrores = new javax.swing.JButton();
 
         txtTexto.setColumns(20);
         txtTexto.setRows(5);
         jScrollPane1.setViewportView(txtTexto);
 
-        jButton1.setText("Ver");
+        jButton1.setText("Traducir");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
+            }
+        });
+
+        txt3d.setColumns(20);
+        txt3d.setRows(5);
+        jScrollPane2.setViewportView(txt3d);
+
+        btnErrores.setText("Errores");
+        btnErrores.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnErroresActionPerformed(evt);
             }
         });
 
@@ -74,79 +114,116 @@ public class PanelPrincipal extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(21, 21, 21)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 614, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(20, Short.MAX_VALUE))
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 479, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 546, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 269, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnErrores, javax.swing.GroupLayout.PREFERRED_SIZE, 251, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 369, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jButton1)
-                .addContainerGap(15, Short.MAX_VALUE))
+                .addGap(24, 24, 24)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 411, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton1)
+                    .addComponent(btnErrores))
+                .addGap(23, 23, 23))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        reiniciarDatos();
+        tabla = new TablaSimbolos();
+        cuarpeta = new ArrayList<>();
+        textos.set(itTab, txtTexto.getText());
         divTexto.manejarTexto(tabla, txtTexto.getText());
         AnalizadorLexico lexer = new AnalizadorLexico(new StringReader(codigoJava));
-
+        
         AnalizadorLexico2 lexer2 = new AnalizadorLexico2(new StringReader(codigoPython));
 
         AnalizadorLexico3 lexer3 = new AnalizadorLexico3(new StringReader(codigoVb));
         
         AnalizadorLexico4 lexer4 = new AnalizadorLexico4(new StringReader(codigoC));
         try {
-            
-            /*System.out.println("codigo python------------------");
-            System.out.println(codigoPython);
-            System.out.println("codgio java---------------");
-            System.out.println(codigoJava);
-            System.out.println("codigo c-------------------------");
-            System.out.println(codigoC);
-            System.out.println("codigo Vb-----------------------------");
-            System.out.println(codigoVb);*/
-            //--------------------------------------------------------------------------------------------------------------
-            // System.out.println(codigoVb);
-        //   new SintaxVB(lexer3, tabla.getObVb(), tabla).parse();
-       //  new SintaxPYTHON(lexer2, tabla).parse();
-         //  new SintaxJAVA(lexer, tabla).parse();
-           new SintaxC(lexer4, tabla).parse();
-            //CUARPETA JAVA    
-           for (int i = 0; i < tabla.getObJava().getCuarpeta().size(); i++) {
-                System.out.println(tabla.getObJava().getCuarpeta().get(i).getOperacion()+" - "+tabla.getObJava().getCuarpeta().get(i).getDato1()+" - "+tabla.getObJava().getCuarpeta().get(i).getDato2()+" - "+tabla.getObJava().getCuarpeta().get(i).getVar()+" - "+tabla.getObJava().getCuarpeta().get(i).getNivel());
-            }
-
+            totalLineas = 1;
+            new SintaxVB(lexer3, tabla.getObVb(), tabla).parse();
+            totalLineas = lineasVb;
+            divTexto.sumarVariablesJava(tabla);
+            new SintaxJAVA(lexer, tabla).parse();
+            totalLineas = totalLineas + lineasJava;
+            divTexto.sumarVariablesPython(tabla);
+            new SintaxPYTHON(lexer2, tabla).parse();
+            totalLineas = totalLineas + lineasPython;
+            divTexto.sumarVariablesC(tabla);
+            new SintaxC(lexer4, tabla).parse();
             //CUARPETA VB
             for (int i = 0; i < tabla.getObVb().getCuarpeta().size(); i++) {
                 System.out.println(tabla.getObVb().getCuarpeta().get(i).getOperacion()+" - "+tabla.getObVb().getCuarpeta().get(i).getDato1()+ " - "+tabla.getObVb().getCuarpeta().get(i).getDato2()+" - "+tabla.getObVb().getCuarpeta().get(i).getVar()+" - "+tabla.getObVb().getCuarpeta().get(i).getNivel());
             }
-            
-            //CUARPETA PYYHON
-          /*  for (int i = 0; i < tabla.getObPython().getCuarpeta().size(); i++) {
+            //CUARPETA PYTHON
+            for (int i = 0; i < tabla.getObPython().getCuarpeta().size(); i++) {
                 System.out.println(tabla.getObPython().getCuarpeta().get(i).getOperacion()+" - "+tabla.getObPython().getCuarpeta().get(i).getDato1()+ " - "+tabla.getObPython().getCuarpeta().get(i).getDato2()+" - "+tabla.getObPython().getCuarpeta().get(i).getVar()+" - "+tabla.getObPython().getCuarpeta().get(i).getNivel());
-            }*/
+            }
+            //CUARPETA JAVA    
+            for (int i = 0; i < tabla.getObJava().getCuarpeta().size(); i++) {
+                System.out.println(tabla.getObJava().getCuarpeta().get(i).getOperacion()+" - "+tabla.getObJava().getCuarpeta().get(i).getDato1()+" - "+tabla.getObJava().getCuarpeta().get(i).getDato2()+" - "+tabla.getObJava().getCuarpeta().get(i).getVar()+" - "+tabla.getObJava().getCuarpeta().get(i).getNivel());
+            }
             
             //CUARPETA C
             for (int i = 0; i < tabla.getObC().getCuarpeta().size(); i++) {
                 System.out.println(tabla.getObC().getCuarpeta().get(i).getOperacion()+" - "+tabla.getObC().getCuarpeta().get(i).getDato1()+ " - "+tabla.getObC().getCuarpeta().get(i).getDato2()+" - "+tabla.getObC().getCuarpeta().get(i).getVar()+" - "+tabla.getObC().getCuarpeta().get(i).getNivel());
             }
-            
-            
-            
+            creacion.unificarCuarpetas(cuarpeta, tabla);
+            codigo = creacion.crearCodigo(cuarpeta);
+          //  if(errores.equals("")){
+                txt3d.setText(codigo);
+            /*} else {
+                JOptionPane.showMessageDialog(null, "Error en la gramatica, por favor verifica la ventana de errores");
+           // }*/
         } catch (Exception ex) {
             Logger.getLogger(PanelPrincipal.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void btnErroresActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnErroresActionPerformed
+        Errores error = new Errores(null, true, errores);
+        error.setVisible(true);
+    }//GEN-LAST:event_btnErroresActionPerformed
+
+    public void reiniciarDatos(){
+        totalLineas = 0;
+        lineasC = 0;
+        lineasJava = 0;
+        lineasPython = 0;
+        lineasVb = 0;
+        codigoPython = "";
+        codigoC = "";
+        codigoPython = "";
+        codigoVb = "";
+        codigoJava = "";
+        codigo = "";
+        errores = "";
+        txt3d.setText("");
+    }
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnErrores;
     private javax.swing.JButton jButton1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTextArea txt3d;
     private javax.swing.JTextArea txtTexto;
     // End of variables declaration//GEN-END:variables
 }

@@ -6,7 +6,9 @@
 package Operaciones;
 
 import cuartetos.Nodo;
+import gramaticaJAVA.sym;
 import gramaticaPYTHON.SintaxPYTHON;
+import interfaz.PanelPrincipal;
 import java.util.ArrayList;
 import manejoCuartetos.ManejoCondiciones;
 import manejoCuartetos.ManejoPython;
@@ -23,7 +25,7 @@ import verificaciones.VerifPY;
  */
 public class OperacionesPY {
 
-    public void verificarTabs(ObjetosPYTHON py, ArrayList<ArrayList<Nodo>> pilaCuarpeta, ArrayList<ArrayList<Nodo>> pilaFalsas, ArrayList<Integer> instrucciones, ArrayList<Integer> lineasGuias, int tabsLinea, boolean instruccion, ArrayList<String> tipoInstruccion) {
+    public void verificarTabs(int columna, ObjetosPYTHON py, ArrayList<ArrayList<Nodo>> pilaFor, ArrayList<Boolean> usoPila, ArrayList<ArrayList<Nodo>> pilaCuarpeta, ArrayList<ArrayList<Nodo>> pilaFalsas, ArrayList<Integer> instrucciones, ArrayList<Integer> lineasGuias, int tabsLinea, boolean instruccion, ArrayList<String> tipoInstruccion) {
         ManejoCondiciones manejo = new ManejoCondiciones();
         ManejoPython manejoPY = new ManejoPython();
         //Significa que somos la primer linea luego de una instruccion
@@ -38,14 +40,15 @@ public class OperacionesPY {
                 Integer iterador = null;
                 for (int i = instrucciones.size() - 1; i >= 0; i--) {
                     /*AQUI DEBE IR LA SEGUNDA PARTE DE LAS CONDICIONALES: IF - FOR - WHILE */
-
                     if (!tipoInstruccion.isEmpty()) {
                         if (tipoInstruccion.get(tipoInstruccion.size() - 1).equals("IF")) {
                             if (manejoPY.ultimaEtiquetaFinal(py, SintaxPYTHON.jerarquia) != null) {
-                                py.setContEtFin(py.getContEtFin() - 1);
+                                int nodo = manejoPY.ultimaEtiquetaFinal(py, SintaxPYTHON.jerarquia);
+                                //   py.getCuarpeta().remove(nodo);
+                                //   py.setContEtFin(py.getContEtFin() - 1);
                             }
                             manejo.irEtiquetaFinPY(py, SintaxPYTHON.jerarquia);
-                            manejoPY.segundoChequeoIf(py, pilaCuarpeta, pilaFalsas);
+                            manejoPY.segundoChequeoIf(py, usoPila, pilaCuarpeta, pilaFalsas);
                             manejo.agregarEtiquetaFinPY(py, SintaxPYTHON.jerarquia);
                         } else if (tipoInstruccion.get(tipoInstruccion.size() - 1).equals("ELSEIF")) {
                             if (manejoPY.ultimaEtiquetaFinal(py, SintaxPYTHON.jerarquia) != null) {
@@ -53,21 +56,23 @@ public class OperacionesPY {
                                 py.getCuarpeta().remove(nodo);
                                 py.setContEtFin(py.getContEtFin() - 1);
                             }
-                            manejo.irEtiquetaFinPY(py, SintaxPYTHON.jerarquia);
-                            manejoPY.segundoChequeoIf(py, pilaCuarpeta, pilaFalsas);
-                            manejo.agregarEtiquetaFinPY(py, SintaxPYTHON.jerarquia);
+                            String et = manejoPY.ultimoGotoFinal(py, SintaxPYTHON.jerarquia);
+                            manejo.irEtiquetaFinPY2(py, SintaxPYTHON.jerarquia, et);
+                            manejoPY.segundoChequeoIf(py, usoPila, pilaCuarpeta, pilaFalsas);
+                            manejo.agregarEtiquetaFinPY2(py, SintaxPYTHON.jerarquia, et);
                         } else if (tipoInstruccion.get(tipoInstruccion.size() - 1).equals("ELSE")) {
                             if (manejoPY.ultimaEtiquetaFinal(py, SintaxPYTHON.jerarquia) != null) {
                                 int nodo = manejoPY.ultimaEtiquetaFinal(py, SintaxPYTHON.jerarquia);
                                 py.getCuarpeta().remove(nodo);
                                 py.setContEtFin(py.getContEtFin() - 1);
                             }
-                            manejo.irEtiquetaFinPY(py, SintaxPYTHON.jerarquia);
-                            manejo.agregarEtiquetaFinPY(py, SintaxPYTHON.jerarquia);
+                            String et = manejoPY.ultimoGotoFinal(py, SintaxPYTHON.jerarquia);
+                            manejo.irEtiquetaFinPY2(py, SintaxPYTHON.jerarquia, et);
+                            manejo.agregarEtiquetaFinPY2(py, SintaxPYTHON.jerarquia, et);
                         } else if (tipoInstruccion.get(tipoInstruccion.size() - 1).equals("WHILE")) {
-
+                            manejoPY.retornoWhile(py, usoPila, pilaCuarpeta, pilaFalsas);
                         } else if (tipoInstruccion.get(tipoInstruccion.size() - 1).equals("FOR")) {
-
+                            manejoPY.retornoFor(py, usoPila, pilaCuarpeta, pilaFalsas, pilaFor);
                         }
                         System.out.println(tipoInstruccion.get(tipoInstruccion.size() - 1) + "      " + tipoInstruccion.size());
                         tipoInstruccion.remove(tipoInstruccion.size() - 1);
@@ -79,14 +84,13 @@ public class OperacionesPY {
                         iterador = i;
                         break;
                     } else if (tabsLinea > instrucciones.get(i)) {
-                        System.out.println("ERROR 2");
+                        PanelPrincipal.errores += "Columna: "+columna+" Tipo de error: SEMANTICO - Causa: Error en manejo de identado.\n";
                         break;
                     }
                 }
                 if (iterador != null) {
                     for (int i = instrucciones.size() - 1; i >= iterador; i--) {
-
-                        instrucciones.remove(i);
+                      instrucciones.remove(i);
                     }
                 }
 
@@ -126,20 +130,10 @@ public class OperacionesPY {
     }
 
     //verifica si una variable ya existe dentro del archivo
-    public boolean asignarVariables(ObjetosPYTHON py, String id, String tipo) {
+    public boolean asignarVariables(ObjetosPYTHON py, String id, String tipo, int fila, int columna) {
         boolean existe = false;
         if (!tipo.equals("")) {
             VerifPY verif = new VerifPY();
-            /*if (SintaxPYTHON.jerarquia == 0) {
-                if (verif.verifVarGlobal(py, id)) {
-                    py.getGlobales().get(VerifPY.iteradorVar).getListAsignaciones().add(SintaxPYTHON.jerarquia);
-                    py.getGlobales().get(VerifPY.iteradorVar).setValor(true);
-                } else {
-                    //si no existe agrega la variable a las variables globales
-                    py.getGlobales().add(new Variable(id, tipo, true, SintaxPYTHON.jerarquia));
-                    py.getGlobales().get(py.getGlobales().size() - 1).getListAsignaciones().add(SintaxPYTHON.jerarquia);
-                }
-            } else {*/
             if (verif.verifVarLocal(py, id)) {
                 existe = true;
                 py.getMisMetodos().get(py.getMisMetodos().size() - 1).getMisVariables().get(VerifPY.iteradorVar).getListAsignaciones().add(SintaxPYTHON.jerarquia);
@@ -152,13 +146,13 @@ public class OperacionesPY {
             }
             //}
         } else {
-            System.out.println("Error de asignacion en variable: " + id);
-        }
+            PanelPrincipal.errores += "Fila: "+fila+" Columna: "+columna+" Tipo de error: SEMANTICO - Causa: Error de asignacion en posible variable: "+id+"\n";
+       }
         return existe;
     }
 
     //metodo para las asignaciones de tipo: a,b,c = 1,2,3
-    public void asignacionesMultiples(ObjetosPYTHON py, ArrayList<String> identificadores, ArrayList<NodoBoolean> tipos, int jerarquia) {
+    public void asignacionesMultiples(ObjetosPYTHON py, ArrayList<String> identificadores, ArrayList<NodoBoolean> tipos, int jerarquia, int fila, int columna) {
         if (tipos != null) {
             VerifPY verif = new VerifPY();
             if (identificadores.size() == tipos.size()) {
@@ -188,10 +182,10 @@ public class OperacionesPY {
                     }
                 }
             } else {
-                System.out.println("Error, falta de valores en asignacion. " + identificadores.size() + " " + tipos.size());
+                PanelPrincipal.errores += "Fila: "+fila+" Columna: "+columna+" Tipo de error: SEMANTICO - Causa: Falta de valores en asignacion -> "+identificadores.size()+" "+tipos.size()+".\n";
             }
         } else {
-            System.out.println("Error en las asignaciones");
+        //    System.out.println("Error en las asignaciones");
         }
     }
 
@@ -214,8 +208,18 @@ public class OperacionesPY {
         return tipo;
     }
 
+    public void valorVariableInput(ObjetosPYTHON py, String id, int jerarquia, String tipoVar) {
+        VerifPY verif = new VerifPY();
+        int itMetodo = py.getMisMetodos().size() - 1;
+        if (verif.verifVarLocal(py, id)) {
+            py.getMisMetodos().get(itMetodo).getMisVariables().get(VerifPY.iteradorVar).setTipo(tipoVar);
+        } else {
+            py.getMisMetodos().get(itMetodo).getMisVariables().add(new Variable(id, tipoVar, true, jerarquia));
+        }
+    }
+
     //agrega un nuevo metodo al archivo
-    public void agregarMetodo(ObjetosPYTHON py, String id, ArrayList<String> parametros, int jerarquia) {
+    public void agregarMetodo(ObjetosPYTHON py, String id, ArrayList<String> parametros, int jerarquia, int fila, int columna) {
         VerifPY verif = new VerifPY();
         boolean coincidencia = false;
         for (int i = 0; i < parametros.size(); i++) {
@@ -230,7 +234,7 @@ public class OperacionesPY {
         }
         if (!coincidencia) {
             if (verif.verifMetodo(py, id)) {
-                System.out.println("Ya existe un metodo con el id: " + id);
+                PanelPrincipal.errores += "Fila: "+fila+" Columna: "+columna+" Tipo de error: SEMANTICO - Causa: Ya existe un metodo dentro de PYTHON con el id: "+id+".\n";
             } else {
                 py.getMisMetodos().add(new Metodo(id, false, null));
                 for (int i = 0; i < parametros.size(); i++) {
@@ -240,7 +244,7 @@ public class OperacionesPY {
                 }
             }
         } else {
-            System.out.println("Nombres de parametros iguales en metodo: " + id);
+            PanelPrincipal.errores += "Fila: "+fila+" Columna: "+columna+" Tipo de error: SEMANTICO - Causa: Id's en parametros de metodo "+id+" con multiple coincidencia.\n";
         }
     }
 
@@ -254,7 +258,7 @@ public class OperacionesPY {
     }
 
     //borra una variable gracias al comando "DEL"
-    public void borrarVariable(ObjetosPYTHON py, String id, int jerarquia) {
+    public void borrarVariable(ObjetosPYTHON py, String id, int jerarquia, int fila, int columna) {
         VerifPY verif = new VerifPY();
         if (jerarquia == 0) {
             if (verif.verifVarGlobal(py, id)) {
@@ -269,7 +273,7 @@ public class OperacionesPY {
                 int aRemover = VerifPY.iteradorVar;
                 py.getGlobales().remove(aRemover);
             } else {
-                System.out.println("No existe la variable: " + id + " dentro del archivo como para usar el comando: del");
+                PanelPrincipal.errores += "Fila: "+fila+" Columna: "+columna+" Tipo de error: SEMANTICO - Causa: No existe la variable "+id+" comos para usar el comando del.\n"; 
             }
         }
     }

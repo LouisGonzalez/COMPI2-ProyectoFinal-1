@@ -5,6 +5,7 @@
  */
 package verificaciones;
 
+import interfaz.PanelPrincipal;
 import java.util.Objects;
 import objetos.ObjetosJAVA;
 import objetos.Variable;
@@ -71,7 +72,7 @@ public class VerifJAVA {
     }
 
     //float suma = 23.3 + a; --------->  verifica si a existe y si no hay problemas de tipado 
-    public boolean verificarTipadoVar(ObjetosJAVA jv, String id, int jerarquia, int itClase, String tipoBase) {
+    public boolean verificarTipadoVar(ObjetosJAVA jv, String id, int jerarquia, int itClase, String tipoBase, int fila, int columna) {
         boolean todoCorrecto = false;
         if (jerarquia == 0) {
             if (verifVarGlobal(jv, id)) {
@@ -79,21 +80,21 @@ public class VerifJAVA {
                     if (jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getValor()) {
                         todoCorrecto = true;
                     } else {
-                        System.out.println("La variable: " + id + " es nula");
+                        PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
                     }
                 } else {
                     if (verificarPadreVar(jv, jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getTipo(), tipoBase)) {
                         if (jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getValor()) {
                             todoCorrecto = true;
                         } else {
-                            System.out.println("La variable: " + id + " es nula");
+                            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
                         }
                     } else {
-                        System.out.println("variable " + id + " con tipo incorrecto para entrar a la operacion");
+                        PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no es compatible con el tipo de operacion.\n";
                     }
                 }
             } else {
-                System.out.println("no existe una variable: " + id + " en el archivo.");
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe ninguna variable: " + id + " dentro del archivo JAVA.\n";
             }
         } else {
             int itMetodo = jv.getMisClases().get(itClase).getMisMetodos().size() - 1;
@@ -102,17 +103,17 @@ public class VerifJAVA {
                     if (jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getValor()) {
                         todoCorrecto = true;
                     } else {
-                        System.out.println("La variable: " + id + " es nula");
+                        PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
                     }
                 } else {
                     if (verificarPadreVar(jv, jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getTipo(), tipoBase)) {
                         if (jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getValor()) {
                             todoCorrecto = true;
                         } else {
-                            System.out.println("La variable: " + id + " es nula");
+                            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
                         }
                     } else {
-                        System.out.println("variable " + id + " con tipo incorrecto para entrar a la operacion");
+                        PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no es compatible con el tipo de operacion.\n";
                     }
                 }
             } else if (verifVarLocal(jv, id)) {
@@ -120,21 +121,21 @@ public class VerifJAVA {
                     if (jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getValor()) {
                         todoCorrecto = true;
                     } else {
-                        System.out.println("La variable: " + id + " es nula");
+                        PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
                     }
                 } else {
                     if (verificarPadreVar(jv, jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getTipo(), tipoBase)) {
                         if (jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getValor()) {
                             todoCorrecto = true;
                         } else {
-                            System.out.println("La variable: " + id + " es nula");
+                            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
                         }
                     } else {
-                        System.out.println("variable " + id + " con tipo incorrecto para entrar a la operacion");
+                        PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no es compatible con el tipo de operacion.\n";
                     }
                 }
             } else {
-                System.out.println("no existe una variable: " + id + " en el archivo.");
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe ninguna variable: " + id + " dentro del archivo JAVA.\n";
             }
         }
         return todoCorrecto;
@@ -158,7 +159,7 @@ public class VerifJAVA {
         return aceptado;
     }
 
-    public boolean verificarNumero(String tipoNum, ObjetosJAVA jv, String tipoBase, String valor) {
+    public boolean verificarNumero(String tipoNum, ObjetosJAVA jv, String tipoBase, String valor, int fila, int columna) {
         boolean todoCorrecto = false;
         if (tipoBase.equals(tipoNum)) {
             todoCorrecto = true;
@@ -166,14 +167,15 @@ public class VerifJAVA {
             if (verificarPadreVar(jv, tipoNum, tipoBase)) {
                 todoCorrecto = true;
             } else {
-                System.out.println("El valor: " + valor + " no es compatible con la operacion");
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: El valor " + valor + " no es compatible con el tipo de operacion.\n";
+
             }
         }
         return todoCorrecto;
     }
 
     //revisa que el id que se ingrese en un input cumpla con las condiciones
-    public void verifInput(ObjetosJAVA jv, String id, String tipoBase) {
+    public void verifInput(ObjetosJAVA jv, String id, String tipoBase, int fila, int columna) {
         boolean todoCorrecto = false;
         int itClase = jv.getMisClases().size() - 1;
         int itMetodo = jv.getMisClases().get(itClase).getMisMetodos().size() - 1;
@@ -181,44 +183,47 @@ public class VerifJAVA {
             if (jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getTipo().equals(tipoBase)) {
                 todoCorrecto = true;
             } else {
-                System.out.println("la variable: " + id + " no es de tipo " + tipoBase);
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no es de tipo: " + tipoBase + "\n";
+
             }
         } else {
             if (verifVarGlobal(jv, id)) {
                 if (jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getTipo().equals(tipoBase)) {
                     todoCorrecto = true;
                 } else {
-                    System.out.println("la variable: " + id + " no es de tipo " + tipoBase);
+                    PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no es de tipo: " + tipoBase + "\n";
                 }
             } else {
-                System.out.println("la variable: " + id + " no existe dentro del archivo de entrada");
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no existe dentro del archivo JAVA\n";
+
             }
         }
     }
 
     //verifica que el id condicion de un switch cumpla con las condiciones
-    public void verifVarSwitch(ObjetosJAVA jv, String id) {
+    public void verifVarSwitch(ObjetosJAVA jv, String id, int fila, int columna) {
         int itClase = jv.getMisClases().size() - 1;
         int itMetodo = jv.getMisClases().get(itClase).getMisMetodos().size() - 1;
         if (verifVarLocal(jv, id)) {
             if (jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getTipo().equals("Float")) {
-                System.out.println("la variable: " + id + " es de tipo Float por lo que no es posible usarse en el switch");
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " es de tipo Float por lo que no es posible usarla dentro de un switch\n";
+
             }
         } else {
             if (verifVarGlobal(jv, id)) {
                 if (jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getTipo().equals("Float")) {
-                    System.out.println("La variable: " + id + " es de tipo Float por lo que no es posible usarse en el switch");
+                    PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " es de tipo Float por lo que no es posible usarla dentro de un switch\n";
                 }
             } else {
-                System.out.println("la variable: " + id + " no existe dentro del archivo de entrada");
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe una variable " + id + " dentro del archivo JAVA\n";
+
             }
         }
 
     }
-    int xx = 0;
 
     //agrega la variable del iterador dentro de un for
-    public void agregarVarFor(ObjetosJAVA jv, String id, String dec, int jerarquia) {
+    public void agregarVarFor(ObjetosJAVA jv, String id, String dec, int jerarquia, int fila, int columna) {
         int itClase = jv.getMisClases().size() - 1;
         int itMetodo = jv.getMisClases().get(itClase).getMisMetodos().size() - 1;
         if (dec.equals("")) {
@@ -231,7 +236,7 @@ public class VerifJAVA {
                     if (verificarPadreVar(jv, jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getTipo(), "Integer")) {
 
                     } else {
-                        System.out.println("El tipo de la variable: " + id + " no es compatible como para ser introducido en un for");
+                        PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no es compatible como iterador de un for\n";
                     }
                 }
             } else {
@@ -242,20 +247,21 @@ public class VerifJAVA {
                         if (verificarPadreVar(jv, jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getTipo(), "Integer")) {
 
                         } else {
-                            System.out.println("El tipo de la variable " + id + " no es compatible como para ser introducido en un for");
+                            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no es compatible como iterador de un for\n";
                         }
                     }
                 } else {
-                    System.out.println("la variable: " + id + " no existe dentro del archivo de entrada");
+                    PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe una variable " + id + " dentro del archivo JAVA\n";
                 }
             }
         } else {
             //acaba de ser declarada por lo que hay que comprobar que no haya una sentenciada antes
             if (verifVarLocal(jv, id)) {
-                System.out.println("Ya existe una variable: " + id + " declarada previamente");
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe una variable id" + id + " dentro del archivo JAVA\n";
+
             } else {
                 if (verifVarGlobal(jv, id)) {
-                    System.out.println("Ya existe una variable: " + id + " declarada previamente");
+                    PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe una variable id" + id + " dentro del archivo JAVA\n";
                 } else {
                     //agregar variable al metodo
                     jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().add(new Variable(id, dec, true, jerarquia));
@@ -267,10 +273,9 @@ public class VerifJAVA {
 
     //verifica que todas las sentencias esten de forma correcta
     public void comprobarFor(ObjetosJAVA jv, String id, String dec, int jerarquia) {
-       /** if (g) {
-        } else {
-            System.out.println("Problemas en el for...");
-        }*/
+        /**
+         * if (g) { } else { System.out.println("Problemas en el for..."); }
+         */
     }
 
     public String verificarTipoOperacion(ObjetosJAVA jv, String dato1, String dato2) {

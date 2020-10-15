@@ -13,7 +13,8 @@ import java_cup.runtime.Symbol;
 GuionBajo = [_]
 Numero = [0123456789]
 Letra = [a-zA-Z]
-Salto = \r|\n|\r\n
+Enter = \n
+Salto = \r
 Espacio1 = [ \t\f]
 Espacio = {Salto} | {Espacio1}
 
@@ -50,6 +51,8 @@ Espacio = {Salto} | {Espacio1}
     "return"                                                        {return symbol(sym.retorno, new String(yytext()));}
     "System.out.print"                                              {return symbol(sym.mensaje, new String(yytext()));}
     "System.out.println"                                            {return symbol(sym.mensaje2, new String(yytext()));}
+
+    "this"                                                          {return symbol(sym.condThis, new String(yytext()));}
 
     "public"                                                        {return symbol(sym.tipoPublic, new String(yytext()));}
     "class"                                                         {return symbol(sym.clase, new String(yytext()));}
@@ -96,6 +99,7 @@ Espacio = {Salto} | {Espacio1}
     "'"                                                             {return symbol(sym.comillaSimple, new String(yytext()));}
     
     "_"                                                             {return symbol(sym.guionBajo, new String(yytext()));}
+    {Enter}                                                         {return symbol(sym.enter);}    
     {Numero}+                                                       {return symbol(sym.numero, new Integer(yytext()));}
     ({Letra}|{GuionBajo})({Letra}|{Numero}|{GuionBajo})*            {return symbol(sym.id, new String(yytext()));}
     {Espacio}+                                                      {}    

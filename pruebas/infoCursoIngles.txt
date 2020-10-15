@@ -24,42 +24,13 @@ End Function
 %%JAVA
 public class algo {
 
-	
-	public void hola(){
-		int a = 12;
-		/*char cx,ch = 'd';*/
-		if(1 > 1 && 3 > 1 || 4 > 1){
+	public void aaa(){
 
 	}
-	}		
 }
 %%PY
 def edadmeses(edad, meses):
-	a = 12 + 3
-	if a > 14:
-		if 44 > 1234:
-			print("hora reina x2")
-		print("hola reina x3")
-		elif 78 > 654:
-			print("hora reina x2")
-		print("hola reina x3")
-		else :
-			print("asfsd")
-		print("holasdfds")
-	elif 1 > 888:
-		if 44 > 1234:
-			print("hora reina x2")
-		print("hola reina x3")
-		elif 78 > 654:
-			print("hora reina x2")
-		print("hola reina x3")
-		else :
-			print("asfsd")
-		print("holasdfd	s")
-	else:
-		print("www")
-	print("hola reina x3")
-
+    print("HOla mundo")
 
 
 
@@ -72,13 +43,9 @@ const int constante1 = 10;
 
 void main()
 {
-  	int base, i, c;
-	base = 1 + 4 * 2 - 2 /3;
-	c = 12 +1 +1;
-	if(1 > 1 && 3 > 1 || 4 > 1){
-
-	}
+  	JAVA.algo ob1();
 }
+
 
 
 

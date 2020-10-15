@@ -8,6 +8,7 @@ package interfaz;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 import javax.swing.JFileChooser;
 import operacionesInterfaz.NuevaHoja;
 
@@ -18,6 +19,7 @@ import operacionesInterfaz.NuevaHoja;
 public class Principal extends javax.swing.JFrame {
 
     private NuevaHoja nueva = new NuevaHoja();
+    private ArrayList<String> textos = new ArrayList<>();
     
     /**
      * Creates new form Principal
@@ -71,6 +73,11 @@ public class Principal extends javax.swing.JFrame {
         opAbrir.add(jMenuItem3);
 
         jMenuItem4.setText("Guardar Como");
+        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem4ActionPerformed(evt);
+            }
+        });
         opAbrir.add(jMenuItem4);
 
         menuSalir.setText("Salir");
@@ -97,7 +104,7 @@ public class Principal extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(tabbed, javax.swing.GroupLayout.DEFAULT_SIZE, 827, Short.MAX_VALUE)
+                .addComponent(tabbed, javax.swing.GroupLayout.DEFAULT_SIZE, 1058, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -116,7 +123,7 @@ public class Principal extends javax.swing.JFrame {
     }//GEN-LAST:event_menuSalirActionPerformed
 
     private void opNuevoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_opNuevoActionPerformed
-        PanelPrincipal nuevo = new PanelPrincipal("", "");
+        PanelPrincipal nuevo = new PanelPrincipal("", "", textos, tabbed.getTabCount());
         tabbed.addTab("Sin nombre", nuevo);
         tabbed.setTabComponentAt(tabbed.getTabCount()-1, nueva.crearCabecera("Sin nombre", tabbed));
     }//GEN-LAST:event_opNuevoActionPerformed
@@ -136,9 +143,14 @@ public class Principal extends javax.swing.JFrame {
             FileReader reader = null;
             BufferedReader buffer = null;
             String texto = "";
-            nueva.crearHoja(archivoNuevo, reader, buffer, texto, tabbed);
+            nueva.crearHoja(archivoNuevo, reader, buffer, texto, tabbed, textos);
         }
     }//GEN-LAST:event_jMenuItem2ActionPerformed
+
+    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+         GuardarArchivo guardar = new GuardarArchivo(null, true, textos.get(tabbed.getSelectedIndex()), "mlg");
+         guardar.setVisible(true);
+    }//GEN-LAST:event_jMenuItem4ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

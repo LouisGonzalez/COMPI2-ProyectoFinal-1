@@ -9,6 +9,7 @@ import cuartetos.Nodo;
 import gramaticaVB.SintaxVB;
 import java.util.ArrayList;
 import objetos.ObjetosVB;
+import objetos.Variable;
 import objetosApoyo.NodoBoolean;
 import verificaciones.VerifVB;
 
@@ -17,14 +18,14 @@ import verificaciones.VerifVB;
  * @author luisGonzalez
  */
 public class ManejoVb {
-    
+
     public String definirEtiqueta2(ObjetosVB jv) {
         int suma = jv.getContEt() + 1;
         jv.setContEt(suma);
         String et = "et_" + suma;
         return et;
     }
-    
+
     public String obtenerUltimoGoTo(ArrayList<Nodo> jv, int jerarquia) {
         String et = "";
         for (int i = 0; i < jv.size(); i++) {
@@ -40,28 +41,50 @@ public class ManejoVb {
         return et;
     }
 
-    /*------------------------------------- CREACION VARIABLES -----------------------------------------------*/
+    /*----------------------------------------- METODOS ----------------------------------------------------*/
+    public void crearMetodo(ObjetosVB vb, String idMetodo, ArrayList<Variable> parametros, String tipo) {
+        String nombre;
+        String param = parametros(parametros);
+        nombre = "VB_"+idMetodo+"_"+param;
+        vb.getCuarpeta().add(new Nodo("CREACION_METODO", tipo, null, nombre, null));
+    }
     
+    public void finMetodo(ObjetosVB vb){
+        vb.getCuarpeta().add(new Nodo("FIN_METODO", null, null, null, null));
+    }
+
+    public String parametros(ArrayList<Variable> listVariables) {
+        String var = "";
+        for (int i = 0; i < listVariables.size(); i++) {
+            if (i < listVariables.size() - 1) {
+                var += listVariables.get(i).getTipo() + "_";
+            } else {
+                var += listVariables.get(i).getTipo();
+            }
+        }
+        return var;
+    }
+
+    /*------------------------------------- CREACION VARIABLES -----------------------------------------------*/
     public void crearVariable(ObjetosVB vb, String id, String tipo) {
         vb.getCuarpeta().add(new Nodo("CREACION_VAR", tipo, null, id, null));
     }
 
     /*------------------------------------- ASIGNACION VARIABLES ---------------------------------------------*/
-    
     public String agregarOperacion(ObjetosVB vb, String ladoA, String ladoB, String tipo) {
         String var = "t" + vb.getContVars();
         vb.setContVars(vb.getContVars() + 1);
         vb.getCuarpeta().add(new Nodo(tipo, ladoA, ladoB, var, null));
         return var;
     }
-    
-    public String agregarOperacionFor(ObjetosVB vb, ArrayList<ArrayList<Nodo>> pilaFor,  String ladoA, String ladoB, String tipo){
-        String var = "t"+vb.getContVars();
-        vb.setContVars(vb.getContVars()+1);
-        pilaFor.get(pilaFor.size()-1).add(new Nodo(tipo, ladoA, ladoB, var, null));
+
+    public String agregarOperacionFor(ObjetosVB vb, ArrayList<ArrayList<Nodo>> pilaFor, String ladoA, String ladoB, String tipo) {
+        String var = "t" + vb.getContVars();
+        vb.setContVars(vb.getContVars() + 1);
+        pilaFor.get(pilaFor.size() - 1).add(new Nodo(tipo, ladoA, ladoB, var, null));
         return var;
     }
-    
+
     public void agregarValorVar(ObjetosVB vb, String id, String val) {
         if (val != null) {
             vb.getCuarpeta().add(new Nodo("asig", val, null, id, null));
@@ -69,7 +92,6 @@ public class ManejoVb {
     }
 
     /*-------------------------------------- MANEJO BOOLEANOS -------------------------------------------------*/
-    
     public NodoBoolean concatenarOperacion(ObjetosVB vb, NodoBoolean ladoA, NodoBoolean ladoB, String tipoOp) {
         VerifVB verif = new VerifVB();
         String var = "t" + vb.getContVars();
@@ -83,7 +105,7 @@ public class ManejoVb {
             return new NodoBoolean("", var);
         }
     }
-    
+
     public ArrayList<Nodo> agregarBooleans(ObjetosVB vb, ArrayList<ArrayList<Nodo>> pilaFalsas, NodoBoolean lado1, NodoBoolean lado2, String op, int jerarquia) {
         VerifVB verif = new VerifVB();
         if (!lado1.getTipo().equals("") && !lado2.getTipo().equals("")) {
@@ -102,8 +124,16 @@ public class ManejoVb {
         return list;
     }
 
+    /*---------------------------------------------- NOT -----------------------------------------------------*/
+    public ArrayList<Nodo> cambiarGotos(ArrayList<Nodo> booleano) {
+        String goto1 = booleano.get(0).getVar();
+        String goto2 = booleano.get(1).getVar();
+        booleano.get(0).setVar(goto2);
+        booleano.get(1).setVar(goto1);
+        return booleano;
+    }
+
     /*--------------------------------------------- AND -------------------------------------------------------*/
-    
     public ArrayList<Nodo> manejoAnd(ArrayList<Nodo> ladoA, ArrayList<Nodo> ladoB) {
         for (int i = 0; i < ladoB.size(); i++) {
             ladoA.add(ladoB.get(i));
@@ -112,8 +142,7 @@ public class ManejoVb {
     }
 
     /*--------------------------------------------- OR --------------------------------------------------------*/
-    
-    public void manejoOr(ObjetosVB vb, ArrayList<ArrayList<Nodo>> pilaCuarpeta, ArrayList<Nodo> ladoA, ArrayList<Nodo> ladoB, int jerarquia) {
+    public void manejoOr(ObjetosVB vb, ArrayList<Boolean> usoPila, ArrayList<ArrayList<Nodo>> pilaCuarpeta, ArrayList<Nodo> ladoA, ArrayList<Nodo> ladoB, int jerarquia) {
         if (SintaxVB.inst) {
             if (ladoA == null) {
                 pilaCuarpeta.get(pilaCuarpeta.size() - 1).add(new Nodo("ETIQUETA", SintaxVB.aux3, null, null, jerarquia));
@@ -132,6 +161,7 @@ public class ManejoVb {
             }
             ladoB.add(new Nodo("GOTO", null, null, SintaxVB.etInst, jerarquia));
             pilaCuarpeta.add(new ArrayList<>());
+            usoPila.set(usoPila.size() - 1, true);
             pilaCuarpeta.get(pilaCuarpeta.size() - 1).add(new Nodo("ETIQUETA", ultimoGoto, null, null, jerarquia));
             for (int i = 0; i < ladoB.size(); i++) {
                 pilaCuarpeta.get(pilaCuarpeta.size() - 1).add(ladoB.get(i));
@@ -140,7 +170,6 @@ public class ManejoVb {
     }
 
     /*------------------------------------ IF - ELSEIF - ELSE -------------------------------------------------*/
-    
     public void primerChequeoIf(ObjetosVB vb, ArrayList<Nodo> booleano) {
         if (!SintaxVB.inst) {
             for (int i = 0; i < booleano.size(); i++) {
@@ -150,18 +179,26 @@ public class ManejoVb {
         SintaxVB.inst = false;
         SintaxVB.etInst = "";
     }
-    
-    public void segundoChequeoIf(ObjetosVB vb, ArrayList<ArrayList<Nodo>> pilaCuarpeta, ArrayList<ArrayList<Nodo>> pilaFalsas, int jerarquia) {
+
+    public void segundoChequeoIf(ObjetosVB vb, ArrayList<Boolean> usoPila, ArrayList<ArrayList<Nodo>> pilaCuarpeta, ArrayList<ArrayList<Nodo>> pilaFalsas, int jerarquia) {
         ManejoCondiciones manejo = new ManejoCondiciones();
         if (!pilaCuarpeta.isEmpty()) {
-            manejo.eliminarEtiquetasVB(vb, pilaCuarpeta.get(pilaCuarpeta.size() - 1), pilaFalsas.get(pilaFalsas.size() - 1));
-            for (int i = 0; i < pilaFalsas.get(pilaFalsas.size() - 1).size(); i++) {
-                pilaCuarpeta.get(pilaCuarpeta.size() - 1).add(pilaFalsas.get(pilaFalsas.size() - 1).get(i));
+            if (usoPila.get(usoPila.size() - 1)) {
+                manejo.eliminarEtiquetasVB(vb, pilaCuarpeta.get(pilaCuarpeta.size() - 1), pilaFalsas.get(pilaFalsas.size() - 1));
+                for (int i = 0; i < pilaFalsas.get(pilaFalsas.size() - 1).size(); i++) {
+                    pilaCuarpeta.get(pilaCuarpeta.size() - 1).add(pilaFalsas.get(pilaFalsas.size() - 1).get(i));
+                }
+                for (int i = 0; i < pilaCuarpeta.get(pilaCuarpeta.size() - 1).size(); i++) {
+                    vb.getCuarpeta().add(pilaCuarpeta.get(pilaCuarpeta.size() - 1).get(i));
+                }
+                pilaCuarpeta.remove(pilaCuarpeta.size() - 1);
+            } else {
+                manejo.eliminarEtiquetasVB(vb, null, pilaFalsas.get(pilaFalsas.size() - 1));
+                for (int i = 0; i < pilaFalsas.get(pilaFalsas.size() - 1).size(); i++) {
+                    vb.getCuarpeta().add(pilaFalsas.get(pilaFalsas.size() - 1).get(i));
+                }
             }
-            for (int i = 0; i < pilaCuarpeta.get(pilaCuarpeta.size() - 1).size(); i++) {
-                vb.getCuarpeta().add(pilaCuarpeta.get(pilaCuarpeta.size() - 1).get(i));
-            }
-            pilaCuarpeta.remove(pilaCuarpeta.size() - 1);
+            usoPila.remove(usoPila.size() - 1);
         } else {
             manejo.eliminarEtiquetasVB(vb, null, pilaFalsas.get(pilaFalsas.size() - 1));
             for (int i = 0; i < pilaFalsas.get(pilaFalsas.size() - 1).size(); i++) {
@@ -172,22 +209,21 @@ public class ManejoVb {
     }
 
     /*------------------------------------------- WHILE ------------------------------------------------------*/
-    
     public void agregarWhile(ObjetosVB vb, ArrayList<Nodo> booleano, int jerarquia) {
         String etWhile = "etWhile_" + vb.getContEtWhile();
         vb.setContEtWhile(vb.getContEtWhile() + 1);
         vb.getCuarpeta().add(new Nodo("ETIQUETA", etWhile, null, null, jerarquia));
         primerChequeoIf(vb, booleano);
     }
-    
-    public void retornoWhile(ObjetosVB vb, ArrayList<ArrayList<Nodo>> pilaCuarpeta, ArrayList<ArrayList<Nodo>> pilaFalsas, int jerarquia) {
+
+    public void retornoWhile(ObjetosVB vb, ArrayList<Boolean> usoPila, ArrayList<ArrayList<Nodo>> pilaCuarpeta, ArrayList<ArrayList<Nodo>> pilaFalsas, int jerarquia) {
         ManejoCondiciones manejo = new ManejoCondiciones();
         String etWhile = buscarUltimoWhile(vb, jerarquia);
         vb.getCuarpeta().add(new Nodo("GOTO", null, null, etWhile, jerarquia));
-        segundoChequeoIf(vb, pilaCuarpeta, pilaFalsas, jerarquia);
+        segundoChequeoIf(vb, usoPila, pilaCuarpeta, pilaFalsas, jerarquia);
         manejo.agregarEtiquetaFinVB(vb, jerarquia);
     }
-    
+
     public String buscarUltimoWhile(ObjetosVB vb, int jerarquia) {
         String etWhile = "";
         for (int i = 0; i < vb.getCuarpeta().size(); i++) {
@@ -202,7 +238,7 @@ public class ManejoVb {
         }
         return etWhile;
     }
-    
+
     public String agregarEtiquetaFinWhile(ObjetosVB vb, int jerarquia) {
         String etWhile = "";
         for (int i = 0; i < vb.getCuarpeta().size(); i++) {
@@ -216,33 +252,31 @@ public class ManejoVb {
     }
 
     /*-------------------------------------- DO WHILE -----------------------------------------------------*/
-    
     public void agregarDoWhile(ObjetosVB vb, int jerarquia) {
         String etWhile = "etWhile_" + vb.getContEtWhile();
         vb.getCuarpeta().add(new Nodo("ETIQUETA", etWhile, null, null, jerarquia));
         vb.setContEtWhile(vb.getContEtWhile() + 1);
-        
+
     }
-    
-    public void agregarCondicionWhile(ObjetosVB vb, ArrayList<Nodo> booleano, ArrayList<ArrayList<Nodo>> pilaCuarpeta, ArrayList<ArrayList<Nodo>> pilaFalsas, int jerarquia) {
+
+    public void agregarCondicionWhile(ObjetosVB vb, ArrayList<Boolean> usoPila, ArrayList<Nodo> booleano, ArrayList<ArrayList<Nodo>> pilaCuarpeta, ArrayList<ArrayList<Nodo>> pilaFalsas, int jerarquia) {
         ManejoCondiciones manejo = new ManejoCondiciones();
         String etWhile = buscarUltimoWhile(vb, jerarquia);
         primerChequeoIf(vb, booleano);
-        vb.getCuarpeta().add(new Nodo("GOTO", etWhile, null, null, jerarquia));
-        segundoChequeoIf(vb, pilaCuarpeta, pilaFalsas, jerarquia);
+        vb.getCuarpeta().add(new Nodo("GOTO", null, null, etWhile, jerarquia));
+        segundoChequeoIf(vb, usoPila, pilaCuarpeta, pilaFalsas, jerarquia);
         manejo.agregarEtiquetaFinVB(vb, jerarquia);
     }
 
     /*------------------------------------- SWITCH CASE ---------------------------------------------------*/
-    
     public void agregarCaseSwitch(ObjetosVB vb, int jerarquia, String comparacion1, String comparacion2, String tipoOp) {
         String et = definirEtiqueta2(vb);
-        vb.getCuarpeta().add(new Nodo("IF" + tipoOp, comparacion1, comparacion2, et, jerarquia));
+        vb.getCuarpeta().add(new Nodo("IF " + tipoOp, comparacion1, comparacion2, et, jerarquia));
         String et2 = definirEtiqueta2(vb);
         vb.getCuarpeta().add(new Nodo("GOTO", null, null, et2, jerarquia));
         vb.getCuarpeta().add(new Nodo("ETIQUETA", et, null, null, jerarquia));
     }
-    
+
     public void agregarFinCase(ObjetosVB vb, ArrayList<String> arrayFinales, int jerarquia) {
         vb.getCuarpeta().add(new Nodo("GOTO", null, null, arrayFinales.get(arrayFinales.size() - 1), jerarquia));
         String et = obtenerUltimoGoTo(vb.getCuarpeta(), jerarquia);
@@ -250,14 +284,13 @@ public class ManejoVb {
     }
 
     /*----------------------------------------- FOR ------------------------------------------------------*/
-    
     public void agregarFor(ObjetosVB vb, ArrayList<ArrayList<Nodo>> pilaFalsas, String id1, String ladoA, String ladoB, int jerarquia, String tipoVar) {
-        if(!tipoVar.equals("")){
+        if (!tipoVar.equals("")) {
             vb.getCuarpeta().add(new Nodo("CREACION_VAR", tipoVar, null, id1, jerarquia));
         }
         vb.getCuarpeta().add(new Nodo("asig", ladoA, null, id1, null));
-        String etFor = "etFor_"+vb.getContFor();
-        vb.setContFor(vb.getContFor()+1);
+        String etFor = "etFor_" + vb.getContFor();
+        vb.setContFor(vb.getContFor() + 1);
         vb.getCuarpeta().add(new Nodo("ETIQUETA", etFor, null, null, jerarquia));
         String et = definirEtiqueta2(vb);
         vb.getCuarpeta().add(new Nodo("IF <=", id1, ladoB, et, jerarquia));
@@ -267,10 +300,10 @@ public class ManejoVb {
         vb.getCuarpeta().add(new Nodo("GOTO", null, null, et2, jerarquia));
         pilaFalsas.get(pilaFalsas.size() - 1).add(new Nodo("ETIQUETA", et2, null, null, jerarquia));
         vb.getCuarpeta().add(new Nodo("ETIQUETA", et, null, null, jerarquia));
-        
+
     }
-    
-    public void retornoFor(ObjetosVB vb, ArrayList<ArrayList<Nodo>> pilaFor, String id, ArrayList<ArrayList<Nodo>> pilaCuarpeta, ArrayList<ArrayList<Nodo>> pilaFalsas, int jerarquia) {
+
+    public void retornoFor(ObjetosVB vb, ArrayList<Boolean> usoPila, ArrayList<ArrayList<Nodo>> pilaFor, String id, ArrayList<ArrayList<Nodo>> pilaCuarpeta, ArrayList<ArrayList<Nodo>> pilaFalsas, int jerarquia) {
         ManejoCondiciones manejo = new ManejoCondiciones();
         String etFor = buscarUltimoFor(vb, jerarquia);
         for (int i = 0; i < pilaFor.get(pilaFor.size() - 1).size(); i++) {
@@ -278,17 +311,17 @@ public class ManejoVb {
         }
         pilaFor.remove(pilaFor.size() - 1);
         vb.getCuarpeta().add(new Nodo("GOTO", null, null, etFor, jerarquia));
-        segundoChequeoIf(vb, pilaCuarpeta, pilaFalsas, jerarquia);
+        segundoChequeoIf(vb, usoPila, pilaCuarpeta, pilaFalsas, jerarquia);
         manejo.agregarEtiquetaFinVB(vb, jerarquia);
     }
-    
-    public void agregarAuxPilaFor(ObjetosVB vb, ArrayList<ArrayList<Nodo>> pilaFor, String numero, String varAsignar){
-        String et = "t"+vb.getContVars();
-        vb.setContVars(vb.getContVars()+1);
-        pilaFor.get(pilaFor.size()-1).add(new Nodo("suma", numero, varAsignar, et, null));
-        pilaFor.get(pilaFor.size()-1).add(new Nodo("asig", et, null, varAsignar, null));
+
+    public void agregarAuxPilaFor(ObjetosVB vb, ArrayList<ArrayList<Nodo>> pilaFor, String numero, String varAsignar) {
+        String et = "t" + vb.getContVars();
+        vb.setContVars(vb.getContVars() + 1);
+        pilaFor.get(pilaFor.size() - 1).add(new Nodo("suma", numero, varAsignar, et, null));
+        pilaFor.get(pilaFor.size() - 1).add(new Nodo("asig", et, null, varAsignar, null));
     }
-    
+
     public String buscarUltimoFor(ObjetosVB vb, int jerarquia) {
         String etFor = "";
         for (int i = 0; i < vb.getCuarpeta().size(); i++) {
@@ -297,24 +330,43 @@ public class ManejoVb {
                 if (arreglo[0].equals("etFor")) {
                     if (vb.getCuarpeta().get(i).getNivel() == jerarquia) {
                         etFor = vb.getCuarpeta().get(i).getDato1().toString();
-                        break;
                     }
                 }
             }
         }
         return etFor;
-    }                                             
-                        
+    }
+
     /*------------------------------------------- INPUTS ------------------------------------------------------*/
-    
-    public void crearScanf(ObjetosVB vb, String id, String tipo){
-        if(tipo.equals("Integer")){
+    public void crearScanf(ObjetosVB vb, String id, String tipo) {
+        if (tipo.equals("Integer")) {
             vb.getCuarpeta().add(new Nodo("SCANF", "%d", null, id, null));
-        } else if(tipo.equals("Float")){
+        } else if (tipo.equals("Float")) {
             vb.getCuarpeta().add(new Nodo("SCANF", "%f", null, id, null));
-        } else if(tipo.equals("Char")){
+        } else if (tipo.equals("Char")) {
             vb.getCuarpeta().add(new Nodo("SCANF", "%c", null, id, null));
         }
+    }
+
+    /*-------------------------------------------- RETURNS ----------------------------------------------------*/
+    
+    public void crearReturn(ObjetosVB c, String id){
+        String var = "t"+c.getContVars();
+        c.setContVars(c.getContVars()+1);
+        c.getCuarpeta().add(new Nodo("asig", id, null, var, null));
+    }
+ 
+    /*------------------------------------------- MENSAJES ---------------------------------------------------*/
+    
+    public String concatenarMensajes(ObjetosVB vb, String ladoA, String ladoB){
+        String et = "t"+vb.getContVars();
+        vb.setContVars(vb.getContVars()+1);
+        vb.getCuarpeta().add(new Nodo("asig", ladoA, ladoB, et, null));
+        return et;
+    }
+    
+    public void mostrarMensaje(ObjetosVB vb, String id){
+        vb.getCuarpeta().add(new Nodo("PRINT", null, null, id, null));
     }
     
 }

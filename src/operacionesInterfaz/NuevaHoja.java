@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BoxLayout;
@@ -27,14 +28,14 @@ import javax.swing.JTabbedPane;
  */
 public class NuevaHoja {
 
-    public void crearHoja(File archivo, FileReader reader, BufferedReader buffer, String texto, JTabbedPane principal){
+    public void crearHoja(File archivo, FileReader reader, BufferedReader buffer, String texto, JTabbedPane principal, ArrayList<String> textos){
         try {
             reader = new FileReader(archivo.toString());
             buffer = new BufferedReader(reader);
             while(buffer.ready()){
                 texto += buffer.readLine()+ "\n";
             }
-            abrirPanel(texto, archivo.getPath(), archivo.getName(), principal);
+            abrirPanel(texto, archivo.getPath(), archivo.getName(), principal, textos, principal.getTabCount());
         } catch (FileNotFoundException ex) {
             Logger.getLogger(NuevaHoja.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -43,8 +44,8 @@ public class NuevaHoja {
         
     }
     
-    public void abrirPanel(String texto, String path, String titulo, JTabbedPane principal){
-        PanelPrincipal panel = new PanelPrincipal(texto, path);
+    public void abrirPanel(String texto, String path, String titulo, JTabbedPane principal, ArrayList<String> textos, int itTab){
+        PanelPrincipal panel = new PanelPrincipal(texto, path, textos, itTab);
         principal.addTab(titulo, panel);
         principal.setTabComponentAt(principal.getTabCount()-1, crearCabecera(titulo, principal));
     }

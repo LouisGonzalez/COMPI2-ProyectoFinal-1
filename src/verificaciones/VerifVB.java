@@ -8,6 +8,7 @@ package verificaciones;
 import Operaciones.OperacionesVB;
 import Tablas.Tipado;
 import gramaticaVB.SintaxVB;
+import interfaz.PanelPrincipal;
 import java.util.ArrayList;
 import java.util.Objects;
 import objetos.ObjetosVB;
@@ -47,7 +48,7 @@ public class VerifVB {
     }
 
     //Simplemente verifica si existe un id dentro del metodo actual y tiene agregado un valor
-    public boolean verifVarOp(ObjetosVB vb, int iterador, String id, String tipoBase, Tipado tipado) {
+    public boolean verifVarOp(ObjetosVB vb, int iterador, String id, String tipoBase, Tipado tipado, int fila, int columna) {
         boolean varExiste = false;
         if (verifVarLocal(vb, id)) {
             if (vb.getMisMetodos().get(vb.getMisMetodos().size() - 1).getMisVariables().get(iteradorVar).getValor()) {
@@ -57,14 +58,14 @@ public class VerifVB {
                     if (verificarPadre(vb, vb.getMisMetodos().get(vb.getMisMetodos().size() - 1).getMisVariables().get(iteradorVar).getTipo(), tipoBase, tipado)) {
                         varExiste = true;
                     } else {
-                        System.out.println("La variable: " + id + " no es compatible con la operacion");
+                        PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable: " + id + " no es compatible con el tipo de operacion\n";
                     }
                 }
             } else {
-                System.out.println("La variable: " + id + " no tiene asignado un valor");
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable: " + id + " no tiene un valor asignado\n";
             }
         } else {
-            System.out.println("La variable: " + id + " no existe dentro del metodo");
+            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable: " + id + " no existe dentro del metodo\n";
         }
 
         return varExiste;
@@ -82,8 +83,6 @@ public class VerifVB {
                     if (verificarPadre(vb, vb.getMisMetodos().get(iterador).getMisVariables().get(i).getTipo(), tipoBase, tipado)) {
                         todoCorrecto = true;
                         break;
-                    } else {
-                        System.out.println("esta variable no es compatible con la variable padre, input");
                     }
                 }
             }
@@ -91,7 +90,7 @@ public class VerifVB {
         return todoCorrecto;
     }
 
-    public boolean verificarNumero(String tipoNum, ObjetosVB vb, Tipado tipado, String tipoBase) {
+    public boolean verificarNumero(String tipoNum, ObjetosVB vb, Tipado tipado, String tipoBase, int fila, int columna, String valor) {
         boolean todoCorrecto = false;
         if (tipoBase.equals(tipoNum)) {
             todoCorrecto = true;
@@ -99,7 +98,7 @@ public class VerifVB {
             if (verificarPadre(vb, tipoNum, tipoBase, tipado)) {
                 todoCorrecto = true;
             } else {
-                System.out.println("esta variable no es compatible con la variable padreeee");
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: El valor " + valor + " no es compatible con el tipo de operacion.\n";
             }
         }
         return todoCorrecto;
@@ -152,11 +151,12 @@ public class VerifVB {
     }
 
     //verifica si ya existe un metodo con un id especifico
-    public boolean verificarMetodo(String id, ObjetosVB vb) {
+    public boolean verificarMetodo(String id, ObjetosVB vb, int fila, int columna) {
         boolean agregar = true;
         for (int i = 0; i < vb.getMisMetodos().size(); i++) {
             if (id.equals(vb.getMisMetodos().get(i).getIdMetodo())) {
                 System.out.println("Ya existe un metodo con este nombre en especifico");
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe un metodo con el id" + id + " dentro del archivo.\n";
                 agregar = false;
                 break;
             }
@@ -178,65 +178,70 @@ public class VerifVB {
     }
 
     //verifica el tipo de valor de una variable a la que se le asignara un valor, y luego lo devuelve
-    public String verificarVarAsignar(String id, ObjetosVB vb, int iterador) {
+    public String verificarVarAsignar(String id, ObjetosVB vb, int iterador, int fila, int columna) {
         String tipo = "";
         if (verifVarLocal(vb, id)) {
             tipo = vb.getMisMetodos().get(vb.getMisMetodos().size() - 1).getMisVariables().get(iteradorVar).getTipo();
         } else {
-            tipo = verificarReturn(vb, id);
+            tipo = verificarReturn(vb, id, fila, columna);
             if (tipo.equals("")) {
-                System.out.println("La variable: " + id + " no existe dentro de este metodo");
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe una variable con el id " + id + " dentro del metodo.\n";
+    
             }
         }
         return tipo;
     }
 
     //verifica si una asignacion es del mismo nombre que el metodo, lo que significa que es un return
-    public String verificarReturn(ObjetosVB vb, String id) {
+    public String verificarReturn(ObjetosVB vb, String id, int fila, int columna) {
         String tipo = "";
         if (id.equals(vb.getMisMetodos().get(vb.getMisMetodos().size() - 1).getIdMetodo())) {
             if (vb.getMisMetodos().get(vb.getMisMetodos().size() - 1).isTipo()) {
                 SintaxVB.isReturn = true;
                 tipo = vb.getMisMetodos().get(vb.getMisMetodos().size() - 1).getRetorno();
             } else {
-                System.out.println("El metodo: " + vb.getMisMetodos().get(vb.getMisMetodos().size() - 1).getIdMetodo() + " es de tipo Sub por lo que no puede retornar elementos.");
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: El metodo: " + vb.getMisMetodos().get(vb.getMisMetodos().size() - 1).getIdMetodo() + " es de tipo Sub por lo que no puede retornar elementos.\n";
             }
         }
         return tipo;
     }
 
     //verifica a la variable iterable de un FOR
-    public void verificarVarFor(String id, String tipoVar, ObjetosVB vb, int iterador, Tipado tipado, int nivel, Boolean step) {
+    public void verificarVarFor(String id, String tipoVar, ObjetosVB vb, int iterador, Tipado tipado, int nivel, Boolean step, int fila, int columna) {
 
         if (step || step == null) {
             //si tipoVar es vacio hace alusion que esa variable ya existe dentro del metodo
             if (tipoVar.equals("")) {
-                if (!verificarVarInput(vb, iterador, id, tipoVar, tipado)) {
-                    System.out.println("La variable " + id + " no existe dentro del metodo");
+                if (!verificarVarInput(vb, iterador, id, "Integer", tipado)) {
+                    PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe una variable con el id " + id + " dentro del metodo.\n";
+                    
                 }
             } else {
                 if (tipoVar.equals("Integer")) {
                     vb.getMisMetodos().get(iterador).getMisVariables().add(new Variable(id, tipoVar, true, nivel));
                 } else {
                     System.out.println("No es posible usar una variable de tipo " + tipoVar + " en un for");
+                    PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No es posible usar una variable de tipo " + tipoVar + " en un for\n";
                 }
             }
         } else {
             if (!step) {
                 System.out.println("STEP no es de tipo integer");
+                    PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Paso STEP no es de tipo Integer por lo que no puede usarse dentro de un for\n";
+
             }
         }
     }
 
     //verifica si una variable dentro de un mensaje existe y si es asi ver si tiene un valor
-    public void verifVarMensaje(ObjetosVB vb, String id) {
+    public void verifVarMensaje(ObjetosVB vb, String id, int fila, int columna) {
         if (verifVarLocal(vb, id)) {
             if (!vb.getMisMetodos().get(vb.getMisMetodos().size() - 1).getMisVariables().get(iteradorVar).getValor()) {
-                System.out.println("La variable: " + id + " no tiene asignado ningun valor.");
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene asignado ningun valor.\n";
             }
         } else {
-            System.out.println("No existe ninguna variable: " + id + " dentro del metodo");
-        }
+            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe ninguna variable " + id + " dentro del metodo.\n";
+       }
     }
 
     //verifica el tipo que representara a una operacion condicional
@@ -269,17 +274,19 @@ public class VerifVB {
         return tipo;
     }
 
-    public void verifVarSelect(ObjetosVB vb, String id) {
-        if(verifVarLocal(vb, id)){
-            if(vb.getMisMetodos().get(vb.getMisMetodos().size()-1).getMisVariables().get(iteradorVar).getValor()){
-                if(!vb.getMisMetodos().get(vb.getMisMetodos().size()-1).getMisVariables().get(iteradorVar).getTipo().equals("Float")){
-                    System.out.println("Variable: "+id+" imposible de utilizar en select debido a su tipo de dato: "+vb.getMisMetodos().get(vb.getMisMetodos().size()-1).getMisVariables().get(iteradorVar).getTipo());
-                } 
+    public void verifVarSelect(ObjetosVB vb, String id, int fila, int columna) {
+        if (verifVarLocal(vb, id)) {
+            System.out.println(vb.getMisMetodos().get(vb.getMisMetodos().size() - 1).getMisVariables().get(iteradorVar).getId());
+            if (vb.getMisMetodos().get(vb.getMisMetodos().size() - 1).getMisVariables().get(iteradorVar).getValor()) {
+                if (vb.getMisMetodos().get(vb.getMisMetodos().size() - 1).getMisVariables().get(iteradorVar).getTipo().equals("Float")) {
+                    PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Variable: " + id + " imposible de utilizar en select debido a su tipo de dato: " + vb.getMisMetodos().get(vb.getMisMetodos().size() - 1).getMisVariables().get(iteradorVar).getTipo()+"\n";
+                }
             } else {
-                System.out.println("Variable: "+id+" sin valor para uso en select.");
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Variable: " + id + " sin valor para uso en select.\n";
             }
         } else {
-            System.out.println("Variable: "+id+" no existe dentro del archivo principal.");
+            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Variable: " + id + " no existe dentro del archivo VB.\n";
+
         }
     }
 

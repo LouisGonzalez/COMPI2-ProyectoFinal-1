@@ -13,7 +13,7 @@ import java_cup.runtime.Symbol;
 GuionBajo = [_]
 Numero = [0123456789]
 Letra = [a-zA-Z]
-Tab = \t | "     "
+Tab = \t | "    "
 Enter = \n
 Salto = \r
 Espacio1 = [ \f]

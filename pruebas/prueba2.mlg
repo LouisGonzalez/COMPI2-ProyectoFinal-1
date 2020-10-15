@@ -1,5 +1,4 @@
 %%VB
-
 public sub hola()
     Dim N as integer
     Dim c as integer
@@ -27,7 +26,7 @@ public sub hola()
             N = N - 1
        	End While
 	Factorial = Fact
-	Select CASE como
+	Select como
             CASE 8
 		//Dim como as integer
             CASE 9
@@ -37,14 +36,14 @@ public sub hola()
 	END select
     End If
     FOR c = 8 To 15
-    	dim character as char
+    	dim character as chart
     	if Num < 0 THEN 
             dim como as integer
         end if
-    next c
+    next
 End sub
 
-Function Factorial(N As Integer) as integer
+public Function Factorial(N As Integer) as integer
     Dim Fact, Num As Integer
     N = 5
     Num = N
@@ -114,57 +113,46 @@ public class algo{
         
 }
 %%PY
-
 def edadmeses(edad, meses):
-    edad = 5
-    intinput("Ingrese su edad:")
-    meses = edad * 12
-    print("meses = ",meses)
-    #intinput("")
-    """for i = 0 in range():
-    range(1)
-    range(1,2)
-    range(1,2,1)"""
-    for i in [1,2,"h"]:
-        hola = 'c'
-        if 5<6:
-            g = 1
-        elif 10<1:
-            g = 2
-        else
-            h = 1
-            while h<10:
-                h= h+3
-                return 10
-    hola = 2
-    return 10
+	edad = 5
+	intinput("Ingrese su edad:")
+	meses = edad * 12
+	print("meses = ",meses)
+	intinput("")
+	for i in range(1,32,3):
+		hola = 'c'
+		if 5<6:
+			g = 1
+		elif 10<1:
+			g = 2
+		else :
+			g = 22
+		while h<10:
+			h = 1+3
+		hola = 2
+return 10
 
 def saludo():
-    edad = intinput("Ingrese su edad:")
-    meses = edad * 12
-    print("meses = ",meses)
-    intinput("")
-    hola = 2
-    j = 5
+	edad = intinput("Ingrese su edad:")
+	meses = edad * 12
+	print("meses = ",meses)
+	intinput("")
+	hola = 2
+	j = 5
 
 %%PROGRAMA
-
 #include <stdio.h>
 #include <stdlib.h>
-#include "VB.h()"
 #include "VB"
-#include "PY.HOLA()"
+#include "PY"
 #include "JAVA.*"
 #include "JAVA.hola"
 
-// Constantes
 const int constante1 = 10;
 
-// Variables globales
 int Arreglo1[1][4];
 
-void main()
-{
+void main() {
     int base, exp, i, resultado;
 
     clrscr();

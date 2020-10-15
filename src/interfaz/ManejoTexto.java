@@ -27,6 +27,7 @@ public class ManejoTexto {
                 break;
             }
         }
+        PanelPrincipal.lineasVb = iterador;
         for (int i = 1; i < iterador; i++) {
             PanelPrincipal.codigoVb += textoLineas.get(i)+"\n";
         }
@@ -43,6 +44,7 @@ public class ManejoTexto {
                 break;
             }
         }
+        PanelPrincipal.lineasJava = iterador;
         for (int i = 1; i < iterador; i++) {
             PanelPrincipal.codigoJava += textoLineas.get(i)+"\n";
         }
@@ -59,6 +61,7 @@ public class ManejoTexto {
                 break;
             }
         }
+        PanelPrincipal.lineasPython = iterador;
         for (int i = 1; i < iterador; i++) {
             PanelPrincipal.codigoPython += textoLineas.get(i)+"\n";
         }
@@ -69,10 +72,40 @@ public class ManejoTexto {
         }
         iterador = null;
         //------------------------------------------------------------
+        PanelPrincipal.lineasC = textoLineas.size();
         for (int i = 1; i < textoLineas.size(); i++) {
             PanelPrincipal.codigoC += textoLineas.get(i)+"\n";
         }
-      
+  /*      System.out.println(PanelPrincipal.lineasVb);
+        System.out.println(PanelPrincipal.lineasJava);
+        System.out.println(PanelPrincipal.lineasPython);
+        System.out.println(PanelPrincipal.lineasC);
+        int total = PanelPrincipal.lineasC+PanelPrincipal.lineasJava+PanelPrincipal.lineasPython+PanelPrincipal.lineasVb;
+        System.out.println(total+"      -------------------------------------------------TOTAL--------------");
+    */    
     }
+    
+    public void sumarVariablesPython(TablaSimbolos tabla){
+        tabla.getObPython().setContEt(tabla.getObJava().getContEt()+1);
+        tabla.getObPython().setContEtFin(tabla.getObJava().getContEtFin()+1);
+        tabla.getObPython().setContFor(tabla.getObJava().getContFor()+1);
+        tabla.getObPython().setContVars(tabla.getObJava().getContVars()+1);
+        tabla.getObPython().setContWhile(tabla.getObJava().getContWhile()+1);
+    }
+    
+    public void sumarVariablesJava(TablaSimbolos tabla){
+        tabla.getObJava().setContEt(tabla.getObVb().getContEt()+1);
+        tabla.getObJava().setContEtFin(tabla.getObVb().getContEtFin()+1);
+        tabla.getObJava().setContFor(tabla.getObVb().getContFor()+1);
+        tabla.getObJava().setContWhile(tabla.getObVb().getContEtWhile()+1);
+    }
+    
+    public void sumarVariablesC(TablaSimbolos tabla){
+        tabla.getObC().setContEt(tabla.getObPython().getContEt()+1);
+        tabla.getObC().setContEtFin(tabla.getObPython().getContEtFin()+1);
+        tabla.getObC().setContFor(tabla.getObPython().getContFor()+1);
+        tabla.getObC().setContWhile(tabla.getObJava().getContWhile()+1);
+    }
+    
 
 }

@@ -214,6 +214,11 @@ public class ManejoCondiciones {
         py.getCuarpeta().add(new Nodo("GOTO", null, null, etFin, jerarquia));
     }
 
+    public void irEtiquetaFinPY2(ObjetosPYTHON py, int jerarquia, String et) {
+        py.getCuarpeta().add(new Nodo("GOTO", null, null, et, jerarquia));
+    }
+    
+    
     public void irEtiquetaFinC(ObjetosC c, int jerarquia) {
         String etFin = "etFin_" + c.getContEtFin();
         c.getCuarpeta().add(new Nodo("GOTO", null, null, etFin, jerarquia));
@@ -253,6 +258,11 @@ public class ManejoCondiciones {
     
     public void agregarEtiquetaFinPY(ObjetosPYTHON py, int jerarquia){
         String etFin = "etFin_" + py.getContEtFin();
+        py.setContEtFin(py.getContEtFin()+1);
+        py.getCuarpeta().add(new Nodo("ETIQUETA", etFin, null, null, jerarquia));
+    }
+    
+    public void agregarEtiquetaFinPY2(ObjetosPYTHON py, int jerarquia, String etFin){
         py.setContEtFin(py.getContEtFin()+1);
         py.getCuarpeta().add(new Nodo("ETIQUETA", etFin, null, null, jerarquia));
     }

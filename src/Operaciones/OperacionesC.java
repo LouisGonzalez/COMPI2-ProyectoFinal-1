@@ -9,6 +9,7 @@ import ObjetosC.ClasesJava;
 import ObjetosC.Constantes;
 import ObjetosC.VerifObjetos;
 import Tablas.TablaSimbolos;
+import interfaz.PanelPrincipal;
 import java.util.ArrayList;
 import objetos.Arreglo;
 import objetos.Metodo;
@@ -23,16 +24,15 @@ import verificaciones.VerifC;
  */
 public class OperacionesC {
 
- 
     //activa un lenguaje para poder usar sus clases y/o metodos en el lenguaje principal
-    public void activarLenguaje(String lenguaje, TablaSimbolos tabla, String clase) {
+    public void activarLenguaje(String lenguaje, TablaSimbolos tabla, String clase, int fila, int columna) {
         if (lenguaje.equals("JAVA")) {
             if (clase.equals("*")) {
                 for (int i = 0; i < tabla.getObJava().getMisClases().size(); i++) {
                     tabla.getObJava().getMisClases().get(i).setActivado(true);
                 }
             } else {
-                activarClase(tabla.getObJava(), clase);
+                activarClase(tabla.getObJava(), clase, fila, columna);
             }
         } else if (lenguaje.equals("VB")) {
             tabla.getObVb().setActivado(true);
@@ -42,7 +42,7 @@ public class OperacionesC {
     }
 
     //activa una clase JAVA para poder usarla en el lenguaje principal
-    public void activarClase(ObjetosJAVA jv, String clase) {
+    public void activarClase(ObjetosJAVA jv, String clase, int fila, int columna) {
         boolean encontrado = false;
         for (int i = 0; i < jv.getMisClases().size(); i++) {
             if (jv.getMisClases().get(i).getId().equals(clase)) {
@@ -52,7 +52,8 @@ public class OperacionesC {
             }
         }
         if (!encontrado) {
-            System.out.println("No existe ninguna clase con el id: " + clase + " dentro del archivo");
+            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe ninguna clase con el id: " + clase + " dentro del archivo\n";
+
         }
     }
 
@@ -97,13 +98,14 @@ public class OperacionesC {
     }
 
     //agrega una nueva variable a la tabla de C
-    public void agregarNuevaVar(ObjetosC c, String id, String tipoDato, String tipoVar, int nivel, boolean valor, String idClase, Integer dimension) {
+    public void agregarNuevaVar(ObjetosC c, String id, String tipoDato, String tipoVar, int nivel, boolean valor, String idClase, Integer dimension, int fila, int columna) {
         VerifC verif = new VerifC();
         boolean existe = false;
         if (nivel > 0) {
-            existe = verif.verificarExistenciaVar(c, nivel, id);
+            existe = verif.verificarExistenciaVar(c, nivel, id, fila, columna);
             if (existe) {
-                System.out.println("Ya existe una variable con el id: " + id);
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe una variable con el id: " + id + " dentro del archivo C\n";
+
             } else {
                 if (tipoVar.equals("Clase")) {
                     c.getListClases().add(new ClasesJava(id, idClase, nivel));
@@ -116,9 +118,9 @@ public class OperacionesC {
                 }
             }
         } else {
-            existe = verif.verificarVarGlobal(c, id, nivel);
+            existe = verif.verificarVarGlobal(c, id, nivel, fila, columna);
             if (existe) {
-                System.out.println("Ya existe una variable con el id: " + id);
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe una variable con el id: " + id + " dentro del archivo C\n";
             } else {
                 if (tipoVar.equals("Clase")) {
                     c.getListClases().add(new ClasesJava(id, idClase, nivel));
@@ -134,29 +136,30 @@ public class OperacionesC {
     }
 
     //devuelve el tipo de dato de un arreglo
-    public String devolverTipoArreglo(ObjetosC c, String id, int dim, int jerarquia) {
+    public String devolverTipoArreglo(ObjetosC c, String id, int dim, int jerarquia, int fila, int columna) {
         String tipo = "";
         VerifObjetos verif2 = new VerifObjetos();
         if (verif2.verifVector(c, jerarquia, id)) {
             if (c.getListArreglos().get(VerifObjetos.iterador).getDimension() == dim) {
                 tipo = c.getListArreglos().get(VerifObjetos.iterador).getTipo();
             } else {
-                System.out.println("Error en la dimension del arreglo: " + dim);
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Error en la dimension del arreglo: " + dim + "\n";
+
             }
         } else if (verif2.verifVectorGlobal(c, jerarquia, id)) {
             if (c.getListArreglos().get(VerifObjetos.iterador).getDimension() == dim) {
                 tipo = c.getListArreglos().get(VerifObjetos.iterador).getTipo();
             } else {
-                System.out.println("Error en la dimension del arreglo: " + dim);
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Error en la dimension del arreglo: " + dim + "\n";
             }
         } else {
-            System.out.println("Arreglo con id: " + id + " inexistente dentro del archivo.");
+            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Arreglo con id: " + id + " inexistente dentro del archivo.\n";
         }
         return tipo;
     }
 
     //devuelve el tipo de dato de una variable
-    public String devolverTipoVar(ObjetosC c, String id, int jerarquia) {
+    public String devolverTipoVar(ObjetosC c, String id, int jerarquia, int fila, int columna) {
         String tipo = "";
         VerifObjetos verif2 = new VerifObjetos();
         if (verif2.verifIdVar(c, jerarquia, id)) {
@@ -164,13 +167,13 @@ public class OperacionesC {
         } else if (verif2.verifIdVarGlobal(c, jerarquia, id)) {
             tipo = c.getListVariables().get(VerifObjetos.iterador).getTipo();
         } else {
-            System.out.println("Variable: " + id + " inexistente dentro del archivo.");
+            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Variable: " + id + " inexistente dentro del archivo.\n";
         }
         return tipo;
     }
 
     //mediante parametros ddescritos se busca un constructor 
-    public void crearClase(TablaSimbolos tabla, ArrayList<String> posibles, String idClase, String id, int jerarquia) {
+    public void crearClase(TablaSimbolos tabla, ArrayList<String> posibles, String idClase, String id, int jerarquia, int fila, int columna) {
         Integer itClase = null;
         boolean encontrado = false;
         for (int i = 0; i < tabla.getObJava().getMisClases().size(); i++) {
@@ -189,38 +192,45 @@ public class OperacionesC {
                 }
             }
             if (!encontrado) {
-                System.out.println("No existe constructor dentro de la clase: " + idClase + " que cumpla con los parametros que se necesitan");
+                if(!posibles.isEmpty()){
+                    PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe constructor dentro de la clase: " + idClase + " que cumpla con los parametros que se necesitan\n";
+                }
             } else {
-                agregarClase(tabla.getObC(), id, idClase, jerarquia);
+                agregarClase(tabla.getObC(), id, idClase, jerarquia, fila, columna);
             }
         } else {
-            System.out.println("No existe ninguna clase en JAVA con el id: " + idClase);
+            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe ninguna clase en JAVA con el id: " + idClase + "\n";
+
         }
+        
+       
+        
     }
 
-    public void agregarClase(ObjetosC c, String id, String idClase, int jerarquia) {
+   
+    public void agregarClase(ObjetosC c, String id, String idClase, int jerarquia, int fila, int columna) {
         VerifObjetos verif = new VerifObjetos();
         if (jerarquia == 0) {
             if (verif.verifClaseGlobal(c, jerarquia, id)) {
-                System.out.println("Ya existe un variable de tipo clase con id: " + id);
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe un variable de tipo clase con id: " + id + "\n";
             } else if (verif.verifIdConstGlobal(c, jerarquia, id)) {
-                System.out.println("Ya existe un variable de tipo constante con id: " + id);
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe un variable de tipo constante con id: " + id + "\n";
             } else if (verif.verifIdVarGlobal(c, jerarquia, id)) {
-                System.out.println("Ya existe un variable con id: " + id);
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe un variable de tipo constante con id: " + id + "\n";
             } else if (verif.verifVectorGlobal(c, jerarquia, id)) {
-                System.out.println("Ya existe un arreglo con id: " + id);
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe un arreglo con id: " + id + "\n";
             } else {
                 c.getListClases().add(new ClasesJava(id, idClase, jerarquia));
             }
         } else {
             if (verif.verifClase(c, jerarquia, id)) {
-                System.out.println("Ya existe un variable de tipo clase dentro del main con id: " + id);
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe un variable de tipo clase dentro del main con id: " + id+ "\n";
             } else if (verif.verifIdConst(c, jerarquia, id)) {
-                System.out.println("Ya existe un variable de tipo constante dentro del main con id: " + id);
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe un variable de tipo constante dentro del main con id: " + id + "\n";
             } else if (verif.verifIdVar(c, jerarquia, id)) {
-                System.out.println("Ya existe un variable dentro del main con id: " + id);
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe un variable dentro del main con id: " + id+ "\n";
             } else if (verif.verifVector(c, jerarquia, id)) {
-                System.out.println("Ya existe un arreglo dentro del main con id: " + id);
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe un arreglo dentro del main con id: " + id + "\n";
             } else {
                 c.getListClases().add(new ClasesJava(id, idClase, jerarquia));
             }

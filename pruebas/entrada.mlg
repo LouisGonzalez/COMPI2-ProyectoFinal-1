@@ -1,13 +1,13 @@
 %%VB
 
-Public Sub Saludo()
 
+Public Sub Saludo()
     Print("Segundo Proyecto de Compiladores 2")
 
 End Sub 
 
 
-Function Factorial(N As Integer) as integer
+public Function Factorial(N As Integer) as integer
 
     Dim Fact, Num As Integer
     Num = N
@@ -24,6 +24,10 @@ Function Factorial(N As Integer) as integer
 End Function
 
 %%JAVA
+
+
+
+
 public class algo {
 
 	public int holaMundo() {
@@ -32,6 +36,7 @@ public class algo {
 }
 
 %%PY
+
 
 def edadmeses(edad, meses):
 	edad = intinput("Ingrese su edad:")
@@ -42,6 +47,7 @@ def edadmeses(edad, meses):
 
 
 %%PROGRAMA
+
 
 #include <stdio.h>
 #include <stdlib.h>

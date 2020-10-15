@@ -23,7 +23,8 @@ public class main {
         for (int i = 0; i < dats.length; i++) {
             System.out.println(dats[i]);
         }
-     
+           System.out.println(-2.6);
+  
     }
     
 }
