@@ -4,9 +4,11 @@
  * and open the template in the editor.
  */
 package interfaz;
+
 import Tablas.TablaSimbolos;
 import cuartetos.CreacionCodigo;
 import cuartetos.Nodo;
+import ejecutable.Tabla;
 import gramaticaC.AnalizadorLexico4;
 import gramaticaC.SintaxC;
 import gramaticaJAVA.AnalizadorLexico;
@@ -37,7 +39,7 @@ public class PanelPrincipal extends javax.swing.JPanel {
     public static int lineasPython = 0;
     public static int lineasJava = 0;
     public static int lineasC = 0;
-    
+
     private String codigo = "";
     private ArrayList<Nodo> cuarpeta = new ArrayList<>();
     private CreacionCodigo creacion = new CreacionCodigo();
@@ -46,12 +48,12 @@ public class PanelPrincipal extends javax.swing.JPanel {
     public static String codigoJava = "";
     public static String codigoVb = "";
     public static String codigoC = "";
-    
+
     public static String errores = "";
 
     private ArrayList<String> textos = new ArrayList<>();
     private int itTab;
-    
+
     /**
      * Creates new form PanelPrincipal
      */
@@ -60,7 +62,7 @@ public class PanelPrincipal extends javax.swing.JPanel {
         txtTexto.setText(texto);
         this.textos = textos;
         this.itTab = itTab;
-        if(textos.size() <= itTab){
+        if (textos.size() <= itTab) {
             textos.add(texto);
         } else {
             textos.set(itTab, texto);
@@ -149,15 +151,15 @@ public class PanelPrincipal extends javax.swing.JPanel {
         textos.set(itTab, txtTexto.getText());
         divTexto.manejarTexto(tabla, txtTexto.getText());
         AnalizadorLexico lexer = new AnalizadorLexico(new StringReader(codigoJava));
-        
+
         AnalizadorLexico2 lexer2 = new AnalizadorLexico2(new StringReader(codigoPython));
 
         AnalizadorLexico3 lexer3 = new AnalizadorLexico3(new StringReader(codigoVb));
-        
+
         AnalizadorLexico4 lexer4 = new AnalizadorLexico4(new StringReader(codigoC));
         try {
             totalLineas = 1;
-            new SintaxVB(lexer3, tabla.getObVb(), tabla).parse();
+            new SintaxVB(lexer3, tabla).parse();
             totalLineas = lineasVb;
             divTexto.sumarVariablesJava(tabla);
             new SintaxJAVA(lexer, tabla).parse();
@@ -168,7 +170,7 @@ public class PanelPrincipal extends javax.swing.JPanel {
             divTexto.sumarVariablesC(tabla);
             new SintaxC(lexer4, tabla).parse();
             //CUARPETA VB
-            for (int i = 0; i < tabla.getObVb().getCuarpeta().size(); i++) {
+            /*  for (int i = 0; i < tabla.getObVb().getCuarpeta().size(); i++) {
                 System.out.println(tabla.getObVb().getCuarpeta().get(i).getOperacion()+" - "+tabla.getObVb().getCuarpeta().get(i).getDato1()+ " - "+tabla.getObVb().getCuarpeta().get(i).getDato2()+" - "+tabla.getObVb().getCuarpeta().get(i).getVar()+" - "+tabla.getObVb().getCuarpeta().get(i).getNivel());
             }
             //CUARPETA PYTHON
@@ -183,11 +185,22 @@ public class PanelPrincipal extends javax.swing.JPanel {
             //CUARPETA C
             for (int i = 0; i < tabla.getObC().getCuarpeta().size(); i++) {
                 System.out.println(tabla.getObC().getCuarpeta().get(i).getOperacion()+" - "+tabla.getObC().getCuarpeta().get(i).getDato1()+ " - "+tabla.getObC().getCuarpeta().get(i).getDato2()+" - "+tabla.getObC().getCuarpeta().get(i).getVar()+" - "+tabla.getObC().getCuarpeta().get(i).getNivel());
+            }*/
+
+         //----------------------------------------------------------------------------------------------------
+            
+            //MUEESTRA LA TABLA DEW SIMBOLOS
+           for (int i = 0; i < tabla.getTablaExe().size(); i++) {
+                Tabla exe = tabla.getTablaExe().get(i);
+            //  if (exe.getLenguaje().equals("JV")) {
+                    System.out.println(exe.getId() + " - " + exe.getTipo() + " - " + exe.getPosMemoria() + " - " + exe.getAmbito() + " - " + exe.getSize() + " - " + exe.getRol() + " - " + exe.getLenguaje() + " - "+exe.getListParametros());
+              // }
             }
+
             creacion.unificarCuarpetas(cuarpeta, tabla);
             codigo = creacion.crearCodigo(cuarpeta);
-          //  if(errores.equals("")){
-                txt3d.setText(codigo);
+            //  if(errores.equals("")){
+            txt3d.setText(codigo);
             /*} else {
                 JOptionPane.showMessageDialog(null, "Error en la gramatica, por favor verifica la ventana de errores");
            // }*/
@@ -201,7 +214,7 @@ public class PanelPrincipal extends javax.swing.JPanel {
         error.setVisible(true);
     }//GEN-LAST:event_btnErroresActionPerformed
 
-    public void reiniciarDatos(){
+    public void reiniciarDatos() {
         totalLineas = 0;
         lineasC = 0;
         lineasJava = 0;
@@ -216,7 +229,7 @@ public class PanelPrincipal extends javax.swing.JPanel {
         errores = "";
         txt3d.setText("");
     }
-    
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnErrores;

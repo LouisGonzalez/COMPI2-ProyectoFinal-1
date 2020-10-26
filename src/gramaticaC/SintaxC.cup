@@ -10,6 +10,7 @@ import manejoCuartetos.*;
 import objetosApoyo.*;
 import cuartetos.*;
 import interfaz.*;
+import manejoExe.*;
 
 parser code {:
 
@@ -40,8 +41,14 @@ parser code {:
     public ArrayList<ArrayList<Nodo>> pilaFalsas = new ArrayList<>();
     public ArrayList<ArrayList<Nodo>> pilaCuarpeta = new ArrayList<>();
     public ArrayList<Boolean> usoPila = new ArrayList<>();
-
     public boolean auxFor = false;
+
+    /*---------------------------------------- CODIGO EJECUTABLE ------------------------------------------------*/
+
+    public ArrayList<String> dimensiones = new ArrayList<>();
+    public String idArreglo = "";
+    public String claseAux = "";
+    public ExeC exe = new ExeC();
 
     public SintaxC(AnalizadorLexico4 lexer, TablaSimbolos tabla){
         super(lexer);
@@ -74,21 +81,23 @@ parser code {:
 
     non terminal String METODOS, TEXTO, TEXTO2, JAVA_CLASES, TIPO_VAR, MODULOS, TIPO_VAR_FOR, OP;
     
-    non terminal Boolean  VECTOR, VECTOR_OP, METODOS_MAIN;
+    non terminal Boolean  METODOS_MAIN;
 
-    non terminal Integer DIM, DIM2;
+    non terminal Integer DIM_ASIG, DIM_ASIG2;
 
-    non terminal NodoOperacion OPERACION, VAR, VALOR;
+    non terminal NodoArreglo DIM, DIM2;
+
+    non terminal NodoOperacion OPERACION, VAR, VALOR, VECTOR_OP, VECTOR;
 
     non terminal NodoOperacion VAR_FOR;
 
     non terminal ArrayList<Nodo> BOOLEAN, EXT;
 
-    non terminal NodoBoolean OP_COND, VAL_COND, METODO_COND;
+    non terminal NodoBoolean OP_COND, VAL_COND, METODO_COND, VECTOR_COND;
 
-    non terminal String VECTOR_COND, VAR_LECTURA, VAR_CASE;
+    non terminal String VAR_LECTURA, VAR_CASE;
 
-    non terminal ArrayList<String> PARAM, PARAM2, CONSTRUCTOR;
+    non terminal ArrayList<NodoBoolean> PARAM, PARAM2, PARAM_METODOS, CONSTRUCTOR;
 
     precedence left mas, menos;
     precedence left por, div, modulo;
@@ -98,7 +107,7 @@ parser code {:
 
     start with INICIO;
 
-    INICIO ::= ENTER2 LIBRERIAS VARIABLES MAIN
+    INICIO ::= ENTER2 LIBRERIAS {: parser.manejoc.inicializaciones(parser.tabla); :} VARIABLES MAIN
 ;
     LIBRERIAS ::= LIBRERIAS numeral condInclude comilla visual:a comilla {: parser.op.activarLenguaje(a.toString(), parser.tabla, "", aleft+PanelPrincipal.totalLineas, aright); :} ENTER2 
     |             LIBRERIAS numeral condInclude comilla python:a comilla {: parser.op.activarLenguaje(a.toString(), parser.tabla, "", aleft+PanelPrincipal.totalLineas, aright); :} ENTER2 
@@ -119,60 +128,220 @@ parser code {:
     |               
     |             VARIABLES error
 ;
-    CONSTANTES ::= tipoConst TIPO_VAR:a {: parser.tipoActual = a; :} id:b igual OPERACION:c puntoComa {: parser.manejoc.crearVariable(parser.tabla.getObC(), b.toString(), a);   parser.op.agregarNuevaVar(parser.tabla.getObC(), b.toString(), a, "Constante", parser.jerarquia, true, "", null, bleft+PanelPrincipal.totalLineas, bright); :} ENTER2
-;
-    VALOR ::= igual OPERACION:a {: RESULT=a; :}
-    |        {: RESULT=null; :}
-;
-    ASIGNACIONES ::= id:a igual {: parser.tipoActual = parser.verif.devolverTipoVar(parser.tabla.getObC(), parser.jerarquia, a.toString(), aleft+PanelPrincipal.totalLineas, aright); :} OPERACION:b puntoComa {:  parser.manejoc.asignarValor(parser.tabla.getObC(), a.toString(), b.getId());   parser.tabla.getObC().getListVariables().get(VerifObjetos.iterador).getListAsignaciones().add(parser.jerarquia); parser.tabla.getObC().getListVariables().get(VerifObjetos.iterador).setValor(true);       :} ENTER2
-    |                VECTOR:a igual OPERACION:b puntoComa {: if(a && b.getValor()){ /*VER LO DE LAS ASIGNACIONES*/ } else { System.out.println("no es posible asignar en el arreglo"); }     :} ENTER2
-;
-    VARS ::= TIPO_VAR:a id:b  {: parser.tipoActual=a; :} VALOR:c {: parser.manejoc.crearVariableConValor(parser.tabla.getObC(), b.toString(), a, c);    if(c!=null){ if(c.getValor()){parser.op.agregarNuevaVar(parser.tabla.getObC(), b.toString(), a, "Variable", parser.jerarquia, c.getValor(), "", null, bleft+PanelPrincipal.totalLineas, bright); } else { System.out.println("soy falso"); } } else { parser.op.agregarNuevaVar(parser.tabla.getObC(), b.toString(), a, "Variable", parser.jerarquia, false, "", null, bleft+PanelPrincipal.totalLineas, bright); }  :} VARS2 puntoComa ENTER2
-    |        TIPO_VAR:a id:b DIM:c {: parser.tipoActual=a; if(a!=null){ parser.op.agregarNuevaVar(parser.tabla.getObC(), b.toString(), a, "Arreglo", parser.jerarquia, true, "", c, bleft+PanelPrincipal.totalLineas, bright); } :} VARS2 puntoComa ENTER2
-;
-    VARS2 ::= coma id:a VALOR:b {: parser.manejoc.crearVariableConValor(parser.tabla.getObC(), a.toString(), parser.tipoActual, b); if(b != null){ if(b.getValor()){ parser.op.agregarNuevaVar(parser.tabla.getObC(), a.toString(), parser.tipoActual, "Variable", parser.jerarquia, b.getValor(), "", null, aleft+PanelPrincipal.totalLineas, aright); } } else { parser.op.agregarNuevaVar(parser.tabla.getObC(), a.toString(), parser.tipoActual, "Variable", parser.jerarquia, false, "", null, aleft+PanelPrincipal.totalLineas, aright); }  :} VARS2
-    |         coma id:a DIM:b {: if(b != null){ parser.op.agregarNuevaVar(parser.tabla.getObC(), a.toString(), parser.tipoActual, "Arreglo", parser.jerarquia, true, "", b, aleft+PanelPrincipal.totalLineas, aright); } :}
-    |
-;
-    TIPO_VAR ::= tipoInteger {: RESULT="Integer"; :}
-    |            tipoChar {: RESULT="Char"; :}
-    |            tipoFloat {: RESULT="Float"; :}
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    CONSTANTES ::= tipoConst TIPO_VAR:a                 {:  parser.tipoActual = a; :} 
+                   id:b igual OPERACION:c puntoComa     {:  parser.exe.agregarVariable(parser.tabla, b.toString(), 1, false, a);
+                                                            parser.manejoc.crearConstante(parser.tabla, b.toString(), c.getId());
+                                                            parser.op.agregarNuevaVar(parser.tabla.getObC(), b.toString(), a, "Constante", parser.jerarquia, true, "", null, bleft+PanelPrincipal.totalLineas, bright, parser.dimensiones); :} 
+                   ENTER2
 ;
 
-    OPERACION ::= parentesis_a OPERACION:a parentesis_b     {: RESULT = a; :}
-    |             OPERACION:a mas OPERACION:b               {:  String id = parser.manejoc.agregarOperacion(parser.tabla.getObC(), a.getId(), b.getId(), "suma");  if(a.getValor() && b.getValor()){ RESULT = new NodoOperacion(id, true);  } else { RESULT=new NodoOperacion(id, false); }      :}
-    |             OPERACION:a menos OPERACION:b             {: String id = parser.manejoc.agregarOperacion(parser.tabla.getObC(), a.getId(), b.getId(), "resta"); if(a.getValor() && b.getValor()){ RESULT = new NodoOperacion(id, true);  } else { RESULT=new NodoOperacion(id, false); }  :}
-    |             OPERACION:a por OPERACION:b               {: String id = parser.manejoc.agregarOperacion(parser.tabla.getObC(), a.getId(), b.getId(), "mult"); if(a.getValor() && b.getValor()){ RESULT = new NodoOperacion(id, true);  } else { RESULT=new NodoOperacion(id, false); }  :}
-    |             OPERACION:a div OPERACION:b               {:  String id = parser.manejoc.agregarOperacion(parser.tabla.getObC(), a.getId(), b.getId(), "div"); if(a.getValor() && b.getValor()){ RESULT = new NodoOperacion(id, true);  } else { RESULT=new NodoOperacion(id, false); }   :}
-    |             OPERACION:a modulo OPERACION:b            {: String id = parser.manejoc.agregarOperacion(parser.tabla.getObC(), a.getId(), b.getId(), "modulo"); if(a.getValor() && b.getValor()){ RESULT = new NodoOperacion(id, true);  } else { RESULT=new NodoOperacion(id, false); }   :}
-    |             VAR:a                                     {:  RESULT = a; :}
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    VALOR ::= igual OPERACION:a                         {: RESULT=a; :}
+    |                                                   {: RESULT=null; :}
 ;
-    VAR ::= comillaSimple:a id:b comillaSimple:c            {:  RESULT = new NodoOperacion(a.toString()+b.toString()+c.toString(), true);   :}
-    |       comillaSimple:a numero:b comillaSimple:c        {:  RESULT = new NodoOperacion(a.toString()+b.toString()+c.toString(), true);   :}
-    |       numero:a                                        {: Boolean valor = parser.verif.verificarNumero(parser.tabla.getObC(), "Integer", parser.tipoActual, a.toString(), aleft+PanelPrincipal.totalLineas, aright); RESULT = new NodoOperacion(a.toString(), valor); :}
-    |       numero:a punto:b numero:c                       {: Boolean valor = parser.verif.verificarNumero(parser.tabla.getObC(), "Float", parser.tipoActual, a.toString()+b.toString()+c.toString(), aleft+PanelPrincipal.totalLineas, aright); RESULT = new NodoOperacion(a.toString()+b.toString()+c.toString(), valor); :} 
-    |       VECTOR_OP:a                                     {: /*RESULT=a;*/ :}
-    |       METODOS:a                                       {: String id = parser.manejoc.operacionMetodo(parser.tabla.getObC(), a, parser.contParam); parser.contParam = 0; parser.idClase2 = ""; RESULT = new NodoOperacion(id, true);  :}
-    |       id:a                                            {: Boolean valor = parser.verif.verificarIdOperacion(parser.tabla.getObC(), a.toString(), parser.jerarquia, parser.tipoActual, aleft+PanelPrincipal.totalLineas, aright);  RESULT = new NodoOperacion(a.toString(), valor); :}
-    |       menos:b numero:a                                {: Boolean valor = parser.verif.verificarNumero(parser.tabla.getObC(), "Integer", parser.tipoActual, a.toString(), aleft+PanelPrincipal.totalLineas, aright); RESULT = new NodoOperacion(b.toString()+a.toString(),valor); :}
-    |       menos:d numero:a punto:b numero:c               {: Boolean valor = parser.verif.verificarNumero(parser.tabla.getObC(), "Float", parser.tipoActual, a.toString()+b.toString()+c.toString(), aleft+PanelPrincipal.totalLineas, aright); RESULT = new NodoOperacion(d.toString()+a.toString()+b.toString()+c.toString(), valor); :}
-    |       menos:b VECTOR_OP:a                             {: /*RESULT=a;*/ :}
-    |       menos:b METODOS:a                               {: String id = parser.manejoc.operacionMetodo2(parser.tabla.getObC(), a, parser.contParam); parser.contParam = 0; parser.idClase2 = "";  RESULT = new NodoOperacion(id, true); :}
-    |       menos:b id:a                                    {: Boolean valor = parser.verif.verificarIdOperacion(parser.tabla.getObC(), a.toString(), parser.jerarquia, parser.tipoActual, aleft+PanelPrincipal.totalLineas, aright); RESULT = new NodoOperacion(b.toString()+a.toString(), valor); :}
-    |       menos:a comillaSimple:b id:c comillaSimple:d    {:  RESULT = new NodoOperacion(a.toString() + b.toString() + c.toString() + d.toString(), true);   :}
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    ASIGNACIONES ::= id:a igual                             {:  parser.tipoActual = parser.verif.devolverTipoVar(parser.tabla.getObC(), parser.jerarquia, a.toString(), aleft+PanelPrincipal.totalLineas, aright); :} 
+                     OPERACION:b puntoComa                  {:  parser.manejoc.asignarValor(parser.tabla, a.toString(), b.getId());   
+                                                                parser.tabla.getObC().getListVariables().get(VerifObjetos.iterador).getListAsignaciones().add(parser.jerarquia); 
+                                                                parser.tabla.getObC().getListVariables().get(VerifObjetos.iterador).setValor(true);       :} 
+                     ENTER2
+    |                VECTOR:a igual OPERACION:b puntoComa   {:  if(a.getValor() && b.getValor()){ 
+                                                                    parser.manejoc.asignarValorNodo(parser.tabla, a.getId(), b.getId()); 
+                                                                } else { 
+                                                                    System.out.println("no es posible asignar en el arreglo"); 
+                                                                }     :} 
+                     ENTER2
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    VARS ::= TIPO_VAR:a id:b                                {:  parser.tipoActual = a; 
+                                                                parser.exe.agregarVariable(parser.tabla, b.toString(), 1, false, a); :} 
+             VALOR:c                                        {:  parser.manejoc.crearVariableConValor(parser.tabla, b.toString(), a, c);    
+                                                                if(c!=null){ 
+                                                                    if(c.getValor()){
+                                                                        parser.op.agregarNuevaVar(parser.tabla.getObC(), b.toString(), a, "Variable", parser.jerarquia, c.getValor(), "", null, bleft+PanelPrincipal.totalLineas, bright, parser.dimensiones); 
+                                                                    } else { 
+                                                                        System.out.println("soy falso"); 
+                                                                    } 
+                                                                } else { 
+                                                                    parser.op.agregarNuevaVar(parser.tabla.getObC(), b.toString(), a, "Variable", parser.jerarquia, false, "", null, bleft+PanelPrincipal.totalLineas, bright, parser.dimensiones); 
+                                                                }  :} 
+             VARS2 puntoComa ENTER2
+    |        TIPO_VAR:a id:b DIM_ASIG:c                     {:  parser.tipoActual=a; 
+                                                                if(c!=null){
+                                                                    int size = parser.manejoc.definirSize(parser.tabla, parser.dimensiones, b.toString());
+                                                                    parser.exe.agregarVariable(parser.tabla, b.toString(), size, true, a);
+                                                                    parser.op.agregarNuevaVar(parser.tabla.getObC(), b.toString(), a, "Arreglo", parser.jerarquia, true, "", c, bleft+PanelPrincipal.totalLineas, bright, parser.dimensiones); 
+                                                                } :} 
+             VARS2 puntoComa ENTER2
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    VARS2 ::= coma id:a VALOR:b                             {:  parser.manejoc.crearVariableConValor(parser.tabla, a.toString(), parser.tipoActual, b); 
+                                                                parser.exe.agregarVariable(parser.tabla, a.toString(), 1, false, parser.tipoActual);
+                                                                if(b != null){ 
+                                                                    if(b.getValor()){ 
+                                                                        parser.op.agregarNuevaVar(parser.tabla.getObC(), a.toString(), parser.tipoActual, "Variable", parser.jerarquia, b.getValor(), "", null, aleft+PanelPrincipal.totalLineas, aright, parser.dimensiones); 
+                                                                    } 
+                                                                } else { 
+                                                                    parser.op.agregarNuevaVar(parser.tabla.getObC(), a.toString(), parser.tipoActual, "Variable", parser.jerarquia, false, "", null, aleft+PanelPrincipal.totalLineas, aright, parser.dimensiones); 
+                                                                }  :} 
+              VARS2
+    |         coma id:a DIM_ASIG:b                          {:  if(b != null){ 
+                                                                    int size = parser.manejoc.definirSize(parser.tabla, parser.dimensiones, a.toString());
+                                                                    parser.exe.agregarVariable(parser.tabla, a.toString(), size, true, parser.tipoActual);
+                                                                    parser.op.agregarNuevaVar(parser.tabla.getObC(), a.toString(), parser.tipoActual, "Arreglo", parser.jerarquia, true, "", b, aleft+PanelPrincipal.totalLineas, aright, parser.dimensiones); 
+                                                                } :}
+    |
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    TIPO_VAR ::= tipoInteger            {: RESULT="Integer"; :}
+    |            tipoChar               {: RESULT="Char"; :}
+    |            tipoFloat              {: RESULT="Float"; :}
+;
+
+    OPERACION ::= parentesis_a OPERACION:a parentesis_b         {:  RESULT = a; :}
+    |             OPERACION:a mas OPERACION:b                   {:  String id = parser.manejoc.agregarOperacion(parser.tabla.getObC(), a.getId(), b.getId(), "suma");  if(a.getValor() && b.getValor()){ RESULT = new NodoOperacion(id, true);  } else { RESULT=new NodoOperacion(id, false); }      :}
+    |             OPERACION:a menos OPERACION:b                 {:  String id = parser.manejoc.agregarOperacion(parser.tabla.getObC(), a.getId(), b.getId(), "resta"); if(a.getValor() && b.getValor()){ RESULT = new NodoOperacion(id, true);  } else { RESULT=new NodoOperacion(id, false); }  :}
+    |             OPERACION:a por OPERACION:b                   {:  String id = parser.manejoc.agregarOperacion(parser.tabla.getObC(), a.getId(), b.getId(), "mult"); if(a.getValor() && b.getValor()){ RESULT = new NodoOperacion(id, true);  } else { RESULT=new NodoOperacion(id, false); }  :}
+    |             OPERACION:a div OPERACION:b                   {:  String id = parser.manejoc.agregarOperacion(parser.tabla.getObC(), a.getId(), b.getId(), "div"); if(a.getValor() && b.getValor()){ RESULT = new NodoOperacion(id, true);  } else { RESULT=new NodoOperacion(id, false); }   :}
+    |             OPERACION:a modulo OPERACION:b                {:  String id = parser.manejoc.agregarOperacion(parser.tabla.getObC(), a.getId(), b.getId(), "modulo"); if(a.getValor() && b.getValor()){ RESULT = new NodoOperacion(id, true);  } else { RESULT=new NodoOperacion(id, false); }   :}
+    |             VAR:a                                         {:  RESULT = a; :}
+;
+    VAR ::= comillaSimple:a id:b comillaSimple:c                {:  RESULT = new NodoOperacion(a.toString()+b.toString()+c.toString(), true);   :}
+    |       comillaSimple:a numero:b comillaSimple:c            {:  RESULT = new NodoOperacion(a.toString()+b.toString()+c.toString(), true);   :}
+    |       numero:a                                            {:  Boolean valor = parser.verif.verificarNumero(parser.tabla.getObC(), "Integer", parser.tipoActual, a.toString(), aleft+PanelPrincipal.totalLineas, aright); RESULT = new NodoOperacion(a.toString(), valor); :}
+    |       numero:a punto:b numero:c                           {:  Boolean valor = parser.verif.verificarNumero(parser.tabla.getObC(), "Float", parser.tipoActual, a.toString()+b.toString()+c.toString(), aleft+PanelPrincipal.totalLineas, aright); RESULT = new NodoOperacion(a.toString()+b.toString()+c.toString(), valor); :} 
+    |       VECTOR_OP:a                                         {:  RESULT=a; :}
+    |       METODOS:a                                           {:  parser.contParam = 0; 
+                                                                    parser.idClase2 = ""; 
+                                                                    RESULT = new NodoOperacion(a, true);  :}
+    |       id:a                                                {:  Boolean valor = parser.verif.verificarIdOperacion(parser.tabla.getObC(), a.toString(), parser.jerarquia, parser.tipoActual, aleft+PanelPrincipal.totalLineas, aright);  
+                                                                    String et = parser.manejoc.etiquetaId(parser.tabla, a.toString());
+                                                                    RESULT = new NodoOperacion(et, valor); :}
+    |       menos:b numero:a                                    {:  Boolean valor = parser.verif.verificarNumero(parser.tabla.getObC(), "Integer", parser.tipoActual, a.toString(), aleft+PanelPrincipal.totalLineas, aright); RESULT = new NodoOperacion(b.toString()+a.toString(),valor); :}
+    |       menos:d numero:a punto:b numero:c                   {:  Boolean valor = parser.verif.verificarNumero(parser.tabla.getObC(), "Float", parser.tipoActual, a.toString()+b.toString()+c.toString(), aleft+PanelPrincipal.totalLineas, aright); RESULT = new NodoOperacion(d.toString()+a.toString()+b.toString()+c.toString(), valor); :}
+    |       menos:b VECTOR_OP:a                                 {:  String t = parser.manejoc.etiquetaNegativa(parser.tabla, a.getId());
+                                                                    RESULT = new NodoOperacion(b.toString()+t, a.getValor()); :}
+    |       menos:b METODOS:a                                   {:  parser.contParam = 0; 
+                                                                    parser.idClase2 = "";  
+                                                                    RESULT = new NodoOperacion("-"+a, true); :}
+    |       menos:b id:a                                        {:  Boolean valor = parser.verif.verificarIdOperacion(parser.tabla.getObC(), a.toString(), parser.jerarquia, parser.tipoActual, aleft+PanelPrincipal.totalLineas, aright); 
+                                                                    String et = parser.manejoc.etiquetaId(parser.tabla, a.toString());        
+                                                                    RESULT = new NodoOperacion(b.toString()+et, valor); :}
+    |       menos:a comillaSimple:b id:c comillaSimple:d        {:  RESULT = new NodoOperacion(a.toString() + b.toString() + c.toString() + d.toString(), true);   :}
     |       menos:a comillaSimple:b numero:c comillaSimple:d    {:  RESULT = new NodoOperacion(a.toString() + b.toString() + c.toString() + d.toString(), true);   :}
 ;
-    VECTOR ::= id:a {:  parser.tipoActual="Integer";  :} DIM:b {:  if(parser.verif.verifExistenciaArreglo(parser.tabla.getObC(), parser.jerarquia, a.toString())){ parser.tipoActual = parser.tabla.getObC().getListArreglos().get(VerifObjetos.iterador).getTipo(); RESULT=true; } else {  RESULT=false; }  :}
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    VECTOR ::= id:a                             {:  parser.tipoActual="Integer";
+                                                    parser.idArreglo = a.toString();  :} 
+               DIM:b                            {:  String posStack = parser.manejoc.encontrarNodoArreglo(parser.tabla, b.getEtiqueta(), a.toString());
+                                                    boolean valor = false;
+                                                    if(parser.verif.verifExistenciaArreglo(parser.tabla.getObC(), parser.jerarquia, a.toString())){ 
+                                                        parser.tipoActual = parser.tabla.getObC().getListArreglos().get(VerifObjetos.iterador).getTipo(); 
+                                                        valor = true; 
+                                                    } else {  
+                                                        valor = false; 
+                                                    }  
+                                                    RESULT = new NodoOperacion(posStack, valor); :}
 ;
-    VECTOR_OP ::= id:a {: parser.auxTipo = parser.tipoActual; parser.tipoActual = "Integer"; :} DIM:b {: parser.tipoActual = parser.auxTipo; parser.auxTipo = ""; if(b != null){ RESULT=parser.verif.verifVectorOperacion(parser.tabla.getObC(), a.toString(), b, parser.jerarquia, parser.tipoActual, aleft+PanelPrincipal.totalLineas, aright); }  :}
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    VECTOR_OP ::= id:a                          {:  parser.auxTipo = parser.tipoActual; 
+                                                    parser.tipoActual = "Integer";
+                                                    parser.idArreglo = a.toString(); :} 
+                  DIM:b                         {:  parser.tipoActual = parser.auxTipo; 
+                                                    parser.auxTipo = ""; 
+                                                    if(b != null){ 
+                                                        String et = parser.manejoc.etiquetaArreglo(parser.tabla, b.getEtiqueta(), a.toString());
+                                                        Boolean val = parser.verif.verifVectorOperacion(parser.tabla.getObC(), a.toString(), b.getSize(), parser.jerarquia, parser.tipoActual, aleft+PanelPrincipal.totalLineas, aright); 
+                                                        RESULT = new NodoOperacion(et, val);
+                                                    } else {
+                                                        RESULT = new NodoOperacion("", null);    
+                                                    }  :}
 ;
-    DIM ::= DIM2:a agrupacion_a OPERACION:b agrupacion_b {: if(b.getValor()!= null){ if(b.getValor()){Integer suma = a + 1; RESULT=suma;} else { RESULT=null; } } else { RESULT=null; } :}
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    VECTOR_COND ::= id:a                        {:  parser.idArreglo = a.toString(); :} 
+                    DIM:b                       {:  String tip = parser.op.devolverTipoArreglo(parser.tabla.getObC(), a.toString(), b.getSize(), parser.jerarquia, aleft+PanelPrincipal.totalLineas, aright);
+                                                    String et = "";
+                                                    if(b != null){
+                                                        et = parser.manejoc.etiquetaArreglo(parser.tabla, b.getEtiqueta(), a.toString());
+                                                    }
+                                                    RESULT = new NodoBoolean(tip, et); :}
 ;
-    DIM2 ::= DIM2:a agrupacion_a  OPERACION:b agrupacion_b {: if(b.getValor() != null){ if(b.getValor()){ Integer suma = a + 1; RESULT=suma; } else { RESULT=null; } } else { RESULT=null; } :}
-    | {: RESULT = 0; :}
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    DIM ::= DIM2:a agrupacion_a OPERACION:b agrupacion_b        {:  if(b.getValor()!= null){ 
+                                                                        if(b.getValor()){
+                                                                            Integer suma = a.getSize() + 1; 
+                                                                            String et = parser.manejoc.acumularSuma(parser.tabla, parser.idArreglo, suma, b.getId(), a.getEtiqueta());
+                                                                            RESULT = new NodoArreglo(suma, et);
+                                                                        } else { 
+                                                                            RESULT = null; 
+                                                                        } 
+                                                                    } else {
+                                                                        RESULT = null; 
+                                                                    } :}
 ;
-    MAIN ::= tipoVoid main parentesis_a parentesis_b ENTER2 {: parser.manejoc.crearMain(parser.tabla.getObC());  parser.jerarquia++; :} llave_a ENTER2 CUERPO_MAIN llave_b {: parser.manejoc.finMain(parser.tabla.getObC()); parser.jerarquia--; :} ENTER2
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    DIM2 ::= DIM2:a agrupacion_a  OPERACION:b agrupacion_b      {:  if(b.getValor() != null){ 
+                                                                        if(b.getValor()){ 
+                                                                            Integer suma = a.getSize() + 1; 
+                                                                            String et = parser.manejoc.acumularSuma(parser.tabla, parser.idArreglo, suma, b.getId(), a.getEtiqueta());    
+                                                                            RESULT = new NodoArreglo(suma, et); 
+                                                                        } else {
+                                                                            RESULT=null; 
+                                                                        } 
+                                                                    } else { 
+                                                                        RESULT=null; 
+                                                                    } :}
+    |                                                           {: RESULT = new NodoArreglo(0, ""); :}
 ;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    DIM_ASIG ::= DIM_ASIG2:a agrupacion_a OPERACION:b agrupacion_b         {: Integer suma = a + 1; 
+                                                                           parser.dimensiones.add(b.getId());     
+                                                                           RESULT=suma; :}
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    DIM_ASIG2 ::= DIM_ASIG2:a agrupacion_a  OPERACION:b agrupacion_b       {:   Integer suma = a + 1; 
+                                                                                parser.dimensiones.add(b.getId());
+                                                                                RESULT=suma; :}
+    |                                                                       {:  RESULT = 0; :}
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    MAIN ::= tipoVoid main parentesis_a parentesis_b ENTER2         {:  parser.manejoc.crearMain(parser.tabla.getObC());  
+                                                                        parser.jerarquia++; :} 
+             llave_a ENTER2 CUERPO_MAIN llave_b                     {:  parser.manejoc.finMain(parser.tabla.getObC()); 
+                                                                        parser.jerarquia--; :} 
+             ENTER2
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
     CUERPO_MAIN ::= CUERPO_MAIN VARIABLES_MAIN
     |               CUERPO_MAIN IF
     |               CUERPO_MAIN FOR
@@ -188,168 +357,497 @@ parser code {:
     |
     |               CUERPO_MAIN error
 ;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
     VARIABLES_MAIN ::= ASIGNACIONES
     |                 VARS
     |                 METODOS_MAIN 
     |                 CLASES   
 ;
-    METODOS ::= python:a punto id:b parentesis_a  {: parser.len=a.toString(); parser.verif.verificarMetodoOp(parser.tabla, parser.tipoActual, a.toString(), "", parser.jerarquia, b.toString(), bleft+PanelPrincipal.totalLineas, bright);  :}  PARAMETROS parentesis_b {:  RESULT = "PY_"+b.toString();    :}
-    |           visual:a punto id:b parentesis_a {: parser.len=a.toString(); parser.verif.verificarMetodoOp(parser.tabla, parser.tipoActual, a.toString(), "", parser.jerarquia, b.toString(), bleft+PanelPrincipal.totalLineas, bright); :} PARAMETROS parentesis_b {: RESULT = "VB_"+b.toString();  :}
-    |           java:a punto id:b punto id:c parentesis_a {: parser.len=a.toString(); parser.verif.verificarMetodoOp(parser.tabla, parser.tipoActual, a.toString(), b.toString(), parser.jerarquia, c.toString(), bleft+PanelPrincipal.totalLineas, bright); parser.claseUsar = parser.verif.devolverClaseJava2(parser.tabla, b.toString(), bleft+PanelPrincipal.totalLineas, bright); if(parser.claseUsar != null){ parser.idClase2 = "JV_"+parser.claseUsar.getId(); } :} PARAMETROS parentesis_b {:  RESULT = parser.idClase2+"_"+c.toString(); :}
-;
-    METODOS_MAIN ::= python:a punto id:b parentesis_a {: parser.len=a.toString();   parser.metodoCorrecto=parser.verif.verificarMetodo(parser.tabla, a.toString(), null, parser.jerarquia, b.toString(), bleft+PanelPrincipal.totalLineas, bright); :} PARAMETROS:c parentesis_b puntoComa {: parser.manejoc.metodoVoid(parser.tabla.getObC(), "PY_"+b.toString(), parser.contParam); :}    ENTER2  
-    |           visual:a punto id:b parentesis_a {: parser.len=a.toString(); parser.metodoCorrecto=parser.verif.verificarMetodo(parser.tabla, a.toString(), null, parser.jerarquia, b.toString(), bleft+PanelPrincipal.totalLineas, bright);  :} PARAMETROS:c parentesis_b puntoComa {: parser.manejoc.metodoVoid(parser.tabla.getObC(), "VB_"+b.toString(), parser.contParam); :} ENTER2 
-    |           java:a punto id:b punto id:c parentesis_a {: parser.len=a.toString(); parser.metodoCorrecto=parser.verif.verificarMetodo(parser.tabla, a.toString(), b.toString(), parser.jerarquia, c.toString(), cleft+PanelPrincipal.totalLineas, cright); parser.claseUsar = parser.verif.devolverClaseJava2(parser.tabla, b.toString(), bleft+PanelPrincipal.totalLineas, bright); if(parser.claseUsar != null){ parser.idClase2 = "JV_"+parser.claseUsar.getId(); } :} PARAMETROS:d parentesis_b puntoComa {: parser.manejoc.metodoVoid(parser.tabla.getObC(), parser.idClase2+"_"+c.toString(), parser.contParam); :} ENTER2
-;
-    PARAMETROS ::= {: parser.tipoActual = parser.verif.verifParametrosMetodo(parser.tabla, parser.it, parser.len, parser.claseUsar); parser.it++; :} OPERACION:a {: parser.contParam++; parser.manejoc.invocacionParametros(parser.tabla.getObC(), a.getId());  :}  PARAMETROS2:b {:  if(!a.getValor()){ System.out.println("dddd");  }  :}
-    | {: parser.verif.verUltimoParametro(parser.tabla, parser.it, parser.len, parser.claseUsar); parser.it = 0;   parser.len = ""; parser.claseUsar = null; :}
-;
-    PARAMETROS2 ::= coma {: parser.tipoActual = parser.verif.verifParametrosMetodo(parser.tabla, parser.it, parser.len, parser.claseUsar); parser.it++; :} OPERACION:a {: parser.contParam++; parser.manejoc.invocacionParametros(parser.tabla.getObC(), a.getId()); :}  PARAMETROS2:b {:   if(!a.getValor()){ System.out.println("ss"); }    :}
-    | {:   parser.verif.verUltimoParametro(parser.tabla, parser.it, parser.len, parser.claseUsar); parser.it = 0;   parser.len=""; parser.claseUsar=null; :}
-;
-    CLASES ::= java:a punto id:b id:c {: parser.idClase = b.toString(); :} CONSTRUCTOR:d {:  parser.manejoc.agregarConstructor(parser.tabla.getObC(), b.toString(), c.toString(), d.size());    parser.op.crearClase(parser.tabla, d, b.toString(), c.toString(), parser.jerarquia, cleft+PanelPrincipal.totalLineas, cright); :} CLASES2 puntoComa ENTER2
-    |          java:a punto id:b id:c {: parser.idClase = b.toString();    parser.manejoc.agregarConstructor(parser.tabla.getObC(), b.toString(), c.toString(), 0);      parser.op.agregarClase(parser.tabla.getObC(), c.toString(), b.toString(), parser.jerarquia, bleft+PanelPrincipal.totalLineas, bright); :} CLASES2 puntoComa ENTER2
-;
-    CONSTRUCTOR ::= parentesis_a PARAM:a parentesis_b {: RESULT=a; :}
-    |               parentesis_a parentesis_b {: RESULT=new ArrayList<>(); :}
-;
-    PARAM ::= PARAM2:a OP_COND:b {: parser.manejoc.invocacionParametros(parser.tabla.getObC(), b.getId());   if(a!=null){ if(!b.getTipo().equals("")){ a.add(b.getTipo()); RESULT=a; } else { RESULT=null; } } :}
-;
-    PARAM2 ::= PARAM2:a OP_COND:b coma {: parser.manejoc.invocacionParametros(parser.tabla.getObC(), b.getId());  if(a!=null){ if(!b.getTipo().equals("")) { a.add(b.getTipo()); RESULT=a; } else { RESULT=null; } } :}
-    | {: RESULT=new ArrayList<>(); :}
-;
-    CLASES2 ::= coma id:a CONSTRUCTOR:b {:  parser.manejoc.agregarConstructor(parser.tabla.getObC(), parser.idClase, a.toString(), b.size());  parser.op.crearClase(parser.tabla, b, parser.idClase, a.toString(), parser.jerarquia, aleft+PanelPrincipal.totalLineas, aright); :}  CLASES2
-    |           coma id:a {:  parser.manejoc.agregarConstructor(parser.tabla.getObC(), parser.idClase, a.toString(), 0);     parser.op.agregarClase(parser.tabla.getObC(), a.toString(), parser.idClase, parser.jerarquia, aleft+PanelPrincipal.totalLineas, aright); :}  CLASES2
-    |
-;
-    IF ::= condIf parentesis_a {: parser.usoPila.add(false);  parser.jerarquia++; parser.pilaFalsas.add(new ArrayList<>()); :} EXT:h {: parser.manejoc.primerChequeoIf(parser.tabla.getObC(), h); :} parentesis_b ENTER2  llave_a ENTER2 CUERPO_MAIN llave_b {: parser.manejo.irEtiquetaFinC(parser.tabla.getObC(), parser.jerarquia); parser.manejoc.segundoChequeoIf(parser.tabla.getObC(), parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);  parser.op.eliminarVarAmbitos(parser.tabla.getObC(), parser.jerarquia); parser.jerarquia--; :} ENTER2 ELSE
-;
-    ELSE ::= condElse condIf parentesis_a  {: parser.usoPila.add(false);  parser.jerarquia++; parser.pilaFalsas.add(new ArrayList<>()); :}  EXT:h {: parser.manejoc.primerChequeoIf(parser.tabla.getObC(), h); :} parentesis_b ENTER2 llave_a ENTER2 CUERPO_MAIN llave_b {: parser.manejo.irEtiquetaFinC(parser.tabla.getObC(), parser.jerarquia); parser.manejoc.segundoChequeoIf(parser.tabla.getObC(), parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia); parser.op.eliminarVarAmbitos(parser.tabla.getObC(), parser.jerarquia); parser.jerarquia--; :} ENTER2 ELSE
-    |        condElse ENTER2 {: parser.jerarquia++; :} llave_a ENTER2 CUERPO_MAIN llave_b {: parser.manejo.irEtiquetaFinC(parser.tabla.getObC(), parser.jerarquia);  parser.manejo.agregarEtiquetaFinC(parser.tabla.getObC(), parser.jerarquia);  parser.op.eliminarVarAmbitos(parser.tabla.getObC(), parser.jerarquia); parser.jerarquia--; :} ENTER2
-    |       {:  parser.manejo.agregarEtiquetaFinC(parser.tabla.getObC(), parser.jerarquia); :}
-;
-    OP ::= mayor {: RESULT=">"; :}
-    |      menor {: RESULT="<"; :}
-    |      mayor igual {: RESULT=">="; :}
-    |      menor igual {: RESULT="<="; :}
-    |      igual igual {: RESULT="=="; :}
-    |      admiracion igual {: RESULT="!="; :}
-;
-    EXT ::= EXT:a and EXT:b {: RESULT = parser.manejoc.manejoAnd(a, b); :}
-    |       EXT:b or {: parser.aux3 = parser.aux2; :} EXT:a {: parser.manejoc.manejoOr(parser.tabla.getObC(), parser.usoPila, parser.pilaCuarpeta, b, a, parser.jerarquia); :} 
-    |       BOOLEAN:a {: RESULT = a; :}
-    |       admiracion parentesis_a BOOLEAN:a parentesis_b {: RESULT = parser.manejoc.cambiarGotos(a); :}
-    |       admiracion BOOLEAN:a {: RESULT = parser.manejoc.cambiarGotos(a); :}
-;
-    BOOLEAN ::= OP_COND:a OP:c OP_COND:b {: RESULT = parser.manejoc.agregarBooleans(parser.tabla.getObC(), parser.pilaFalsas, a, b, c, parser.jerarquia);  :} 
-    |           verdadero {: RESULT = parser.manejoc.agregarVerdadero(parser.tabla.getObC(), parser.pilaFalsas, parser.jerarquia); :}
-    |           falso  {: RESULT = parser.manejoc.agregarFalso(parser.tabla.getObC(), parser.pilaFalsas, parser.jerarquia); :}
-;
-    OP_COND ::= parentesis_a OP_COND:a parentesis_b {: RESULT=a; :}
-    |           OP_COND:a mas OP_COND:b {: RESULT = parser.manejoc.concatenarOperacion(parser.tabla.getObC(), a, b, "suma"); :}
-    |           OP_COND:a menos OP_COND:b {: RESULT = parser.manejoc.concatenarOperacion(parser.tabla.getObC(), a, b, "resta"); :}
-    |           OP_COND:a por OP_COND:b {: RESULT = parser.manejoc.concatenarOperacion(parser.tabla.getObC(), a, b, "mult"); :}
-    |           OP_COND:a div OP_COND:b {:  RESULT = parser.manejoc.concatenarOperacion(parser.tabla.getObC(), a, b, "div"); :}
-    |           OP_COND:a modulo OP_COND:b {: RESULT = parser.manejoc.concatenarOperacion(parser.tabla.getObC(), a, b, "modulo"); :}
-    |           VAL_COND:a {: RESULT=a; :}
-;
-    VAL_COND ::= comillaSimple:a id:b comillaSimple:c {: RESULT = new NodoBoolean("Char", a.toString()+b.toString()+c.toString()); :}
-    |            comillaSimple:a numero:b comillaSimple:c {: RESULT = new NodoBoolean("Char", a.toString()+b.toString()+c.toString()); :}   
-    |            menos:d comillaSimple:a id:b comillaSimple:c {: RESULT = new NodoBoolean("Char", d.toString()+a.toString()+b.toString()+c.toString()); :}
-    |            menos:d comillaSimple:a numero:b comillaSimple:c {: RESULT = new NodoBoolean("Char", d.toString()+a.toString()+b.toString()+c.toString()); :}   
-    |            numero:a {:  RESULT = new NodoBoolean("Integer", a.toString()); :}
-    |            numero:a punto:b numero:c {:  RESULT = new NodoBoolean("Float", a.toString()+b.toString()+c.toString());  :}
-    |            VECTOR_COND:a {: /*RESULT=a;*/ :}
-    |            METODO_COND:a {: String id = parser.manejoc.operacionMetodo(parser.tabla.getObC(), a.getId(), parser.contParam); parser.idClase2 = ""; parser.contParam = 0; RESULT = new NodoBoolean(a.getTipo(), id);  :}
-    |            id:a {: String tip = parser.op.devolverTipoVar(parser.tabla.getObC(), a.toString(), parser.jerarquia, aleft+PanelPrincipal.totalLineas, aright);  RESULT=new NodoBoolean(tip, a.toString()); :}
-    |            menos:a numero:b {:  RESULT = new NodoBoolean("Integer", a.toString()+b.toString()); :}
-    |            menos:a numero:b punto:c numero:d {: RESULT = new NodoBoolean("Float", a.toString()+b.toString()+c.toString()+d.toString()); :}
-    |            menos VECTOR_COND:a {: /*RESULT=a;*/ :}
-    |            menos METODO_COND:a {:  String id = parser.manejoc.operacionMetodo2(parser.tabla.getObC(), a.getId(), parser.contParam); parser.idClase2 = ""; parser.contParam = 0; RESULT = new NodoBoolean(a.getTipo(), id); :}
-    |            menos:b id:a {: String tip = parser.op.devolverTipoVar(parser.tabla.getObC(), a.toString(), parser.jerarquia, aleft+PanelPrincipal.totalLineas, aright); RESULT = new NodoBoolean(tip, b.toString()+a.toString()); :}
-;    
-    VECTOR_COND ::= id:a DIM:b {: RESULT=parser.op.devolverTipoArreglo(parser.tabla.getObC(), a.toString(), b, parser.jerarquia, aleft+PanelPrincipal.totalLineas, aright); :}
-;
-    METODO_COND ::= python:a punto id:b parentesis_a  {: parser.len=a.toString(); parser.metodoCorrecto=parser.verif.verificarMetodoOp(parser.tabla, parser.tipoActual, a.toString(), "", parser.jerarquia, b.toString(), bleft+PanelPrincipal.totalLineas, bright);  :}  PARAMETROS:c parentesis_b {: String tip = ""; if(parser.metodoCorrecto){  tip=parser.tabla.getObPython().getMisMetodos().get(parser.itMetodo).getRetorno(); }  RESULT= new NodoBoolean(tip, b.toString());  :}
-    |           visual:a punto id:b parentesis_a {: parser.len=a.toString(); parser.metodoCorrecto=parser.verif.verificarMetodoOp(parser.tabla, parser.tipoActual, a.toString(), "", parser.jerarquia, b.toString(), bleft+PanelPrincipal.totalLineas, bright); :} PARAMETROS:c parentesis_b {: String tip = ""; if(parser.metodoCorrecto){  tip=parser.tabla.getObVb().getMisMetodos().get(parser.itMetodo).getRetorno();    } RESULT = new NodoBoolean(tip, b.toString()); :}
-    |           java:a punto id:b punto id:c parentesis_a {: parser.len=a.toString(); parser.metodoCorrecto=parser.verif.verificarMetodoOp(parser.tabla, parser.tipoActual, a.toString(), b.toString(), parser.jerarquia, c.toString(), bleft+PanelPrincipal.totalLineas, bright); parser.claseUsar = parser.verif.devolverClaseJava2(parser.tabla, b.toString(), bleft+PanelPrincipal.totalLineas, bright); if(parser.claseUsar != null){ parser.idClase2 = parser.claseUsar.getId(); } :} PARAMETROS:d parentesis_b {: String tip = ""; if(parser.metodoCorrecto){ tip=parser.claseUsar.getMisMetodos().get(parser.itMetodo).getRetorno();   } RESULT = new NodoBoolean(tip, parser.idClase2+"_"+b.toString()); :}
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    METODOS ::= python:a punto id:b parentesis_a            {:  parser.len=a.toString(); 
+                                                                parser.verif.verificarMetodoOp(parser.tabla, parser.tipoActual, a.toString(), "", parser.jerarquia, b.toString(), bleft+PanelPrincipal.totalLineas, bright);  :}  
+                PARAM_METODOS:c parentesis_b                {:  RESULT = parser.manejoc.operacionMetodo(parser.tabla, b.toString(), "", "PY", c, bleft+PanelPrincipal.totalLineas);    :}
+    |           visual:a punto id:b parentesis_a            {:  parser.len = a.toString(); 
+                                                                parser.verif.verificarMetodoOp(parser.tabla, parser.tipoActual, a.toString(), "", parser.jerarquia, b.toString(), bleft+PanelPrincipal.totalLineas, bright); :} 
+                PARAM_METODOS:c parentesis_b                {:  RESULT = parser.manejoc.operacionMetodo(parser.tabla, b.toString(), "", "VB", c, bleft+PanelPrincipal.totalLineas);  :}
+    |           java:a punto id:b punto id:c parentesis_a   {:  parser.len = a.toString(); 
+                                                                parser.verif.verificarMetodoOp(parser.tabla, parser.tipoActual, a.toString(), b.toString(), parser.jerarquia, c.toString(), bleft+PanelPrincipal.totalLineas, bright); 
+                                                                parser.claseUsar = parser.verif.devolverClaseJava2(parser.tabla, b.toString(), bleft+PanelPrincipal.totalLineas, bright);   :} 
+                PARAM_METODOS:d parentesis_b                {:  String idClase = "";
+                                                                if(parser.claseUsar != null){ 
+                                                                 idClase = parser.claseUsar.getId(); 
+                                                                } 
+                                                                parser.manejoc.operacionMetodo(parser.tabla, c.toString(), idClase, "JV", d, bleft+PanelPrincipal.totalLineas);    :}
 ;
 
-    FOR ::= condFor {: parser.usoPila.add(false);  parser.jerarquia++; parser.pilaFalsas.add(new ArrayList<>());  :} parentesis_a TIPO_VAR_FOR:a id:b igual VAR_FOR:h puntoComa {: if(h.getValor()){ parser.auxFor= parser.verif.verifVarFor(parser.tabla.getObC(), b.toString(), a, "Integer", parser.jerarquia, bleft+PanelPrincipal.totalLineas, bright); } else { parser.auxFor=false; } parser.tipoActual="Integer"; :} BOOLEAN:c puntoComa id:d igual id:e mas VAR_FOR:f parentesis_b {:  parser.manejoc.agregarFor(parser.tabla.getObC(), b.toString(), h.getId(), c, parser.jerarquia, a);  parser.verif.verificarFor(parser.tabla.getObC(), parser.jerarquia, parser.auxFor, d.toString(), e.toString(), parser.tipoActual, f.getValor(), a, b.toString());  :} ENTER2 llave_a ENTER2 CUERPO_MAIN llave_b {:  parser.manejoc.retornarFor(parser.tabla.getObC(), parser.usoPila, d.toString(), e.toString(), f.getId(), parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);  parser.op.eliminarVarAmbitos(parser.tabla.getObC(), parser.jerarquia); parser.jerarquia--; :} ENTER2
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    METODOS_MAIN ::= python:a punto id:b parentesis_a           {:  parser.len=a.toString();   
+                                                                    parser.metodoCorrecto=parser.verif.verificarMetodo(parser.tabla, a.toString(), null, parser.jerarquia, b.toString(), bleft+PanelPrincipal.totalLineas, bright); :} 
+                     PARAM_METODOS:c parentesis_b puntoComa     {:  parser.manejoc.metodoVoid(parser.tabla.getObC(), "PY_"+b.toString(), parser.contParam); 
+                                                                    parser.manejoc.crearMetodo(parser.tabla, b.toString(), "", "PY", c, bleft+PanelPrincipal.totalLineas);    :}    
+                     ENTER2  
+    |                visual:a punto id:b parentesis_a           {:  parser.len=a.toString(); 
+                                                                    parser.metodoCorrecto=parser.verif.verificarMetodo(parser.tabla, a.toString(), null, parser.jerarquia, b.toString(), bleft+PanelPrincipal.totalLineas, bright);  :} 
+                     PARAM_METODOS:c parentesis_b puntoComa     {:  parser.manejoc.metodoVoid(parser.tabla.getObC(), "VB_"+b.toString(), parser.contParam); 
+                                                                    parser.manejoc.crearMetodo(parser.tabla, b.toString(), "", "VB", c, bleft+PanelPrincipal.totalLineas);    :} 
+                     ENTER2 
+    |                java:a punto id:b punto id:c parentesis_a  {:  parser.len=a.toString(); 
+                                                                    parser.metodoCorrecto=parser.verif.verificarMetodo(parser.tabla, a.toString(), b.toString(), parser.jerarquia, c.toString(), cleft+PanelPrincipal.totalLineas, cright); 
+                                                                    parser.claseUsar = parser.verif.devolverClaseJava2(parser.tabla, b.toString(), bleft+PanelPrincipal.totalLineas, bright); 
+                                                                    if(parser.claseUsar != null){ 
+                                                                        parser.claseAux = parser.claseUsar.getId();
+                                                                        parser.idClase2 = "JV_"+parser.claseUsar.getId(); 
+                                                                    } :} 
+                     PARAM_METODOS:d parentesis_b puntoComa     {:  parser.manejoc.metodoVoid(parser.tabla.getObC(), parser.idClase2+"_"+c.toString(), parser.contParam); 
+                                                                    parser.manejoc.crearMetodo(parser.tabla, c.toString(), parser.claseAux, "JV", d, bleft+PanelPrincipal.totalLineas);
+                                                                    parser.claseAux = ""; :} 
+                     ENTER2
 ;
-    TIPO_VAR_FOR ::= tipoInteger {: RESULT="Integer"; :}
-    |                tipoFloat {: RESULT="Float"; :}
-    |                tipoChar {: RESULT="Char"; :}  
-    |                {: RESULT=""; :}
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    PARAM_METODOS ::= PARAM:a           {: RESULT = a; :}
+    |                                   {: RESULT = new ArrayList<>(); :}
 ;
-    VAR_FOR ::= numero:a {: Boolean valor = parser.verif.verificarNumero(parser.tabla.getObC(), "Integer", "Integer", a.toString(), aleft+PanelPrincipal.totalLineas, aright); RESULT = new NodoOperacion(a.toString(), valor); :}
-    |           menos:b numero:a {: Boolean valor = parser.verif.verificarNumero(parser.tabla.getObC(), "Integer", "Integer", a.toString(), aleft+PanelPrincipal.totalLineas, aright); RESULT = new NodoOperacion(b.toString()+a.toString(), valor); :}
-    |           id:a {: Boolean valor = parser.verif.verificarIdOperacion(parser.tabla.getObC(), a.toString(), parser.jerarquia, "Integer", aleft+PanelPrincipal.totalLineas, aright); RESULT = new NodoOperacion(a.toString(), valor);  :} 
-    |           menos:b id:a {: Boolean valor = parser.verif.verificarIdOperacion(parser.tabla.getObC(), a.toString(), parser.jerarquia, "Integer", aleft+PanelPrincipal.totalLineas, aright); RESULT = new NodoOperacion(b.toString() + a.toString(), valor);  :} 
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    PARAMETROS ::=                                              {:  parser.tipoActual = parser.verif.verifParametrosMetodo(parser.tabla, parser.it, parser.len, parser.claseUsar); 
+                                                                    parser.it++; :} 
+                    OPERACION:a                                 {:  parser.contParam++; 
+                                                                   // parser.manejoc.invocacionParametros(parser.tabla.getObC(), a.getId());  :}  
+                    PARAMETROS2:b                               {:  if(!a.getValor()){ 
+                                                                        System.out.println("dddd");  
+                                                                    }  :}
+    |                                                           {:  parser.verif.verUltimoParametro(parser.tabla, parser.it, parser.len, parser.claseUsar); 
+                                                                    parser.it = 0;   
+                                                                    parser.len = ""; 
+                                                                    parser.claseUsar = null; :}
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    PARAMETROS2 ::= coma                                        {:  parser.tipoActual = parser.verif.verifParametrosMetodo(parser.tabla, parser.it, parser.len, parser.claseUsar); 
+                                                                    parser.it++; :} 
+                    OPERACION:a                                 {:  parser.contParam++; 
+                                                                    //parser.manejoc.invocacionParametros(parser.tabla.getObC(), a.getId()); :}  
+                    PARAMETROS2:b                               {:  if(!a.getValor()){ 
+                                                                        System.out.println("ss"); 
+                                                                    }    :}
+    |                                                           {:  parser.verif.verUltimoParametro(parser.tabla, parser.it, parser.len, parser.claseUsar); 
+                                                                    parser.it = 0;   
+                                                                    parser.len=""; 
+                                                                    parser.claseUsar=null; :}
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    CLASES ::= java:a punto id:b id:c                                   {:  parser.idClase = b.toString(); 
+                                                                            parser.exe.agregarVariable(parser.tabla, c.toString(), 1, false, b.toString()); :} 
+               CONSTRUCTOR:d                                            {:  parser.manejoc.agregarConstructor(parser.tabla, b.toString(), c.toString(), d.size(), d);    
+                                                                            parser.op.crearClase(parser.tabla, d, b.toString(), c.toString(), parser.jerarquia, cleft+PanelPrincipal.totalLineas, cright); :} 
+               CLASES2 puntoComa ENTER2
+    |          java:a punto id:b id:c                                   {:  parser.idClase = b.toString(); 
+                                                                            parser.exe.agregarVariable(parser.tabla, c.toString(), 1, false, b.toString());
+                                                                            parser.manejoc.agregarConstructor(parser.tabla, b.toString(), c.toString(), 0, new ArrayList<>());      
+                                                                            parser.op.agregarClase(parser.tabla.getObC(), c.toString(), b.toString(), parser.jerarquia, bleft+PanelPrincipal.totalLineas, bright); :} 
+               CLASES2 puntoComa ENTER2
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    CLASES2 ::= coma id:a CONSTRUCTOR:b                                 {:  parser.manejoc.agregarConstructor(parser.tabla, parser.idClase, a.toString(), b.size(), b);  
+                                                                            parser.exe.agregarVariable(parser.tabla, a.toString(), 1, false, parser.idClase);
+                                                                            parser.op.crearClase(parser.tabla, b, parser.idClase, a.toString(), parser.jerarquia, aleft+PanelPrincipal.totalLineas, aright); :}  
+                CLASES2
+    |           coma id:a                                               {:  parser.manejoc.agregarConstructor(parser.tabla, parser.idClase, a.toString(), 0, new ArrayList<>());     
+                                                                            parser.exe.agregarVariable(parser.tabla, a.toString(), 1, false, parser.idClase);
+                                                                            parser.op.agregarClase(parser.tabla.getObC(), a.toString(), parser.idClase, parser.jerarquia, aleft+PanelPrincipal.totalLineas, aright); :}  
+                CLASES2
+    |
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    CONSTRUCTOR ::= parentesis_a PARAM:a parentesis_b                   {: RESULT=a; :}
+    |               parentesis_a parentesis_b                           {: RESULT=new ArrayList<>(); :}
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    PARAM ::= PARAM2:a OP_COND:b                        {:  //parser.manejoc.invocacionParametros(parser.tabla.getObC(), b.getId());   
+                                                            if(a!=null){ 
+                                                                if(!b.getTipo().equals("")){ 
+                                                                    a.add(b); 
+                                                                    RESULT=a; 
+                                                                } else { 
+                                                                    RESULT=null; 
+                                                                } 
+                                                            } :}
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    PARAM2 ::= PARAM2:a OP_COND:b coma                  {:  //parser.manejoc.invocacionParametros(parser.tabla.getObC(), b.getId());  
+                                                            if(a!=null){ 
+                                                                if(!b.getTipo().equals("")) { 
+                                                                    a.add(b); 
+                                                                    RESULT=a; 
+                                                                } else { 
+                                                                    RESULT=null; 
+                                                                } 
+                                                            } :}
+    |                                                   {: RESULT=new ArrayList<>(); :}
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    IF ::= condIf parentesis_a                                      {:  parser.usoPila.add(false);  
+                                                                        parser.jerarquia++; 
+                                                                        parser.pilaFalsas.add(new ArrayList<>()); :} 
+           EXT:h                                                    {:  parser.manejoc.primerChequeoIf(parser.tabla.getObC(), h); :} 
+           parentesis_b ENTER2 llave_a ENTER2 CUERPO_MAIN llave_b   {:  parser.manejo.irEtiquetaFinC(parser.tabla.getObC(), parser.jerarquia); 
+                                                                        parser.manejoc.segundoChequeoIf(parser.tabla.getObC(), parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);  
+                                                                        parser.op.eliminarVarAmbitos(parser.tabla.getObC(), parser.jerarquia); 
+                                                                        parser.jerarquia--; :} 
+           ENTER2 ELSE
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    ELSE ::= condElse condIf parentesis_a                           {:  parser.usoPila.add(false);  
+                                                                        parser.jerarquia++; 
+                                                                        parser.pilaFalsas.add(new ArrayList<>()); :}  
+             EXT:h                                                  {:  parser.manejoc.primerChequeoIf(parser.tabla.getObC(), h); :} 
+             parentesis_b ENTER2 llave_a ENTER2 CUERPO_MAIN llave_b {:  parser.manejo.irEtiquetaFinC(parser.tabla.getObC(), parser.jerarquia); 
+                                                                        parser.manejoc.segundoChequeoIf(parser.tabla.getObC(), parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia); 
+                                                                        parser.op.eliminarVarAmbitos(parser.tabla.getObC(), parser.jerarquia); 
+                                                                        parser.jerarquia--; :} 
+             ENTER2 ELSE
+    |        condElse ENTER2                                        {:  parser.jerarquia++; :} 
+             llave_a ENTER2 CUERPO_MAIN llave_b                     {:  parser.manejo.irEtiquetaFinC(parser.tabla.getObC(), parser.jerarquia);  
+                                                                        parser.manejo.agregarEtiquetaFinC(parser.tabla.getObC(), parser.jerarquia);  
+                                                                        parser.op.eliminarVarAmbitos(parser.tabla.getObC(), parser.jerarquia); 
+                                                                        parser.jerarquia--; :} 
+             ENTER2
+    |       {:                                                          parser.manejo.agregarEtiquetaFinC(parser.tabla.getObC(), parser.jerarquia); :}
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    OP ::= mayor                                        {: RESULT=">"; :}
+    |      menor                                        {: RESULT="<"; :}
+    |      mayor igual                                  {: RESULT=">="; :}
+    |      menor igual                                  {: RESULT="<="; :}
+    |      igual igual                                  {: RESULT="=="; :}
+    |      admiracion igual                             {: RESULT="!="; :}
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    EXT ::= EXT:a and EXT:b                                 {:  RESULT = parser.manejoc.manejoAnd(a, b); :}
+    |       EXT:b or                                        {:  parser.aux3 = parser.aux2; :} 
+            EXT:a                                           {:  parser.manejoc.manejoOr(parser.tabla.getObC(), parser.usoPila, parser.pilaCuarpeta, b, a, parser.jerarquia); :} 
+    |       BOOLEAN:a                                       {:  RESULT = a; :}
+    |       admiracion parentesis_a BOOLEAN:a parentesis_b  {:  RESULT = parser.manejoc.cambiarGotos(a); :}
+    |       admiracion BOOLEAN:a                            {:  RESULT = parser.manejoc.cambiarGotos(a); :}
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    BOOLEAN ::= OP_COND:a OP:c OP_COND:b                    {: RESULT = parser.manejoc.agregarBooleans(parser.tabla.getObC(), parser.pilaFalsas, a, b, c, parser.jerarquia);  :} 
+    |           verdadero                                   {: RESULT = parser.manejoc.agregarVerdadero(parser.tabla.getObC(), parser.pilaFalsas, parser.jerarquia); :}
+    |           falso                                       {: RESULT = parser.manejoc.agregarFalso(parser.tabla.getObC(), parser.pilaFalsas, parser.jerarquia); :}
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    OP_COND ::= parentesis_a OP_COND:a parentesis_b                 {:  RESULT=a; :}
+    |           OP_COND:a mas OP_COND:b                             {:  RESULT = parser.manejoc.concatenarOperacion(parser.tabla.getObC(), a, b, "suma"); :}
+    |           OP_COND:a menos OP_COND:b                           {:  RESULT = parser.manejoc.concatenarOperacion(parser.tabla.getObC(), a, b, "resta"); :}
+    |           OP_COND:a por OP_COND:b                             {:  RESULT = parser.manejoc.concatenarOperacion(parser.tabla.getObC(), a, b, "mult"); :}
+    |           OP_COND:a div OP_COND:b                             {:  RESULT = parser.manejoc.concatenarOperacion(parser.tabla.getObC(), a, b, "div"); :}
+    |           OP_COND:a modulo OP_COND:b                          {:  RESULT = parser.manejoc.concatenarOperacion(parser.tabla.getObC(), a, b, "modulo"); :}
+    |           VAL_COND:a                                          {:  RESULT=a; :}
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    VAL_COND ::= comillaSimple:a id:b comillaSimple:c               {:  RESULT = new NodoBoolean("Char", a.toString()+b.toString()+c.toString()); :}
+    |            comillaSimple:a numero:b comillaSimple:c           {:  RESULT = new NodoBoolean("Char", a.toString()+b.toString()+c.toString()); :}   
+    |            menos:d comillaSimple:a id:b comillaSimple:c       {:  RESULT = new NodoBoolean("Char", d.toString()+a.toString()+b.toString()+c.toString()); :}
+    |            menos:d comillaSimple:a numero:b comillaSimple:c   {:  RESULT = new NodoBoolean("Char", d.toString()+a.toString()+b.toString()+c.toString()); :}   
+    |            numero:a                                           {:  RESULT = new NodoBoolean("Integer", a.toString()); :}
+    |            numero:a punto:b numero:c                          {:  RESULT = new NodoBoolean("Float", a.toString()+b.toString()+c.toString());  :}
+    |            VECTOR_COND:a                                      {:  RESULT = a; :}
+    |            METODO_COND:a                                      {:  parser.idClase2 = ""; 
+                                                                        parser.contParam = 0; 
+                                                                        RESULT = new NodoBoolean(a.getTipo(), a.getId());  :}
+    |            id:a                                               {:  String tip = parser.op.devolverTipoVar(parser.tabla.getObC(), a.toString(), parser.jerarquia, aleft+PanelPrincipal.totalLineas, aright);  
+                                                                        RESULT = parser.manejoc.devolverEtiquetaId(parser.tabla, a.toString(), tip, false); :}
+    |            menos:a numero:b                                   {:  RESULT = new NodoBoolean("Integer", a.toString()+b.toString()); :}
+    |            menos:a numero:b punto:c numero:d                  {:  RESULT = new NodoBoolean("Float", a.toString()+b.toString()+c.toString()+d.toString()); :}
+    |            menos VECTOR_COND:a                                {:  String et = "-"+a.getId(); 
+                                                                        RESULT = new NodoBoolean(a.getTipo(), et); :}
+    |            menos METODO_COND:a                                {:  parser.idClase2 = ""; 
+                                                                        parser.contParam = 0; 
+                                                                        RESULT = new NodoBoolean(a.getTipo(), "-"+a.getId()); :}
+    |            menos:b id:a                                       {:  String tip = parser.op.devolverTipoVar(parser.tabla.getObC(), a.toString(), parser.jerarquia, aleft+PanelPrincipal.totalLineas, aright); 
+                                                                        RESULT = parser.manejoc.devolverEtiquetaId(parser.tabla, a.toString(), tip, true); :}
+;    
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    METODO_COND ::= python:a punto id:b parentesis_a                {:  parser.len=a.toString(); 
+                                                                        parser.metodoCorrecto=parser.verif.verificarMetodoOp(parser.tabla, parser.tipoActual, a.toString(), "", parser.jerarquia, b.toString(), bleft+PanelPrincipal.totalLineas, bright);  :}  
+                    PARAM_METODOS:c parentesis_b                       {:  String tip = ""; 
+                                                                        if(parser.metodoCorrecto){  
+                                                                            tip = parser.tabla.getObPython().getMisMetodos().get(parser.itMetodo).getRetorno(); 
+                                                                        }  
+                                                                        String et = parser.manejoc.operacionMetodo(parser.tabla, b.toString(), "", "PY", c, bleft+PanelPrincipal.totalLineas);
+                                                                        RESULT= new NodoBoolean(tip, et);  :}
+    |           visual:a punto id:b parentesis_a                    {:  parser.len=a.toString(); 
+                                                                        parser.metodoCorrecto=parser.verif.verificarMetodoOp(parser.tabla, parser.tipoActual, a.toString(), "", parser.jerarquia, b.toString(), bleft+PanelPrincipal.totalLineas, bright); :} 
+                PARAM_METODOS:c parentesis_b                           {:  String tip = ""; 
+                                                                        if(parser.metodoCorrecto){  
+                                                                            tip = parser.tabla.getObVb().getMisMetodos().get(parser.itMetodo).getRetorno();    
+                                                                        } 
+                                                                        String et = parser.manejoc.operacionMetodo(parser.tabla, b.toString(), "", "VB", c, bleft+PanelPrincipal.totalLineas);
+                                                                        RESULT = new NodoBoolean(tip, et); :}
+    |           java:a punto id:b punto id:c parentesis_a           {:  parser.len=a.toString(); 
+                                                                        parser.metodoCorrecto=parser.verif.verificarMetodoOp(parser.tabla, parser.tipoActual, a.toString(), b.toString(), parser.jerarquia, c.toString(), bleft+PanelPrincipal.totalLineas, bright); 
+                                                                        parser.claseUsar = parser.verif.devolverClaseJava2(parser.tabla, b.toString(), bleft+PanelPrincipal.totalLineas, bright); 
+                                                                        if(parser.claseUsar != null){ 
+                                                                            parser.idClase2 = parser.claseUsar.getId(); 
+                                                                        } :} 
+                PARAM_METODOS:d parentesis_b                        {:  String tip = "";    
+                                                                        if(parser.metodoCorrecto){ 
+                                                                            tip=parser.claseUsar.getMisMetodos().get(parser.itMetodo).getRetorno();   
+                                                                        }
+                                                                        String et = parser.manejoc.operacionMetodo(parser.tabla, c.toString(), parser.idClase2, "JV", d, bleft+PanelPrincipal.totalLineas);    
+                                                                        RESULT = new NodoBoolean(tip, et); :}
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    FOR ::= condFor                                                         {:  parser.usoPila.add(false);  
+                                                                                parser.jerarquia++; parser.pilaFalsas.add(new ArrayList<>());  :} 
+            parentesis_a TIPO_VAR_FOR:a id:b igual VAR_FOR:h puntoComa      {:  if(h.getValor()){ 
+                                                                                    parser.auxFor= parser.verif.verifVarFor(parser.tabla.getObC(), b.toString(), a, "Integer", parser.jerarquia, bleft+PanelPrincipal.totalLineas, bright, parser.dimensiones); 
+                                                                                } else { 
+                                                                                    parser.auxFor=false; 
+                                                                                } 
+                                                                                parser.tipoActual="Integer"; :} 
+            BOOLEAN:c puntoComa id:d igual id:e mas VAR_FOR:f parentesis_b  {:  parser.manejoc.agregarFor(parser.tabla, b.toString(), h.getId(), c, parser.jerarquia, a);  
+                                                                                parser.verif.verificarFor(parser.tabla.getObC(), parser.jerarquia, parser.auxFor, d.toString(), e.toString(), parser.tipoActual, f.getValor(), a, b.toString());  :} 
+            ENTER2 llave_a ENTER2 CUERPO_MAIN llave_b                       {:  parser.manejoc.retornarFor(parser.tabla, parser.usoPila, d.toString(), e.toString(), f.getId(), parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);  
+                                                                                parser.op.eliminarVarAmbitos(parser.tabla.getObC(), parser.jerarquia); 
+                                                                                parser.jerarquia--; :} 
+            ENTER2
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    TIPO_VAR_FOR ::= tipoInteger                {: RESULT = "Integer"; :}
+    |                tipoFloat                  {: RESULT = "Float"; :}
+    |                tipoChar                   {: RESULT = "Char"; :}  
+    |                                           {: RESULT = ""; :}
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    VAR_FOR ::= numero:a                            {:  Boolean valor = parser.verif.verificarNumero(parser.tabla.getObC(), "Integer", "Integer", a.toString(), aleft+PanelPrincipal.totalLineas, aright); 
+                                                        RESULT = new NodoOperacion(a.toString(), valor); :}
+    |           menos:b numero:a                    {:  Boolean valor = parser.verif.verificarNumero(parser.tabla.getObC(), "Integer", "Integer", a.toString(), aleft+PanelPrincipal.totalLineas, aright); 
+                                                        RESULT = new NodoOperacion(b.toString()+a.toString(), valor); :}
+    |           id:a                                {:  String et = parser.manejoc.etiquetaId(parser.tabla, a.toString());
+                                                        Boolean valor = parser.verif.verificarIdOperacion(parser.tabla.getObC(), a.toString(), parser.jerarquia, "Integer", aleft+PanelPrincipal.totalLineas, aright); 
+                                                        RESULT = new NodoOperacion(et, valor);  :} 
+    |           menos:b id:a                        {:  String et = parser.manejoc.etiquetaId(parser.tabla, a.toString());
+                                                        Boolean valor = parser.verif.verificarIdOperacion(parser.tabla.getObC(), a.toString(), parser.jerarquia, "Integer", aleft+PanelPrincipal.totalLineas, aright); 
+                                                        RESULT = new NodoOperacion(b.toString() + et, valor);  :} 
     
 ;
-    WHILE ::= condWhile  parentesis_a {:parser.usoPila.add(false);    parser.jerarquia++; parser.pilaFalsas.add(new ArrayList<>()); :} EXT:h {: parser.manejoc.agregarWhile(parser.tabla.getObC(), h, parser.jerarquia); :} parentesis_b ENTER2 llave_a ENTER2 CUERPO_MAIN llave_b {:  parser.manejoc.retornoWhile(parser.tabla.getObC(), parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);   parser.op.eliminarVarAmbitos(parser.tabla.getObC(), parser.jerarquia); parser.jerarquia--; :} ENTER2
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    WHILE ::= condWhile  parentesis_a                                   {:  parser.usoPila.add(false);    
+                                                                            parser.jerarquia++; 
+                                                                            parser.pilaFalsas.add(new ArrayList<>()); :} 
+              EXT:h                                                     {:  parser.manejoc.agregarWhile(parser.tabla.getObC(), h, parser.jerarquia); :} 
+              parentesis_b ENTER2 llave_a ENTER2 CUERPO_MAIN llave_b    {:  parser.manejoc.retornoWhile(parser.tabla.getObC(), parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);   
+                                                                            parser.op.eliminarVarAmbitos(parser.tabla.getObC(), parser.jerarquia); 
+                                                                            parser.jerarquia--; :} 
+              ENTER2
 ;
-    DO_WHILE ::= condDo ENTER2 {: parser.usoPila.add(false);   parser.jerarquia++; parser.pilaFalsas.add(new ArrayList<>()); parser.manejoc.agregarDoWhile(parser.tabla.getObC(), parser.jerarquia); :} llave_a ENTER2 CUERPO_MAIN llave_b ENTER2 condWhile parentesis_a EXT:h parentesis_b puntoComa {:  parser.manejoc.agregarCondicionWhile(parser.tabla.getObC(), parser.usoPila, h, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);    parser.op.eliminarVarAmbitos(parser.tabla.getObC(), parser.jerarquia); parser.jerarquia--; :} ENTER2
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    DO_WHILE ::= condDo ENTER2                                                                                  {:  parser.usoPila.add(false);   
+                                                                                                                    parser.jerarquia++; 
+                                                                                                                    parser.pilaFalsas.add(new ArrayList<>()); 
+                                                                                                                    parser.manejoc.agregarDoWhile(parser.tabla.getObC(), parser.jerarquia); :} 
+                 llave_a ENTER2 CUERPO_MAIN llave_b ENTER2 condWhile parentesis_a EXT:h parentesis_b puntoComa  {:  parser.manejoc.agregarCondicionWhile(parser.tabla.getObC(), parser.usoPila, h, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);    
+                                                                                                                    parser.op.eliminarVarAmbitos(parser.tabla.getObC(), parser.jerarquia); 
+                                                                                                                    parser.jerarquia--; :} 
+                 ENTER2
 ;
-    SWITCH ::= condSwitch {: parser.tipoActual="Integer";  parser.jerarquia++; :} parentesis_a VAR_LECTURA:a {: parser.arrayFinales.add("etFinal_"+parser.contFinales); parser.contFinales++; parser.idSwitch = a.toString(); :} parentesis_b ENTER2  llave_a ENTER2 CASES llave_b {:  parser.tabla.getObC().getCuarpeta().add(new Nodo("ETIQUETA", parser.arrayFinales.get(parser.arrayFinales.size()-1), null, null, parser.jerarquia)); parser.arrayFinales.remove(parser.arrayFinales.size()-1);       parser.op.eliminarVarAmbitos(parser.tabla.getObC(), parser.jerarquia); parser.jerarquia--; :} ENTER2
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+   SWITCH ::= condSwitch                                            {:  parser.tipoActual="Integer";  
+                                                                        parser.jerarquia++; :} 
+              parentesis_a VAR_LECTURA:a                            {:  parser.arrayFinales.add("etFinal_"+parser.contFinales); 
+                                                                        parser.contFinales++; 
+                                                                        parser.idSwitch = a; :} 
+              parentesis_b ENTER2  llave_a ENTER2 CASES llave_b     {:  parser.tabla.getObC().getCuarpeta().add(new Nodo("ETIQUETA", parser.arrayFinales.get(parser.arrayFinales.size()-1), null, null, parser.jerarquia)); 
+                                                                        parser.arrayFinales.remove(parser.arrayFinales.size()-1);       
+                                                                        parser.op.eliminarVarAmbitos(parser.tabla.getObC(), parser.jerarquia); 
+                                                                        parser.jerarquia--; :} 
+              ENTER2
 ;
-    CASES ::= condCase VAR_CASE:h dosPuntos {: parser.jerarquia++; parser.manejoc.agregarCaseSwitch(parser.tabla.getObC(), parser.jerarquia, parser.idSwitch, h, "==");  :} ENTER CUERPO_MAIN BREAK {: parser.manejoc.agregarFinCase(parser.tabla.getObC(), parser.arrayFinales, parser.jerarquia);  parser.op.eliminarVarAmbitos(parser.tabla.getObC(), parser.jerarquia); parser.jerarquia--; :} CASES
-    |         condDef dosPuntos {: parser.jerarquia++; :} ENTER CUERPO_MAIN BREAK {: parser.op.eliminarVarAmbitos(parser.tabla.getObC(), parser.jerarquia); parser.jerarquia--; :}
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    CASES ::= condCase VAR_CASE:h dosPuntos                         {:  parser.jerarquia++; 
+                                                                        parser.manejoc.agregarCaseSwitch(parser.tabla.getObC(), parser.jerarquia, parser.idSwitch, h, "==");  :} 
+              ENTER CUERPO_MAIN BREAK                               {:  parser.manejoc.agregarFinCase(parser.tabla.getObC(), parser.arrayFinales, parser.jerarquia);  
+                                                                        parser.op.eliminarVarAmbitos(parser.tabla.getObC(), parser.jerarquia); 
+                                                                        parser.jerarquia--; :} 
+              CASES
+    |         condDef dosPuntos                                     {:  parser.jerarquia++; :} 
+              ENTER CUERPO_MAIN BREAK                               {:  parser.op.eliminarVarAmbitos(parser.tabla.getObC(), parser.jerarquia); 
+                                                                        parser.jerarquia--; :}
     |       
 ;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
     BREAK ::= condBreak puntoComa ENTER2
     |
 ;
-    VAR_CASE ::= numero:a {: RESULT = a.toString();  :}
-    |            comillaSimple:a id:b comillaSimple:c {: RESULT = a.toString()+b.toString()+c.toString(); :}
-    |            id:a {: RESULT = a.toString(); :}
-    |            menos:a id:b {: RESULT = a.toString()+b.toString(); :} 
-    |            menos:a numero:b {: RESULT = a.toString()+b.toString(); :}
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    VAR_CASE ::= numero:a                                           {:  RESULT = a.toString();  :}
+    |            comillaSimple:a id:b comillaSimple:c               {:  RESULT = a.toString()+b.toString()+c.toString(); :}
+    |            id:a                                               {:  RESULT = parser.manejoc.etiquetaId(parser.tabla, a.toString()); :}
+    |            menos:a id:b                                       {:  String et = parser.manejoc.etiquetaId(parser.tabla, b.toString());
+                                                                        RESULT = a.toString()+et; :} 
+    |            menos:a numero:b                                   {:  RESULT = a.toString()+b.toString(); :}
 ;
-    LECTURA_DATOS ::= scanf parentesis_a comilla TEXTO MODULOS:a {: parser.tipoActual=a; :} comilla coma ampersand VAR_LECTURA:b parentesis_b puntoComa {: parser.manejoc.crearScanf(parser.tabla.getObC(), b, a); :} ENTER2
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    LECTURA_DATOS ::= scanf parentesis_a comilla TEXTO MODULOS:a                    {:  parser.tipoActual=a; :} 
+                      comilla coma ampersand VAR_LECTURA:b parentesis_b puntoComa   {:  parser.manejoc.crearScanf(parser.tabla, b, a); :} 
+                      ENTER2
 ;
-    MODULOS ::= scanfInt:a {: RESULT="Integer"; :}
-    |           scanfFloat:a {: RESULT="Float"; :}
-    |           scanfChar:a {: RESULT="Char"; :}
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    MODULOS ::= scanfInt:a                  {: RESULT="Integer"; :}
+    |           scanfFloat:a                {: RESULT="Float"; :}
+    |           scanfChar:a                 {: RESULT="Char"; :}
 ;
-    VAR_LECTURA ::= id:a {: parser.verif.verificarIdOperacion(parser.tabla.getObC(), a.toString(), parser.jerarquia, parser.tipoActual, aleft+PanelPrincipal.totalLineas, aright); RESULT=a.toString();  :}
-    |               numero:a {: RESULT = a.toString(); :}
-    |               comillaSimple:a id:b comillaSimple:c {: RESULT = a.toString()+b.toString()+c.toString(); :}
-    |               VECTOR_OP:a {: RESULT = ""; :}
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    VAR_LECTURA ::= id:a                                    {:  String et = parser.manejoc.etiquetaId(parser.tabla, a.toString());
+                                                                parser.verif.verificarIdOperacion(parser.tabla.getObC(), a.toString(), parser.jerarquia, parser.tipoActual, aleft+PanelPrincipal.totalLineas, aright); 
+                                                                RESULT = et;  :}
+    |               numero:a                                {:  RESULT = a.toString(); :}
+    |               comillaSimple:a id:b comillaSimple:c    {:  RESULT = a.toString()+b.toString()+c.toString(); :}
+    |               VECTOR_OP:a                             {:  if(a != null){ 
+                                                                    RESULT = a.getId(); 
+                                                                } else { 
+                                                                    RESULT = ""; 
+                                                                } :}
 ;
-    MENSAJE ::= printf parentesis_a {: parser.tipoActual="Float"; :} comilla TEXTO2  comilla RESTO_MENSAJE parentesis_b puntoComa ENTER2
-    |           printf parentesis_a {: parser.tipoActual="Float"; :} VAR_TEXTO RESTO_MENSAJE parentesis_b puntoComa ENTER2
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    MENSAJE ::= printf parentesis_a                                                     {: parser.tipoActual="Float"; :} 
+                comilla TEXTO2  comilla RESTO_MENSAJE parentesis_b puntoComa ENTER2
+    |           printf parentesis_a                                                     {: parser.tipoActual="Float"; :} 
+                VAR_TEXTO RESTO_MENSAJE parentesis_b puntoComa ENTER2
 ;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
     RESTO_MENSAJE ::= coma comilla TEXTO2 comilla RESTO_MENSAJE
     |                 coma VAR_TEXTO RESTO_MENSAJE
     |
 ;
-    CLSCR ::= clscr parentesis_a parentesis_b puntoComa {: parser.manejoc.crearClscr(parser.tabla.getObC()); :} ENTER2
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    CLSCR ::= clscr parentesis_a parentesis_b puntoComa                         {: parser.manejoc.crearClscr(parser.tabla.getObC()); :} ENTER2
 ;
-    GETCH ::= id:a igual getch parentesis_a parentesis_b puntoComa  {: parser.manejoc.crearGetch(parser.tabla.getObC(), a.toString());  parser.tipoActual=parser.verif.devolverTipoVar(parser.tabla.getObC(), parser.jerarquia, a.toString(), aleft+PanelPrincipal.totalLineas, aright);  if(parser.tipoActual.equals("Integer") || parser.tipoActual.equals("Char")){} else { int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: La variable "+a.toString()+" con valor incorrecto para asignacion de getch\n"; } :} ENTER2
-    |         VECTOR:a igual getch parentesis_a parentesis_b puntoComa {: if(a){ if(!parser.tipoActual.equals("Integer") || !parser.tipoActual.equals("Char")){ System.out.println("arreglo "+a.toString()+" con valor incorrecto para asignacion de getch");  } } else { System.out.println("Variable no existe para poder asignar getch"); } :} ENTER2
-    |         getch parentesis_a parentesis_b puntoComa {: parser.manejoc.crearGetch(parser.tabla.getObC(), null); :} ENTER2
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    GETCH ::= id:a igual getch parentesis_a parentesis_b puntoComa              {:  parser.manejoc.crearGetch(parser.tabla, a.toString(), false);  
+                                                                                    parser.tipoActual=parser.verif.devolverTipoVar(parser.tabla.getObC(), parser.jerarquia, a.toString(), aleft+PanelPrincipal.totalLineas, aright);  
+                                                                                    if(parser.tipoActual.equals("Integer") || parser.tipoActual.equals("Char")){
+                                                                                    } else { 
+                                                                                        int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: La variable "+a.toString()+" con valor incorrecto para asignacion de getch\n"; } :} 
+              ENTER2
+    |         VECTOR:a igual getch parentesis_a parentesis_b puntoComa          {:  if(a.getValor()){ 
+                                                                                        if(!parser.tipoActual.equals("Integer") || !parser.tipoActual.equals("Char")){ 
+                                                                                            System.out.println("arreglo "+a.toString()+" con valor incorrecto para asignacion de getch");  
+                                                                                        } else {
+                                                                                            parser.manejoc.crearGetch(parser.tabla, a.getId(), true);
+                                                                                        }
+                                                                                    } else { 
+                                                                                        System.out.println("Variable no existe para poder asignar getch"); 
+                                                                                    } :} 
+              ENTER2
+    |         getch parentesis_a parentesis_b puntoComa                         {:  parser.manejoc.crearGetch(parser.tabla, null, false); :} 
+              ENTER2
 ;
-   VAR_TEXTO ::=  id:a {: RESULT=parser.verif.verificarIdOperacion(parser.tabla.getObC(), a.toString(), parser.jerarquia, parser.tipoActual, aleft+PanelPrincipal.totalLineas, aright); :}
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+   VAR_TEXTO ::=  id:a                                                          {: RESULT=parser.verif.verificarIdOperacion(parser.tabla.getObC(), a.toString(), parser.jerarquia, parser.tipoActual, aleft+PanelPrincipal.totalLineas, aright); :}
     |             ampersand id
-    |             VECTOR:a {: RESULT=a; :}
+    |             VECTOR:a                                                      {: RESULT=a.getValor(); :}
     |             ampersand VECTOR 
-    |             METODOS:a {:  :}
-    |             numero {: RESULT=true; :}
-    |             numero punto numero {: RESULT=true; :}
+    |             METODOS:a                                                     {:  :}
+    |             numero                                                        {: RESULT=true; :}
+    |             numero punto numero                                           {: RESULT=true; :}
 ;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
     COMENTARIO_A ::= comentario_a TEXTO ENTER
 ;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
     COMENTARIO_B ::= comentario_b TEXTO_COM comentario_c ENTER2
 ;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
     ENTER ::= ENTER enter
     |         enter
 ;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
     ENTER2 ::= ENTER enter
     |          enter
     |
 ;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
     TEXTO ::= TEXTO:a coma:b {: RESULT=a + b.toString(); :}
     |         TEXTO:a punto:b {: RESULT=a + b.toString(); :} 
     |         TEXTO:a puntoComa:b {: RESULT= a + b.toString(); :}

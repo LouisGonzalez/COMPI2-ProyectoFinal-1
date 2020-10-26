@@ -1,7 +1,10 @@
 %%VB
-Public Sub Saludo()
+Public Sub Saludo(ty as Integer)
 
-    Console.write("Segundo Proyecto de Compiladores 2")
+do
+  Dim a as integer
+  a = a + 3
+  loop while 1 > 1
 
 End Sub 
 
@@ -11,11 +14,11 @@ Public Function Factorial(N As Integer) as integer
     Dim Num As Integer	
     Dim C As Chart
     Num = N
-	if 1>1 and 3 >1 or 4 > 1 then
+	if 1>1 and Num >1 or 4 > 1 then
 
 	end if
 
-
+	return 2
 End Function
 
 
@@ -23,27 +26,52 @@ End Function
 
 %%JAVA
 public class algo {
+	int z = 23;
 
-	public void aaa(){
+	public void aaa(float a, int b){
+		int c = 12 + z + a;
+	}
+
+	public int aa2(float a, int b){
+		z = 12;
+		return z;
+	}
+	
+	public algo(int a, int c){
 
 	}
+
+
 }
 %%PY
 def edadmeses(edad, meses):
-    print("HOla mundo")
+	print("HOla mundo")
+	b = 33
+	a = 12 + b
+	if 1 == 1:
+		a == 24
+		print("hola mundo")
+	return 23
 
 
 
 %%PROGRAMA
 #include "VB"
 #include "PY"
+#include "JAVA.*"
 
 const int constante1 = 10;
-
-
+int a;
+int b;
+int xx[2][6][5][31];
+int c=23324;
+int d;
 void main()
 {
-  	JAVA.algo ob1();
+	d = 2;
+	JAVA.algo id1(166, 23);
+	d = 12 + VB.Factorial(2);
+
 }
 
 

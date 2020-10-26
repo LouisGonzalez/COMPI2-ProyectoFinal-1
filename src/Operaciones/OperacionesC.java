@@ -16,6 +16,7 @@ import objetos.Metodo;
 import objetos.ObjetosC;
 import objetos.ObjetosJAVA;
 import objetos.Variable;
+import objetosApoyo.NodoBoolean;
 import verificaciones.VerifC;
 
 /**
@@ -98,7 +99,7 @@ public class OperacionesC {
     }
 
     //agrega una nueva variable a la tabla de C
-    public void agregarNuevaVar(ObjetosC c, String id, String tipoDato, String tipoVar, int nivel, boolean valor, String idClase, Integer dimension, int fila, int columna) {
+    public void agregarNuevaVar(ObjetosC c, String id, String tipoDato, String tipoVar, int nivel, boolean valor, String idClase, Integer dimension, int fila, int columna, ArrayList<String> dimensiones) {
         VerifC verif = new VerifC();
         boolean existe = false;
         if (nivel > 0) {
@@ -126,6 +127,10 @@ public class OperacionesC {
                     c.getListClases().add(new ClasesJava(id, idClase, nivel));
                 } else if (tipoVar.equals("Arreglo")) {
                     c.getListArreglos().add(new Arreglo(id, tipoDato, nivel, dimension));
+                    for (int i = 0; i < dimensiones.size(); i++) {
+                        c.getListArreglos().get(c.getListArreglos().size()-1).getDimensiones().add(dimensiones.get(i));
+                    }
+                    dimensiones.clear();
                 } else if (tipoVar.equals("Constante")) {
                     c.getListConstantes().add(new Constantes(id, tipoDato, nivel));
                 } else {
@@ -135,6 +140,7 @@ public class OperacionesC {
         }
     }
 
+    
     //devuelve el tipo de dato de un arreglo
     public String devolverTipoArreglo(ObjetosC c, String id, int dim, int jerarquia, int fila, int columna) {
         String tipo = "";
@@ -173,7 +179,7 @@ public class OperacionesC {
     }
 
     //mediante parametros ddescritos se busca un constructor 
-    public void crearClase(TablaSimbolos tabla, ArrayList<String> posibles, String idClase, String id, int jerarquia, int fila, int columna) {
+    public void crearClase(TablaSimbolos tabla, ArrayList<NodoBoolean> posibles, String idClase, String id, int jerarquia, int fila, int columna) {
         Integer itClase = null;
         boolean encontrado = false;
         for (int i = 0; i < tabla.getObJava().getMisClases().size(); i++) {
@@ -237,13 +243,13 @@ public class OperacionesC {
         }
     }
 
-    public boolean compararParametros(ObjetosC c, Metodo constructor, ArrayList<String> posibles) {
+    public boolean compararParametros(ObjetosC c, Metodo constructor, ArrayList<NodoBoolean> posibles) {
         boolean todoCorrecto = true;
         VerifC verif = new VerifC();
         if (constructor.getMisParametros().size() == posibles.size()) {
             for (int i = 0; i < constructor.getMisParametros().size(); i++) {
-                if (!constructor.getMisParametros().get(i).getTipo().equals(posibles.get(i))) {
-                    if (!verif.verificarPadre(c, posibles.get(i), constructor.getMisParametros().get(i).getTipo())) {
+                if (!constructor.getMisParametros().get(i).getTipo().equals(posibles.get(i).getTipo())) {
+                    if (!verif.verificarPadre(c, posibles.get(i).getTipo(), constructor.getMisParametros().get(i).getTipo())) {
                         todoCorrecto = false;
                         break;
                     }

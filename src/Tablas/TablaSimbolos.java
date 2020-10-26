@@ -5,6 +5,8 @@
  */
 package Tablas;
 
+import ejecutable.Tabla;
+import java.util.ArrayList;
 import objetos.*;
 /**
  *
@@ -13,10 +15,19 @@ import objetos.*;
 public class TablaSimbolos {
     
     
-    private ObjetosC obC = new ObjetosC();
+    private ObjetosC obC = new ObjetosC();  
     private ObjetosJAVA obJava = new ObjetosJAVA();
     private ObjetosPYTHON obPython = new ObjetosPYTHON();
     private ObjetosVB obVb = new ObjetosVB();
+    private ArrayList<Tabla> tablaExe = new ArrayList<>();
+
+    public ArrayList<Tabla> getTablaExe() {
+        return tablaExe;
+    }
+
+    public void setTablaExe(ArrayList<Tabla> tablaExe) {
+        this.tablaExe = tablaExe;
+    }
     
     public ObjetosC getObC() {
         return obC;

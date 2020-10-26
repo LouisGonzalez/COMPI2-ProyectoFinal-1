@@ -116,7 +116,7 @@ public class VerifJAVA {
                         PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no es compatible con el tipo de operacion.\n";
                     }
                 }
-            } else if (verifVarLocal(jv, id)) {
+            } else if (verifVarGlobal(jv, id)) {
                 if (jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getTipo().equals(tipoBase)) {
                     if (jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getValor()) {
                         todoCorrecto = true;
@@ -135,7 +135,7 @@ public class VerifJAVA {
                     }
                 }
             } else {
-                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe ninguna variable: " + id + " dentro del archivo JAVA.\n";
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe ninguna vsssssariable: " + id + " dentro del archivo JAVA.\n";
             }
         }
         return todoCorrecto;

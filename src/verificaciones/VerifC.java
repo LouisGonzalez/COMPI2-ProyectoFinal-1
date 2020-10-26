@@ -10,6 +10,7 @@ import Operaciones.OperacionesC;
 import Tablas.TablaSimbolos;
 import gramaticaC.SintaxC;
 import interfaz.PanelPrincipal;
+import java.util.ArrayList;
 import java.util.Objects;
 import objetos.Clase;
 import objetos.Metodo;
@@ -532,7 +533,7 @@ public class VerifC {
         return tipo;
     }
 
-    public boolean verifVarFor(ObjetosC c, String id, String tipo, String tipoActual, int jerarquia, int fila, int columna) {
+    public boolean verifVarFor(ObjetosC c, String id, String tipo, String tipoActual, int jerarquia, int fila, int columna, ArrayList<String> dimensiones) {
         //hace alusion a que la variable ya existe por lo que hay que buscarla.
         boolean todoCorrecto = false;
         VerifObjetos verif = new VerifObjetos();
@@ -561,7 +562,7 @@ public class VerifC {
 
             }
         } else {
-            op.agregarNuevaVar(c, id, "Integer", "Variable", jerarquia, true, id, null, fila, columna);
+            op.agregarNuevaVar(c, id, "Integer", "Variable", jerarquia, true, id, null, fila, columna, dimensiones);
         }
 
         return todoCorrecto;

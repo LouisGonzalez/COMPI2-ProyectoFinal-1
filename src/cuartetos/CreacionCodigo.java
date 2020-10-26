@@ -53,7 +53,8 @@ public class CreacionCodigo {
             } else if(cuarpeta.get(i).getOperacion().equals("SCANF")){
                 codigo += "scanf("+cuarpeta.get(i).getDato1()+","+cuarpeta.get(i).getVar()+");\n";
             } else if(cuarpeta.get(i).getOperacion().equals("CALL")){
-                codigo += "call "+cuarpeta.get(i).getDato1()+","+cuarpeta.get(i).getDato2()+"\n";
+                   codigo += cuarpeta.get(i).getDato1()+"\n";
+                
             } else if(cuarpeta.get(i).getOperacion().equals("PARAM")){
                 codigo += "param "+cuarpeta.get(i).getVar()+"\n";
             } else if(cuarpeta.get(i).getOperacion().equals("CLSCR")){

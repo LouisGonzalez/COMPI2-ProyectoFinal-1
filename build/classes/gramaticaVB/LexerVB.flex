@@ -49,6 +49,8 @@ Espacio = {Salto} | {Espacio1}
     
     "Sub"                                                       {return symbol(sym.tipoSub, new String(yytext()));}
     "Function"                                                  {return symbol(sym.tipoFuncion, new String(yytext()));}
+    
+    "ByVal"                                                     {return symbol(sym.byVal, new String(yytext()));}
 
     "If"                                                        {return symbol(sym.condIf, new String(yytext()));}
     "Then"                                                      {return symbol(sym.condThen, new String(yytext()));}

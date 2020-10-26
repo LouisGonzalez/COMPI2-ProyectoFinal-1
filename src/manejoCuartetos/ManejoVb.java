@@ -5,6 +5,7 @@
  */
 package manejoCuartetos;
 
+import Tablas.TablaSimbolos;
 import cuartetos.Nodo;
 import gramaticaVB.SintaxVB;
 import java.util.ArrayList;
@@ -18,6 +19,12 @@ import verificaciones.VerifVB;
  * @author luisGonzalez
  */
 public class ManejoVb {
+
+    public String definirTemporal(TablaSimbolos tabla) {
+        String t = "t" + tabla.getObVb().getContVars();
+        tabla.getObVb().setContVars(tabla.getObVb().getContVars() + 1);
+        return t;
+    }
 
     public String definirEtiqueta2(ObjetosVB jv) {
         int suma = jv.getContEt() + 1;
@@ -45,11 +52,34 @@ public class ManejoVb {
     public void crearMetodo(ObjetosVB vb, String idMetodo, ArrayList<Variable> parametros, String tipo) {
         String nombre;
         String param = parametros(parametros);
-        nombre = "VB_"+idMetodo+"_"+param;
+        if (parametros.isEmpty()) {
+            nombre = "VB_" + idMetodo;
+        } else {
+            nombre = "VB_" + idMetodo + "_" + param;
+        }
         vb.getCuarpeta().add(new Nodo("CREACION_METODO", tipo, null, nombre, null));
+        //agregar puntero
+        String et = "t" + vb.getContVars();
+        vb.setContVars(vb.getContVars() + 1);
+
     }
-    
-    public void finMetodo(ObjetosVB vb){
+
+    /*  PENDIENTE
+    //Agrega los parametros al stack segun su posicion
+    public void agregarParametrosStack(TablaSimbolos tabla, ArrayList<Variable> parametros, String idMetodo){
+        for (int i = 0; i < parametros.size(); i++) {
+            for (int j = 0; j < tabla.getTablaExe().size(); j++) {
+                if(parametros.get(i).getId().equals(tabla.getTablaExe().get(j).getId())){
+                    if(tabla.getTablaExe().get(j).getAmbito().equals(idMetodo)){
+                        //agregar los parametros al stack
+                        
+                    }
+                }
+            }
+            
+        }
+    }*/
+    public void finMetodo(ObjetosVB vb) {
         vb.getCuarpeta().add(new Nodo("FIN_METODO", null, null, null, null));
     }
 
@@ -71,11 +101,65 @@ public class ManejoVb {
     }
 
     /*------------------------------------- ASIGNACION VARIABLES ---------------------------------------------*/
-    public String agregarOperacion(ObjetosVB vb, String ladoA, String ladoB, String tipo) {
-        String var = "t" + vb.getContVars();
-        vb.setContVars(vb.getContVars() + 1);
-        vb.getCuarpeta().add(new Nodo(tipo, ladoA, ladoB, var, null));
+    public String agregarOperacion(TablaSimbolos tabla, String ladoA, String ladoB, String tipo, String idMetodo) {
+        String var = "t" + tabla.getObVb().getContVars();
+        tabla.getObVb().setContVars(tabla.getObVb().getContVars() + 1);
+        tabla.getObVb().getCuarpeta().add(new Nodo(tipo, ladoA, ladoB, var, null));
         return var;
+    }
+
+    //metodo que se utiliza cuando una variable esta igualada a tan solo 
+    public String operacionIndividual(TablaSimbolos tabla, String idVar, String idMetodo) {
+        String aDevolver = "";
+        if (!esId(idVar)) {
+            aDevolver = idVar;
+        } else {
+            String t = "t" + tabla.getObVb().getContVars();
+            tabla.getObVb().setContVars(tabla.getObVb().getContVars() + 1);
+            String valMemoria = buscarPosicionMemoria(tabla, idVar, idMetodo);
+            tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
+            aDevolver = "t" + tabla.getObVb().getContVars();
+            tabla.getObVb().setContVars(tabla.getObVb().getContVars() + 1);
+            tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack[" + t + "]", null, aDevolver, null));
+        }
+        return aDevolver;
+    }
+
+    //busca dentro de la pila la posicion de una variable
+    public String buscarPosicionMemoria(TablaSimbolos tabla, String idVar, String idMetodo) {
+        String valor = "";
+        for (int i = 0; i < tabla.getTablaExe().size(); i++) {
+            if (tabla.getTablaExe().get(i).getId().equals(idVar)) {
+                if (tabla.getTablaExe().get(i).getAmbito().equals(idMetodo) && tabla.getTablaExe().get(i).getLenguaje().equals("VB")) {
+                    valor = tabla.getTablaExe().get(i).getPosMemoria().toString();
+                    break;
+                }
+            }
+        }
+        if (valor.equals("")) {
+            valor = idVar;
+        }
+        return valor;
+    }
+
+    //verifica si un id dentro de una operacion es un id - numero - char
+    public boolean esId(String cadena) {
+        String primerItem = Character.toString(cadena.charAt(0));
+        if (primerItem.equals("'")) {
+            return false;
+        } else {
+            try {
+                Integer.parseInt(cadena);
+                return false;
+            } catch (NumberFormatException e) {
+                try {
+                    Double.parseDouble(cadena);
+                    return false;
+                } catch (NumberFormatException ee) {
+                    return true;
+                }
+            }
+        }
     }
 
     public String agregarOperacionFor(ObjetosVB vb, ArrayList<ArrayList<Nodo>> pilaFor, String ladoA, String ladoB, String tipo) {
@@ -85,9 +169,13 @@ public class ManejoVb {
         return var;
     }
 
-    public void agregarValorVar(ObjetosVB vb, String id, String val) {
+    public void agregarValorVar(TablaSimbolos tabla, String id, String val, String idMetodo) {
         if (val != null) {
-            vb.getCuarpeta().add(new Nodo("asig", val, null, id, null));
+            String t = "t" + tabla.getObVb().getContVars();
+            tabla.getObVb().setContVars(tabla.getObVb().getContVars() + 1);
+            String valMemoria = buscarPosicionMemoria(tabla, id, idMetodo);
+            tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
+            tabla.getObVb().getCuarpeta().add(new Nodo("asig", val, null, "stack[" + t + "]", null));
         }
     }
 
@@ -103,6 +191,23 @@ public class ManejoVb {
         } else {
             vb.getCuarpeta().add(new Nodo(tipoOp, ladoA.getId(), ladoB.getId(), var, null));
             return new NodoBoolean("", var);
+        }
+    }
+
+    //Devuelve una etiqueta despues de agregarsele o no un valor dentro del stack
+    public NodoBoolean devolverEtiqueta(TablaSimbolos tabla, NodoBoolean devuelto, String idMetodo) {
+        if (esId(devuelto.getId())) {
+            String t = "t" + tabla.getObVb().getContVars();
+            tabla.getObVb().setContVars(tabla.getObVb().getContVars() + 1);
+            String valMemoria = buscarPosicionMemoria(tabla, devuelto.getId(), idMetodo);
+            tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
+            String t2 = "t" + tabla.getObVb().getContVars();
+            tabla.getObVb().setContVars(tabla.getObVb().getContVars() + 1);
+            tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack[" + t + "]", null, t2, null));
+            NodoBoolean aDevolver = new NodoBoolean(devuelto.getTipo(), t2);
+            return aDevolver;
+        } else {
+            return devuelto;
         }
     }
 
@@ -269,6 +374,15 @@ public class ManejoVb {
     }
 
     /*------------------------------------- SWITCH CASE ---------------------------------------------------*/
+    public String devolverVarSwitch(TablaSimbolos tabla, String idVar, String idMetodo) {
+        String t = definirTemporal(tabla);
+        String valMemoria = buscarPosicionMemoria(tabla, idVar, idMetodo);
+        tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
+        String t2 = definirTemporal(tabla);
+        tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack[" + t + "]", null, t2, null));
+        return t2;
+    }
+
     public void agregarCaseSwitch(ObjetosVB vb, int jerarquia, String comparacion1, String comparacion2, String tipoOp) {
         String et = definirEtiqueta2(vb);
         vb.getCuarpeta().add(new Nodo("IF " + tipoOp, comparacion1, comparacion2, et, jerarquia));
@@ -338,35 +452,54 @@ public class ManejoVb {
     }
 
     /*------------------------------------------- INPUTS ------------------------------------------------------*/
-    public void crearScanf(ObjetosVB vb, String id, String tipo) {
+    public void crearScanf(TablaSimbolos tabla, String id, String tipo, String idMetodo) {
+        String t = definirTemporal(tabla);
+        String valMemoria = buscarPosicionMemoria(tabla, id, idMetodo);
+        tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
+        String t2 = definirTemporal(tabla);
+        tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack[" + t + "]", null, t2, null));
         if (tipo.equals("Integer")) {
-            vb.getCuarpeta().add(new Nodo("SCANF", "%d", null, id, null));
+            tabla.getObVb().getCuarpeta().add(new Nodo("SCANF", "%d", null, t2, null));
         } else if (tipo.equals("Float")) {
-            vb.getCuarpeta().add(new Nodo("SCANF", "%f", null, id, null));
+            tabla.getObVb().getCuarpeta().add(new Nodo("SCANF", "%f", null, t2, null));
         } else if (tipo.equals("Char")) {
-            vb.getCuarpeta().add(new Nodo("SCANF", "%c", null, id, null));
+            tabla.getObVb().getCuarpeta().add(new Nodo("SCANF", "%c", null, t2, null));
         }
     }
 
     /*-------------------------------------------- RETURNS ----------------------------------------------------*/
-    
-    public void crearReturn(ObjetosVB c, String id){
-        String var = "t"+c.getContVars();
-        c.setContVars(c.getContVars()+1);
-        c.getCuarpeta().add(new Nodo("asig", id, null, var, null));
+    public void crearReturn(TablaSimbolos tabla, String id, String idMetodo) {
+            String var = definirTemporal(tabla);
+            String valMemoria = buscarPosicionMemoria(tabla, "return", idMetodo);
+            tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", valMemoria, var, null));
+            tabla.getObVb().getCuarpeta().add(new Nodo("asig", id, null, "stack["+var+"]", null));
     }
- 
+
     /*------------------------------------------- MENSAJES ---------------------------------------------------*/
-    
-    public String concatenarMensajes(ObjetosVB vb, String ladoA, String ladoB){
-        String et = "t"+vb.getContVars();
-        vb.setContVars(vb.getContVars()+1);
+    public String concatenarMensajes(ObjetosVB vb, String ladoA, String ladoB) {
+        String et = "t" + vb.getContVars();
+        vb.setContVars(vb.getContVars() + 1);
         vb.getCuarpeta().add(new Nodo("asig", ladoA, ladoB, et, null));
         return et;
     }
-    
-    public void mostrarMensaje(ObjetosVB vb, String id){
+
+    public String concatenarMensajes2(TablaSimbolos tabla, String idVar, String ladoB, String idMetodo) {
+        if (esId(idVar)) {
+            String t = definirTemporal(tabla);
+            String valMemoria = buscarPosicionMemoria(tabla, idVar, idMetodo);
+            tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
+            String t2 = definirTemporal(tabla);
+            tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack[" + t + "]", null, t2, null));
+            String t3 = definirTemporal(tabla);
+            tabla.getObVb().getCuarpeta().add(new Nodo("asig", t2, ladoB, t3, null));
+            return t3;
+        } else {
+            return concatenarMensajes(tabla.getObVb(), idVar, ladoB);
+        }
+    }
+
+    public void mostrarMensaje(ObjetosVB vb, String id) {
         vb.getCuarpeta().add(new Nodo("PRINT", null, null, id, null));
     }
-    
+
 }

@@ -5,6 +5,8 @@
  */
 package objetos;
 
+import java.util.ArrayList;
+
 /**
  *
  * @author luisGonzalez
@@ -15,12 +17,21 @@ public class Arreglo {
     private String tipo;
     private Integer nivel;
     private Integer dimension;
+    private ArrayList<String> dimensiones = new ArrayList<>();
 
     public Arreglo(String id, String tipo, Integer nivel, Integer dimension) {
         this.id = id;
         this.tipo = tipo;
         this.nivel = nivel;
         this.dimension = dimension;
+    }
+
+    public ArrayList<String> getDimensiones() {
+        return dimensiones;
+    }
+
+    public void setDimensiones(ArrayList<String> dimensiones) {
+        this.dimensiones = dimensiones;
     }
 
     public String getId() {

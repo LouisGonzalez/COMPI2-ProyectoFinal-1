@@ -5,10 +5,9 @@
  */
 package manejoCuartetos;
 
-import Operaciones.OperacionesPY;
+import Tablas.TablaSimbolos;
 import cuartetos.Nodo;
 import gramaticaPYTHON.SintaxPYTHON;
-import gramaticaVB.SintaxVB;
 import java.util.ArrayList;
 import objetos.ObjetosPYTHON;
 import objetosApoyo.NodoBoolean;
@@ -19,14 +18,20 @@ import verificaciones.VerifPY;
  * @author luisGonzalez
  */
 public class ManejoPython {
-
+    
+    public String definirTemporal(TablaSimbolos tabla) {
+        String t = "t" + tabla.getObPython().getContVars();
+        tabla.getObPython().setContVars(tabla.getObPython().getContVars() + 1);
+        return t;
+    }
+    
     public String definirEtiqueta2(ObjetosPYTHON jv) {
         int suma = jv.getContEt() + 1;
         jv.setContEt(suma);
         String et = "et_" + suma;
         return et;
     }
-
+    
     public String ultimoGotoFinal(ObjetosPYTHON py, int jerarquia) {
         String nodo = null;
         for (int i = 0; i < py.getCuarpeta().size(); i++) {
@@ -41,7 +46,7 @@ public class ManejoPython {
         }
         return nodo;
     }
-
+    
     public Integer ultimaEtiquetaFinal(ObjetosPYTHON py, int jerarquia) {
         Integer nodo = null;
         for (int i = 0; i < py.getCuarpeta().size(); i++) {
@@ -56,7 +61,7 @@ public class ManejoPython {
         }
         return nodo;
     }
-
+    
     public String obtenerUltimoGoTo(ArrayList<Nodo> jv, int jerarquia) {
         String et = "";
         for (int i = 0; i < jv.size(); i++) {
@@ -74,32 +79,78 @@ public class ManejoPython {
 
     /*------------------------------------------- METODOS -------------------------------------------------*/
     public void crearMetodo(ObjetosPYTHON py, String idMetodo, ArrayList<String> parametros, String retorno) {
-        String nombre = "PY_"+idMetodo;
+        String nombre = "PY_" + idMetodo;
         py.getCuarpeta().add(new Nodo("CREACION_METODO", retorno, null, nombre, null));
     }
-
+    
     public void finMetodo(ObjetosPYTHON py) {
         py.getCuarpeta().add(new Nodo("FIN_METODO", null, null, null, null));
     }
 
     /*--------------------------------------- MANEJO DE VARIABLES ----------------------------------------------*/
-    public void agregarVariable(ObjetosPYTHON py, String idVar, NodoBoolean valoresVar, int fila, int columna) {
-        OperacionesPY op = new OperacionesPY();
-        if (!op.asignarVariables(py, idVar, valoresVar.getTipo(), fila, columna)) {
-            py.getCuarpeta().add(new Nodo("CREACION_VAR", valoresVar.getTipo(), null, idVar, null));
-        }
-        py.getCuarpeta().add(new Nodo("asig", valoresVar.getId(), null, idVar, null));
+    public void agregarVariable(TablaSimbolos tabla, String idMetodo, String idVar, NodoBoolean valoresVar, int fila, int columna) {
+        String t = definirTemporal(tabla);
+        String valMemoria = buscarPosicionMemoria(tabla, idVar, idMetodo);
+        tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
+        tabla.getObPython().getCuarpeta().add(new Nodo("asig", valoresVar.getId(), null, "stack[" + t + "]", null));
+        
     }
-
+    
     public void asignacionesMultiples(ObjetosPYTHON py, ArrayList<String> identificadores, ArrayList<NodoBoolean> valores, int fila, int columna) {
-        OperacionesPY op = new OperacionesPY();
         if (valores != null) {
             if (identificadores.size() == valores.size()) {
                 for (int i = 0; i < identificadores.size(); i++) {
-                    if (!op.asignarVariables(py, identificadores.get(i), valores.get(i).getTipo(), fila, columna)) {
-                        py.getCuarpeta().add(new Nodo("CREACION_VAR", valores.get(i).getTipo(), null, identificadores.get(i), null));
-                    }
+                    
                     py.getCuarpeta().add(new Nodo("asig", valores.get(i).getId(), null, identificadores.get(i), null));
+                }
+            }
+        }
+    }
+
+    /*---------------------------------------- MANEJO DE PILA -------------------------------------------------*/
+    public NodoBoolean operacionIndividual(TablaSimbolos tabla, NodoBoolean nodo, String idMetodo) {
+        if (!esId(nodo.getId())) {
+            return nodo;
+        } else {
+            String t = definirTemporal(tabla);
+            String valMemoria = buscarPosicionMemoria(tabla, nodo.getId(), idMetodo);
+            tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
+            String t2 = definirTemporal(tabla);
+            tabla.getObPython().getCuarpeta().add(new Nodo("asig", "stack[" + t + "]", null, t2, null));
+            return new NodoBoolean(nodo.getTipo(), t2);
+        }
+    }
+    
+    public String buscarPosicionMemoria(TablaSimbolos tabla, String idVar, String idMetodo) {
+        String valor = "";
+        for (int i = 0; i < tabla.getTablaExe().size(); i++) {
+            if (tabla.getTablaExe().get(i).getId().equals(idVar)) {
+                if (tabla.getTablaExe().get(i).getAmbito().equals(idMetodo) && tabla.getTablaExe().get(i).getLenguaje().equals("PY")) {
+                    valor = tabla.getTablaExe().get(i).getPosMemoria().toString();
+                    break;
+                }
+            }
+        }
+        if (valor.equals("")) {
+            valor = idVar;
+        }
+        return valor;
+    }
+    
+    public boolean esId(String cadena) {
+        String primerItem = Character.toString(cadena.charAt(0));
+        if (primerItem.equals("'")) {
+            return false;
+        } else {
+            try {
+                Integer.parseInt(cadena);
+                return false;
+            } catch (NumberFormatException e) {
+                try {
+                    Double.parseDouble(cadena);
+                    return false;
+                } catch (NumberFormatException ex) {
+                    return true;
                 }
             }
         }
@@ -117,9 +168,8 @@ public class ManejoPython {
         } else {
             return new NodoBoolean("", var);
         }
-
     }
-
+    
     public ArrayList<Nodo> agregarBooleans(ObjetosPYTHON py, ArrayList<ArrayList<Nodo>> pilaFalsas, NodoBoolean ladoA, NodoBoolean ladoB, String op, int fila, int columna) {
         VerifPY verif = new VerifPY();
         ArrayList<Nodo> list = new ArrayList<>();
@@ -127,7 +177,7 @@ public class ManejoPython {
             if (!ladoA.getTipo().equals("") && !ladoB.getTipo().equals("")) {
                 verif.verificarTipoOperacion(py, ladoA.getTipo(), ladoB.getTipo(), fila, columna);
             }
-
+            
             String et = definirEtiqueta2(py);
             list.add(new Nodo("IF " + op, ladoA.getId(), ladoB.getId(), et, SintaxPYTHON.jerarquia));
             int sum = py.getContEt() + 1;
@@ -196,7 +246,7 @@ public class ManejoPython {
         SintaxPYTHON.inst = false;
         SintaxPYTHON.etInst = "";
     }
-
+    
     public void segundoChequeoIf(ObjetosPYTHON py, ArrayList<Boolean> usoPila, ArrayList<ArrayList<Nodo>> pilaCuarpeta, ArrayList<ArrayList<Nodo>> pilaFalsas) {
         ManejoCondiciones manejo = new ManejoCondiciones();
         if (!pilaCuarpeta.isEmpty()) {
@@ -232,7 +282,7 @@ public class ManejoPython {
         py.getCuarpeta().add(new Nodo("ETIQUETA", etWhile, null, null, SintaxPYTHON.jerarquia));
         primerChequeoIf(py, booleano);
     }
-
+    
     public void retornoWhile(ObjetosPYTHON py, ArrayList<Boolean> usoPila, ArrayList<ArrayList<Nodo>> pilaCuarpeta, ArrayList<ArrayList<Nodo>> pilaFalsas) {
         ManejoCondiciones manejo = new ManejoCondiciones();
         String etWhile = buscarUltimoWhile(py, SintaxPYTHON.jerarquia);
@@ -240,7 +290,7 @@ public class ManejoPython {
         segundoChequeoIf(py, usoPila, pilaCuarpeta, pilaFalsas);
         manejo.agregarEtiquetaFinPY(py, SintaxPYTHON.jerarquia);
     }
-
+    
     public String buscarUltimoWhile(ObjetosPYTHON jv, int jerarquia) {
         String etWhile = "";
         for (int i = 0; i < jv.getCuarpeta().size(); i++) {
@@ -273,7 +323,7 @@ public class ManejoPython {
         pilaFalsas.get(pilaFalsas.size() - 1).add(new Nodo("ETIQUETA", et2, null, null, SintaxPYTHON.jerarquia));
         py.getCuarpeta().add(new Nodo("ETIQUETA", et, null, null, SintaxPYTHON.jerarquia));
     }
-
+    
     public void retornoFor(ObjetosPYTHON py, ArrayList<Boolean> usoPila, ArrayList<ArrayList<Nodo>> pilaCuarpeta, ArrayList<ArrayList<Nodo>> pilaFalsas, ArrayList<ArrayList<Nodo>> pilaFor) {
         ManejoCondiciones manejo = new ManejoCondiciones();
         String etFor = buscarUltimoFor(py, SintaxPYTHON.jerarquia);
@@ -285,14 +335,14 @@ public class ManejoPython {
         segundoChequeoIf(py, usoPila, pilaCuarpeta, pilaFalsas);
         manejo.agregarEtiquetaFinPY(py, SintaxPYTHON.jerarquia);
     }
-
+    
     public void agregarAuxPilaFor(ObjetosPYTHON py, ArrayList<ArrayList<Nodo>> pilaFor, String numero, String varAsignar) {
         String et = "t" + py.getContVars();
         py.setContVars(py.getContVars() + 1);
         pilaFor.get(pilaFor.size() - 1).add(new Nodo("suma", numero, varAsignar, et, null));
         pilaFor.get(pilaFor.size() - 1).add(new Nodo("asig", et, null, varAsignar, null));
     }
-
+    
     public String buscarUltimoFor(ObjetosPYTHON vb, int jerarquia) {
         String etFor = "";
         for (int i = 0; i < vb.getCuarpeta().size(); i++) {
@@ -309,13 +359,18 @@ public class ManejoPython {
     }
 
     /*------------------------------------------ INPUTS ---------------------------------------------------*/
-    public void crearScanf(ObjetosPYTHON py, String id, String tipo) {
+    public void crearScanf(TablaSimbolos tabla, String id, String tipo, String idMetodo) {
+        String t = definirTemporal(tabla);
+        String valMemoria = buscarPosicionMemoria(tabla, id, idMetodo);
+        tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
+        String t2 = definirTemporal(tabla);
+        tabla.getObPython().getCuarpeta().add(new Nodo("asig", "stack[" + t + "]", null, t2, null));
         if (tipo.equals("Integer")) {
-            py.getCuarpeta().add(new Nodo("SCANF", "%d", null, id, null));
+            tabla.getObPython().getCuarpeta().add(new Nodo("SCANF", "%d", null, t2, null));
         } else if (tipo.equals("Float")) {
-            py.getCuarpeta().add(new Nodo("SCANF", "%f", null, id, null));
+            tabla.getObPython().getCuarpeta().add(new Nodo("SCANF", "%f", null, t2, null));
         } else if (tipo.equals("Char")) {
-            py.getCuarpeta().add(new Nodo("SCANF", "%c", null, id, null));
+            tabla.getObPython().getCuarpeta().add(new Nodo("SCANF", "%c", null, t2, null));
         }
     }
 
@@ -326,17 +381,34 @@ public class ManejoPython {
         py.getCuarpeta().add(new Nodo("asig", ladoA, ladoB, et, null));
         return et;
     }
-
+    
+    public String concatenarMensaje2(TablaSimbolos tabla, String ladoA, String ladoB, String idMetodo) {
+        if (esId(ladoA)) {
+            String t = definirTemporal(tabla);
+            String valMemoria = buscarPosicionMemoria(tabla, ladoA, idMetodo);
+            tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
+            String t2 = definirTemporal(tabla);
+            tabla.getObPython().getCuarpeta().add(new Nodo("asig", "stack[" + t + "]", null, t2, null));
+            String t3 = definirTemporal(tabla);
+            tabla.getObPython().getCuarpeta().add(new Nodo("asig", t2, ladoB, t3, null));
+            return t3;
+        } else {
+            return concatenarMensaje(tabla.getObPython(), ladoA, ladoB);
+        }
+        
+    }
+    
     public void mostrarMensaje(ObjetosPYTHON py, String id) {
         py.getCuarpeta().add(new Nodo("PRINT", null, null, id, null));
     }
-    
+
     /*------------------------------------------ RETURN ------------------------------------------------------*/
-    
-    public void agregarReturn(ObjetosPYTHON py, String id){
-        String et = "t" + py.getContVars();
-        py.setContVars(py.getContVars()+1);
-        py.getCuarpeta().add(new Nodo("asig", id, null, et, null));
+    public void agregarReturn(TablaSimbolos tabla, String id, String idMetodo) {
+        String t = definirTemporal(tabla);
+        String valMemoria = buscarPosicionMemoria(tabla, "return", idMetodo);
+        tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
+        tabla.getObPython().getCuarpeta().add(new Nodo("asig", id, null, "stack[" + t + "]", null));
+        
     }
     
 }
