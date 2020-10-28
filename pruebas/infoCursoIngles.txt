@@ -27,20 +27,30 @@ End Function
 %%JAVA
 public class algo {
 	int z = 23;
+	int d2 = 12;
+	int qq44 = 9;
+	int qq35 = 9;
+	int qq78 = 9;
+	int qq5 = 9;
+	int qq576 = 9;
 
 	public void aaa(float a, int b){
 		int c = 12 + z + a;
 	}
 
+	int qq11 = 9;
+
 	public int aa2(float a, int b){
 		z = 12;
 		return z;
 	}
+	int qq231 = 9;
 	
 	public algo(int a, int c){
 
 	}
 
+	int qq233 = 9;
 
 }
 %%PY

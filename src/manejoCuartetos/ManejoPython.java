@@ -361,17 +361,18 @@ public class ManejoPython {
     /*------------------------------------------ INPUTS ---------------------------------------------------*/
     public void crearScanf(TablaSimbolos tabla, String id, String tipo, String idMetodo) {
         String t = definirTemporal(tabla);
-        String valMemoria = buscarPosicionMemoria(tabla, id, idMetodo);
-        tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
-        String t2 = definirTemporal(tabla);
-        tabla.getObPython().getCuarpeta().add(new Nodo("asig", "stack[" + t + "]", null, t2, null));
         if (tipo.equals("Integer")) {
-            tabla.getObPython().getCuarpeta().add(new Nodo("SCANF", "%d", null, t2, null));
+            tabla.getObPython().getCuarpeta().add(new Nodo("SCANF", "%d", null, t, null));
         } else if (tipo.equals("Float")) {
-            tabla.getObPython().getCuarpeta().add(new Nodo("SCANF", "%f", null, t2, null));
+            tabla.getObPython().getCuarpeta().add(new Nodo("SCANF", "%f", null, t, null));
         } else if (tipo.equals("Char")) {
-            tabla.getObPython().getCuarpeta().add(new Nodo("SCANF", "%c", null, t2, null));
+            tabla.getObPython().getCuarpeta().add(new Nodo("SCANF", "%c", null, t, null));
         }
+        String posMemoria = buscarPosicionMemoria(tabla, id, idMetodo);
+        String t2 = definirTemporal(tabla);
+        tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t2, null));
+        tabla.getObPython().getCuarpeta().add(new Nodo("asig", t, null, "stack["+t2+"]", null));
+        
     }
 
     /*----------------------------------------- MENSAJES ---------------------------------------------------*/

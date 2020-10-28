@@ -275,7 +275,6 @@ public class VerifC {
                 }
                 if (!existe) {
                     SintaxC.itMetodo = null;
-                    System.out.println("No existe ningun metodo en PYTHON con el id: " + idMetodo);
                     PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe ningun metodo en PYTHON con el id: " + idMetodo + "\n";
                 }
             } else if (lenguaje.equals("VB")) {
@@ -288,7 +287,6 @@ public class VerifC {
                 }
                 if (!existe) {
                     SintaxC.itMetodo = null;
-                    System.out.println("No existe ningun metodo en VB con el id: " + idMetodo);
                     PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe ningun metodo en VB con el id: " + idMetodo + "\n";
                 }
             } else if (lenguaje.equals("JAVA")) {
@@ -302,7 +300,6 @@ public class VerifC {
                 }
                 if (!existe) {
                     SintaxC.itMetodo = null;
-                    System.out.println("No existe ningun metodo en la clase: " + aUsar.getId() + " con el id: " + idMetodo);
                     PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe ningun metodo en la clase: " + aUsar.getId() + " con el id: " + idMetodo + "\n";
                 }
             }

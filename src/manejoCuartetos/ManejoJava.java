@@ -8,7 +8,9 @@ package manejoCuartetos;
 import Tablas.TablaSimbolos;
 import cuartetos.Nodo;
 import gramaticaJAVA.SintaxJAVA;
+import interfaz.PanelPrincipal;
 import java.util.ArrayList;
+import manejoExe.ExeJava;
 import objetos.ObjetosJAVA;
 import objetosApoyo.NodoBoolean;
 import objetosApoyo.NodoHeap;
@@ -108,7 +110,152 @@ public class ManejoJava {
             }
         }
     }
+    
+    /*----------------------------------------- LLAMADO A METODOS ------------------------------------------------*/
+    
+    
+    public String devolverEtiquetaMetodo(TablaSimbolos tabla, String idMetodo, String idClase, ArrayList<NodoBoolean> etiquetas, int linea){
+        invocarMetodo(tabla, idMetodo, idClase, etiquetas, linea);
+        String idTotal = encontrarIdMetodo(tabla, idMetodo, idClase);
+        NodoHeap posReturn = buscarPosicionMemoria(tabla, "return", idMetodo, idClase);
+        int posMemoria = determinarSizeAmbito(tabla, idTotal);
+        if(posReturn != null){
+            String t = definirTemporal(tabla);
+            tabla.getObJava().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t, null));
+            String t2 = definirTemporal(tabla);
+            tabla.getObJava().getCuarpeta().add(new Nodo("suma", t, posReturn.getPosMemoria(), t2, null));
+            String t3 = definirTemporal(tabla);
+            tabla.getObJava().getCuarpeta().add(new Nodo("asig", "stack["+t2+"]", null, t3, null));
+            return t3;
+        } else {
+            return "";
+        }
+    }
+    
+    
+    public void invocarMetodo(TablaSimbolos tabla, String idMetodo, String idClase, ArrayList<NodoBoolean> etiquetas, int linea){
+        VerifJAVA verif = new VerifJAVA();
+        ExeJava exe = new ExeJava();
+        ManejoC manejoc = new ManejoC();
+        String parametros = "";
+        for (int i = 0; i < etiquetas.size(); i++) {
+            if(i == 0){
+                parametros = etiquetas.get(i).getTipo();
+            } else {
+                parametros += "_"+etiquetas.get(i).getTipo();
+            }
+        }
+        String [] arregloParam = parametros.split("_");
+        String id = "";
+        if(!parametros.equals("")){
+            id = idClase + "_" + idMetodo + "_" + parametros;
+        } else {
+            id = idClase + "_" + idMetodo;
+        }
+        String varTotal = manejoc.encontrarIdMetodo(tabla, idMetodo, idClase, "JV");
+        if(verificarParametrosCorrectos(tabla, varTotal, arregloParam, verif, linea)){
+            //paso de parametros
+            pasoParametros(tabla, id, etiquetas, exe);
+            //preparando this
+            preparandoThis(tabla, id);
+            //invocando metodo
+            int posVar = determinarSizeAmbito(tabla, id);
+            tabla.getObJava().getCuarpeta().add(new Nodo("suma", "p", posVar, "p", null));
+            tabla.getObJava().getCuarpeta().add(new Nodo("CALL", id+"();", null, null, null));
+            tabla.getObJava().getCuarpeta().add(new Nodo("resta", "p", posVar, "p", null));
+        }
+    }
+    
+    public void pasoParametros(TablaSimbolos tabla, String ambito, ArrayList<NodoBoolean> etiquetas, ExeJava exe){
+        int cont = 0; 
+        int posVar = determinarSizeAmbito(tabla, ambito);
+        for (int i = 0; i < tabla.getTablaExe().size(); i++) {
+            if(tabla.getTablaExe().get(i).getRol().equals("parametro") && tabla.getTablaExe().get(i).getAmbito().equals(ambito) && tabla.getTablaExe().get(i).getLenguaje().equals("JV")){
+                if(!tabla.getTablaExe().get(i).isChequeado()){
+                    String t1 = definirTemporal(tabla);
+                    tabla.getObJava().getCuarpeta().add(new Nodo("suma", "p", posVar, t1, null));
+                    String t2 = definirTemporal(tabla);
+                    tabla.getObJava().getCuarpeta().add(new Nodo("suma", t1, tabla.getTablaExe().get(i).getPosMemoria(), t2, null));
+                    tabla.getObJava().getCuarpeta().add(new Nodo("asig", etiquetas.get(cont).getId(), null, "stack["+t2+"]", null));
+                    tabla.getTablaExe().get(i).setChequeado(true);
+                    cont++;
+                }
+            }
+        }
+        for (int i = 0; i < tabla.getTablaExe().size(); i++) {
+            tabla.getTablaExe().get(i).setChequeado(false);
+        }
+    }
+    
+    public void preparandoThis(TablaSimbolos tabla, String ambito){
+        int posVar = determinarSizeAmbito(tabla, ambito);
+        String t = definirTemporal(tabla);
+        tabla.getObJava().getCuarpeta().add(new Nodo("suma", "p", 0, t, null));
+        String t2 = definirTemporal(tabla);
+        tabla.getObJava().getCuarpeta().add(new Nodo("asig", "stack["+t+"]", null, t2, null));
+        String t3 = definirTemporal(tabla);
+        tabla.getObJava().getCuarpeta().add(new Nodo("suma", "p", posVar, t3, posVar));
+        String t4 = definirTemporal(tabla);
+        tabla.getObJava().getCuarpeta().add(new Nodo("suma", t3, 0, t4, null));
+        tabla.getObJava().getCuarpeta().add(new Nodo("asig", t2, null, "stack["+t4+"]", null));
+    }
+    
+    public boolean verificarParametrosCorrectos(TablaSimbolos tabla, String id, String[] arregloParam, VerifJAVA verif, int linea){
+        boolean todoCorrecto = true;
+        for (int i = 0; i < tabla.getTablaExe().size(); i++) {
+            if(tabla.getTablaExe().get(i).getRol().equals("metodo") && tabla.getTablaExe().get(i).getId().equals(id) && tabla.getTablaExe().get(i).getLenguaje().equals("JV")){
+                if(!tabla.getTablaExe().get(i).getListParametros().equals("")){
+                    String[] arregloParam2 = tabla.getTablaExe().get(i).getListParametros().split("_");
+                    if(arregloParam2.length == arregloParam.length){
+                        for (int j = 0; j < arregloParam.length; j++) {
+                            if(!arregloParam[j].equals(arregloParam2[j])){
+                                if(!verif.verificarPadreVar(tabla.getObJava(), arregloParam[j], arregloParam2[j])){
+                                    todoCorrecto = false;
+                                    PanelPrincipal.errores += "Fila: "+linea+" Tipo de error: SEMANTICO - Causa: Parametros equivocados en metodo: "+id+"\n";
+                                    break;
+                                }
+                            }
+                        }
+                        if(todoCorrecto){
+                            break;
+                        }
+                    } else {
+                        todoCorrecto = false;
+                    }
+                }
+            }
+        }
+        return todoCorrecto;
+    }
+    
+    public String encontrarIdMetodo(TablaSimbolos tabla, String idMetodo, String idClase){
+        String id = idClase + "_" + idMetodo;
+        String aDevolver = "";
+        for (int i = 0; i < tabla.getTablaExe().size(); i++) {
+            if(tabla.getTablaExe().get(i).getRol().equals("metodo") && tabla.getTablaExe().get(i).getLenguaje().equals("JV")){
+                String[] arreglo = tabla.getTablaExe().get(i).getId().split("_");
+                String id2 = arreglo[0] + "_" + arreglo[1];
+                if(id.equals(id2)){
+                    aDevolver = tabla.getTablaExe().get(i).getId();
+                    break;
+                }
+            }
+        }
+        return aDevolver;
+    }
 
+    public int determinarSizeAmbito(TablaSimbolos tabla, String ambito){
+        int size = 0;
+        for (int i = 0; i < tabla.getTablaExe().size(); i++) {
+            if(tabla.getTablaExe().get(i).getId().equals(ambito) && tabla.getTablaExe().get(i).getLenguaje().equals("JV")){
+                size = tabla.getTablaExe().get(i).getSize();
+                break;
+            }
+        }
+        return size;
+    }
+
+    
     /*---------------------------------------- ASIGNACION VARIABLES------------------------------------------*/
     public void agregarValVariable(TablaSimbolos tabla, String idVar, String et, String idMetodo, String idClase) {
         NodoHeap posible = buscarPosicionMemoria(tabla, idVar, idMetodo, idClase);
@@ -119,8 +266,12 @@ public class ManejoJava {
                 tabla.getObJava().getCuarpeta().add(new Nodo("asig", et, null, "stack[" + t + "]", null));
             } else {
                 String t = definirTemporal(tabla);
-                tabla.getObJava().getCuarpeta().add(new Nodo("suma", "h", posible.getPosMemoria(), t, null));
-                tabla.getObJava().getCuarpeta().add(new Nodo("asig", et, null, "heap[" + t + "]", null));
+                tabla.getObJava().getCuarpeta().add(new Nodo("suma", "p", "0", t, null));
+                String t2 = definirTemporal(tabla);
+                tabla.getObJava().getCuarpeta().add(new Nodo("asig", "stack["+t+"]", null, t2, null));
+                String t3 = definirTemporal(tabla);
+                tabla.getObJava().getCuarpeta().add(new Nodo("suma", t2, posible.getPosMemoria(), t3, null));
+                tabla.getObJava().getCuarpeta().add(new Nodo("asig", et, null, "heap["+t3+"]", null));
             }
         }
     }
@@ -131,8 +282,12 @@ public class ManejoJava {
         if (posible != null) {
             if (!posible.getEnMetodo()) {
                 String t = definirTemporal(tabla);
-                tabla.getObJava().getCuarpeta().add(new Nodo("suma", "h", posible.getPosMemoria(), t, null));
-                tabla.getObJava().getCuarpeta().add(new Nodo("asig", et, null, "heap[" + t + "]", null));
+                tabla.getObJava().getCuarpeta().add(new Nodo("suma", "p", "0", t, null));
+                String t2 = definirTemporal(tabla);
+                tabla.getObJava().getCuarpeta().add(new Nodo("asig", "stack["+t+"]", null, t2, null));
+                String t3 = definirTemporal(tabla);
+                tabla.getObJava().getCuarpeta().add(new Nodo("suma", t2, posible.getPosMemoria(), t3, null));
+                tabla.getObJava().getCuarpeta().add(new Nodo("asig", et, null, "heap["+t3+"]", null));
             }
         }
     }
@@ -157,9 +312,14 @@ public class ManejoJava {
                     tabla.getObJava().getCuarpeta().add(new Nodo("asig", "stack[" + t + "]", null, aDevolver, null));
                 } else {
                     String t = definirTemporal(tabla);
-                    tabla.getObJava().getCuarpeta().add(new Nodo("suma", "h", posible.getPosMemoria(), t, null));
+                    
+                    tabla.getObJava().getCuarpeta().add(new Nodo("suma", "p", "0", t, null));
+                    String t2 = definirTemporal(tabla);
+                    tabla.getObJava().getCuarpeta().add(new Nodo("asig", "stack["+t+"]", null, t2, null));
+                    String t3 = definirTemporal(tabla);
+                    tabla.getObJava().getCuarpeta().add(new Nodo("suma", t2, posible.getPosMemoria(), t3, null));
                     aDevolver = definirTemporal(tabla);
-                    tabla.getObJava().getCuarpeta().add(new Nodo("asig", "heap[" + t + "]", null, aDevolver, null));
+                    tabla.getObJava().getCuarpeta().add(new Nodo("asig", "heap["+t3+"]", null, aDevolver, null));
                 }
             }
         }
@@ -188,6 +348,21 @@ public class ManejoJava {
         jv.getCuarpeta().add(new Nodo("FIN_METODO", null, null, null, null));
     }
 
+    /*-------------------------------------------- CONSTRUCTOR ----------------------------------------------------*/
+    
+    
+    public void inicializarThis(TablaSimbolos tabla, String idMetodo, String idClase){
+        String t = definirTemporal(tabla);
+        NodoHeap posMemoria = buscarPosicionMemoria(tabla, "this", idMetodo, idClase);
+        tabla.getObJava().getCuarpeta().add(new Nodo("suma", "p", posMemoria.getPosMemoria(), t, null));
+        tabla.getObJava().getCuarpeta().add(new Nodo("asig", "h", null, "stack["+t+"]", null));
+        tabla.getObJava().getCuarpeta().add(new Nodo("suma", "h", "VALOR_CLASE_"+idClase, "h", null));
+    }
+    
+        
+    
+    
+    
     /*---------------------------------------- NOT ----------------------------------------------------------*/
     public ArrayList<Nodo> cambiarGotos(ArrayList<Nodo> booleano) {
         String goto1 = booleano.get(0).getVar();
@@ -260,10 +435,16 @@ public class ManejoJava {
                     return new NodoBoolean(devuelto.getTipo(), t2);
                 } else {
                     String t = definirTemporal(tabla);
-                    tabla.getObJava().getCuarpeta().add(new Nodo("suma", "h", posible.getPosMemoria(), t, null));
+                    
+                    
+                    tabla.getObJava().getCuarpeta().add(new Nodo("suma", "p", "0", t, null));
                     String t2 = definirTemporal(tabla);
-                    tabla.getObJava().getCuarpeta().add(new Nodo("asig", "heap[" + t + "]", null, t2, null));
-                    return new NodoBoolean(devuelto.getTipo(), t2);
+                    tabla.getObJava().getCuarpeta().add(new Nodo("asig", "stack["+t+"]", null, t2, null));
+                    String t3 = definirTemporal(tabla);
+                    tabla.getObJava().getCuarpeta().add(new Nodo("suma", t2, posible.getPosMemoria(), t3, null));
+                    String t4 = definirTemporal(tabla);
+                    tabla.getObJava().getCuarpeta().add(new Nodo("asig", "heap["+t3+"]", null, t4, null));
+                    return new NodoBoolean(devuelto.getTipo(), t4);
                 }
             } else {
                 return devuelto;
@@ -411,9 +592,13 @@ public class ManejoJava {
                 tabla.getObJava().getCuarpeta().add(new Nodo("asig", "stack["+t+"]", null, aDevolver, null));
             } else {
                 String t = definirTemporal(tabla);
-                tabla.getObJava().getCuarpeta().add(new Nodo("suma", "h", posible.getPosMemoria(), t, null));
+                tabla.getObJava().getCuarpeta().add(new Nodo("suma", "p", "0", t, null));
+                String t2 = definirTemporal(tabla);
+                tabla.getObJava().getCuarpeta().add(new Nodo("asig", "stack["+t+"]", null, t2, null));
+                String t3 = definirTemporal(tabla);
+                tabla.getObJava().getCuarpeta().add(new Nodo("suma", t2, posible.getPosMemoria(), t3, null));
                 aDevolver = definirTemporal(tabla);
-                tabla.getObJava().getCuarpeta().add(new Nodo("asig", "heap["+t+"]", null, aDevolver, null));
+                tabla.getObJava().getCuarpeta().add(new Nodo("asig", "heap["+t3+"]", null, aDevolver, null));
             }
         }
         return aDevolver;
@@ -461,8 +646,12 @@ public class ManejoJava {
                 tabla.getObJava().getCuarpeta().add(new Nodo("asig", varAsignar, null, "stack["+t+"]", null));
             } else {
                 String t = definirTemporal(tabla);
-                tabla.getObJava().getCuarpeta().add(new Nodo("suma", "h", posible.getPosMemoria(), t, null));
-                tabla.getObJava().getCuarpeta().add(new Nodo("asig", varAsignar, null, "heap["+t+"]", null));
+                tabla.getObJava().getCuarpeta().add(new Nodo("suma", "p", "0", t, null));
+                String t2 = definirTemporal(tabla);
+                tabla.getObJava().getCuarpeta().add(new Nodo("asig", "stack["+t+"]", null, t2, null));
+                String t3 = definirTemporal(tabla);
+                tabla.getObJava().getCuarpeta().add(new Nodo("suma", t2, posible.getPosMemoria(), t3, null));
+                tabla.getObJava().getCuarpeta().add(new Nodo("asig", varAsignar, null, "heap["+t3+"]", null));
             }
         }
         tabla.getObJava().getCuarpeta().add(new Nodo("GOTO", null, null, etFor, jerarquia));
@@ -507,8 +696,12 @@ public class ManejoJava {
                 tabla.getObJava().getCuarpeta().add(new Nodo("asig", temp, null, "stack["+t+"]", null));
             } else {
                 String t = definirTemporal(tabla);
-                tabla.getObJava().getCuarpeta().add(new Nodo("suma", "h", posible.getPosMemoria(), t, null));
-                tabla.getObJava().getCuarpeta().add(new Nodo("asig", temp, null, "heap["+t+"]", null));
+                tabla.getObJava().getCuarpeta().add(new Nodo("suma", "p", 0, t, null));
+                String t2 = definirTemporal(tabla);
+                tabla.getObJava().getCuarpeta().add(new Nodo("asig", "stack["+t+"]", null, t2, null));
+                String t3 = definirTemporal(tabla);
+                tabla.getObJava().getCuarpeta().add(new Nodo("suma", t2, posible.getPosMemoria(), t3, null));
+                tabla.getObJava().getCuarpeta().add(new Nodo("asig", temp, null, "heap["+t3+"]", null));
             }
         }
         

@@ -11,6 +11,7 @@ import gramaticaC.SintaxC;
 import interfaz.PanelPrincipal;
 import java.util.ArrayList;
 import manejoExe.ExeC;
+import manejoExe.ExeJava;
 import objetos.ObjetosC;
 import objetosApoyo.NodoBoolean;
 import objetosApoyo.NodoOperacion;
@@ -55,6 +56,28 @@ public class ManejoC {
         }
         return et;
     }
+    
+    public void modificarConstructores(TablaSimbolos tabla){
+        for (int i = 0; i < tabla.getObJava().getCuarpeta().size(); i++) {
+            if(tabla.getObJava().getCuarpeta().get(i).getOperacion().equals("suma")){
+                if(tabla.getObJava().getCuarpeta().get(i).getDato1().equals("h") && tabla.getObJava().getCuarpeta().get(i).getVar().equals("h")){
+                    String arreglo[] = tabla.getObJava().getCuarpeta().get(i).getDato2().toString().split("_");
+                    if(arreglo.length == 3){
+                        if(arreglo[0].equals("VALOR") && arreglo[1].equals("CLASE")){
+                            for (int j = 0; j < tabla.getTablaExe().size(); j++) {
+                                if(tabla.getTablaExe().get(j).getId().equals(arreglo[2]) && tabla.getTablaExe().get(j).getAmbito().equals("global") && tabla.getTablaExe().get(j).getLenguaje().equals("JV")){
+                                    tabla.getObJava().getCuarpeta().get(i).setDato2(tabla.getTablaExe().get(j).getSize());
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    
 
     /*-------------------------------------- INICIALIZACION PILA - HEAP -----------------------------------------*/
     public void inicializaciones(TablaSimbolos tabla) {
@@ -144,7 +167,7 @@ public class ManejoC {
             tabla.getObC().getCuarpeta().add(new Nodo("CALL", metodoLlamar, null, null, null));
             tabla.getObC().getCuarpeta().add(new Nodo("resta", "p", Integer.toString(posVar), "p", null));
             //asignacion heap 
-            Integer nodoReturn = buscarReturnMetodos(tabla, "return", constructor);
+            Integer nodoReturn = buscarReturnMetodos(tabla, "this", constructor);
             if (nodoReturn != null) {
                 //obtener casilla de return del constructor
                 String t = definirTemporal(tabla.getObC());
@@ -194,6 +217,21 @@ public class ManejoC {
             tabla.getTablaExe().get(i).setChequeado(false);
         }
     }
+    
+    public void asignacionValThis(TablaSimbolos tabla, String ambito, String objetoClase, ExeC exe){
+        int totalGlobales = exe.determinarPosVar(tabla);
+        String t = definirTemporal(tabla.getObC());
+        String posMemoria = buscarPosicionMemoria(tabla, objetoClase);
+        tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t, null));
+        String t2 = definirTemporal(tabla.getObC());
+        tabla.getObC().getCuarpeta().add(new Nodo("asig","stack["+t+"]", null, t2, null));
+        
+        String t3 = definirTemporal(tabla.getObC());
+        tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", totalGlobales, t3, null));
+        String t4 = definirTemporal(tabla.getObC());
+        tabla.getObC().getCuarpeta().add(new Nodo("suma", t3, "0", t4, null));
+        tabla.getObC().getCuarpeta().add(new Nodo("asig", t2, null, "stack["+t4+"]", null));
+    }
 
     public Integer buscarConstructorIndicado(TablaSimbolos tabla, String parametros, String idClase) {
         VerifC verif = new VerifC();
@@ -232,11 +270,8 @@ public class ManejoC {
     }
 
     /*------------------------------------------ METODOS ----------------------------------------------------*/
-    public void metodoVoid(ObjetosC c, String id, int totalParam) {
-        c.getCuarpeta().add(new Nodo("CALL", id, Integer.toString(totalParam), null, null));
-    }
 
-    public void crearMetodo(TablaSimbolos tabla, String idMetodo, String idClase, String lenguaje, ArrayList<NodoBoolean> etiquetas, int linea) {
+    public void crearMetodo(TablaSimbolos tabla, String idMetodo, String idClase, String lenguaje, ArrayList<NodoBoolean> etiquetas, int linea, String objetoClase) {
         VerifC verif = new VerifC();
         ExeC exe = new ExeC();
         int posMemoria = exe.determinarPosVar(tabla);
@@ -276,6 +311,7 @@ public class ManejoC {
                 if (verificarParametrosCorrectos(tabla, varTotal, lenguaje, arregloParam, verif, linea)) {
 
                     pasoDeParametros(tabla, id, etiquetas, exe, lenguaje);
+                    asignacionValThis(tabla, varTotal, objetoClase, exe);
                     tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", posMemoria, "p", null));
                     tabla.getObC().getCuarpeta().add(new Nodo("CALL", varTotal + "();", null, null, null));
                     tabla.getObC().getCuarpeta().add(new Nodo("resta", "p", posMemoria, "p", null));
@@ -405,10 +441,10 @@ public class ManejoC {
         return t3;
     }
 
-    public String operacionMetodo(TablaSimbolos tabla, String idMetodo, String idClase, String lenguaje, ArrayList<NodoBoolean> etiquetas, int linea) {
+    public String operacionMetodo(TablaSimbolos tabla, String idMetodo, String idClase, String lenguaje, ArrayList<NodoBoolean> etiquetas, int linea, String objetoClase) {
         //asignacion de parametros
         ExeC exe = new ExeC();
-        crearMetodo(tabla, idMetodo, idClase, lenguaje, etiquetas, linea);
+        crearMetodo(tabla, idMetodo, idClase, lenguaje, etiquetas, linea, objetoClase);
         String idTotal = "";
         if (lenguaje.equals("PY")) {
             idTotal = idMetodo;

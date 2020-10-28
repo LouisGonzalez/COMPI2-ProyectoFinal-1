@@ -28,15 +28,16 @@ public class ExeJava {
             constructorPorDefecto(tabla, idClase);
         }
     }
-    
-    public void constructorPorDefecto(TablaSimbolos tabla, String idClase){
-        tabla.getTablaExe().add(new Tabla(idClase+"_"+idClase, null, -1, idClase, 1, "constructor", "JV"));
-        this.agregarReturn(tabla, idClase, idClase);
+
+    public void constructorPorDefecto(TablaSimbolos tabla, String idClase) {
+        tabla.getTablaExe().add(new Tabla(idClase + "_" + idClase, null, -1, idClase, 1, "constructor", "JV"));
+        agregarThis(tabla, idClase, idClase);
     }
 
     public void agregarConstructor(TablaSimbolos tabla, String idClase) {
-        String id = idClase +"_"+idClase;
+        String id = idClase + "_" + idClase;
         tabla.getTablaExe().add(new Tabla(id, null, -1, idClase, null, "constructor", "JV"));
+        agregarThis(tabla, idClase, idClase);
     }
 
     public void agregarMetodo(TablaSimbolos tabla, String idMetodo, String tipo, String idClase) {
@@ -50,38 +51,48 @@ public class ExeJava {
         }
         if (!existe) {
             tabla.getTablaExe().add(new Tabla(id, tipo, -1, idClase, null, "metodo", "JV"));
+            agregarThis(tabla, idMetodo, idClase);
         }
     }
-    
-    public void agregarParametros(TablaSimbolos tabla, String idMetodo, String idClase, String listParam){
-        String id = idClase + "_"+idMetodo;
+
+    public void agregarThis(TablaSimbolos tabla, String idMetodo, String idClase) {
+        String id = idClase + "_" + idMetodo;
+        tabla.getTablaExe().add(new Tabla("this", null, tabla.getTablaExe().get(tabla.getTablaExe().size() - 1).getPosMemoria() + 1, id, 1, "variable", "JV"));
+    }
+
+    public void agregarParametros(TablaSimbolos tabla, String idMetodo, String idClase, String listParam) {
+        String id = idClase + "_" + idMetodo;
         Integer iterador = null;
         for (int i = 0; i < tabla.getTablaExe().size(); i++) {
-            if(tabla.getTablaExe().get(i).getId().equals(id) && tabla.getTablaExe().get(i).getLenguaje().equals("JV") && (tabla.getTablaExe().get(i).getRol().equals("metodo") || tabla.getTablaExe().get(i).getRol().equals("constructor"))){
+            if (tabla.getTablaExe().get(i).getId().equals(id) && tabla.getTablaExe().get(i).getLenguaje().equals("JV") && (tabla.getTablaExe().get(i).getRol().equals("metodo") || tabla.getTablaExe().get(i).getRol().equals("constructor"))) {
                 iterador = i;
 //                tabla.getTablaExe().get(i).setListParametros(listParam);
             }
         }
         tabla.getTablaExe().get(iterador).setListParametros(listParam);
-        if(!listParam.equals("")){
-           tabla.getTablaExe().get(iterador).setId(tabla.getTablaExe().get(iterador).getId()+"_"+listParam);
-        } 
+        if (!listParam.equals("")) {
+            tabla.getTablaExe().get(iterador).setId(tabla.getTablaExe().get(iterador).getId() + "_" + listParam);
+        }
     }
-    
-    
-    
-    public void actualizarParametrosMetodo(TablaSimbolos tabla, String idClase, String ambito){
+
+    public void actualizarParametrosMetodo(TablaSimbolos tabla, String idClase, String ambito) {
         String id = idClase + "_" + ambito;
         for (int i = 0; i < tabla.getTablaExe().size(); i++) {
-            if(tabla.getTablaExe().get(i).getRol().equals("parametro") && tabla.getTablaExe().get(i).getLenguaje().equals("JV")){
-                if(!tabla.getTablaExe().get(i).isParamMarcado()){
+            if (tabla.getTablaExe().get(i).getRol().equals("parametro") && tabla.getTablaExe().get(i).getLenguaje().equals("JV")) {
+                if (!tabla.getTablaExe().get(i).isParamMarcado()) {
                     tabla.getTablaExe().get(i).setAmbito(id);
                     tabla.getTablaExe().get(i).setParamMarcado(true);
+                }
+            } else if (tabla.getTablaExe().get(i).getId().equals("this")) {
+                if (tabla.getTablaExe().get(i - 1).getId().equals(id)) {
+                    if (!tabla.getTablaExe().get(i).isParamMarcado()) {
+                        tabla.getTablaExe().get(i).setAmbito(id);
+                        tabla.getTablaExe().get(i).setParamMarcado(true);
+                    }
                 }
             }
         }
     }
-    
 
     public void agregarVariable(TablaSimbolos tabla, String idVar, String idMetodo, String idClase, String tipo) {
         //Hace alusion a que es una variable global dentro de la clase
@@ -176,7 +187,7 @@ public class ExeJava {
     public void sumarMemoriaMetodo(TablaSimbolos tabla, String idClase, String idMetodo) {
         String id = idClase + "_" + idMetodo;
         for (int i = 0; i < tabla.getTablaExe().size(); i++) {
-            if (tabla.getTablaExe().get(i).getId().equals(id) && tabla.getTablaExe().get(i).getAmbito().equals(idClase) && (tabla.getTablaExe().get(i).getRol().equals("metodo") ||tabla.getTablaExe().get(i).getRol().equals("constructor"))) {
+            if (tabla.getTablaExe().get(i).getId().equals(id) && tabla.getTablaExe().get(i).getAmbito().equals(idClase) && (tabla.getTablaExe().get(i).getRol().equals("metodo") || tabla.getTablaExe().get(i).getRol().equals("constructor"))) {
                 if (tabla.getTablaExe().get(i).getSize() != null) {
                     tabla.getTablaExe().get(i).setSize(tabla.getTablaExe().get(i).getSize() + 1);
                 } else {

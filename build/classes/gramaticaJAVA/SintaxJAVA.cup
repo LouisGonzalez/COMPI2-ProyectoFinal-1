@@ -76,11 +76,11 @@ parser code {:
     non terminal AA, A, B, VARIABLES, METODOS, VARIABLES2, OPERACION2,  
                  MENSAJE, CONC_VAR_DEF, CONC_VAR_AS, PARAM_CONSTRUCTOR, PARAM_CONSTRUCTOR2,
                  AND, OR, CONSTRUCTOR, ASIGNACIONES, EXT, ENTER, ENTER2, 
-                  LECTURA_DATOS, COMENTARIO_A, COMENTARIO_B;
+                  LECTURA_DATOS, COMENTARIO_A, COMENTARIO_B, METODO_VOID;
 
     non terminal String TEXTO, TEXTO2, VAL_TEXTO, TEXTO_PLANO, VAR, TIPO_INPUT, INT, TIPO_METODO, TEXTO_PLANO2;
 
-    non terminal String PARAMETROS, PARAMETROS2;
+    non terminal String PARAMETROS, PARAMETROS2, METODO_OP;
 
     non terminal Boolean CUERPO_METODO;
 
@@ -88,7 +88,9 @@ parser code {:
 
     non terminal Boolean IF, ELSE, FOR, WHILE, DO_WHILE, SWITCH, CASOS_SWITCH, RETORNO, RETORNO_SWITCH;
 
-    non terminal NodoBoolean OP_COND, VAL_COND;
+    non terminal ArrayList<NodoBoolean> PARAM, PARAM2, PARAM_METODOS;
+
+    non terminal NodoBoolean OP_COND, VAL_COND, METODO_COND;
 
     non terminal String OPERACION, TIPO_VAL, VALOR, C, INC, VAL_SWITCH, OP_FOR, TIPO_FOR;
 
@@ -200,6 +202,18 @@ parser code {:
 ;                         
     TIPO_VAL ::= id:a                                               {:  parser.verif.verificarTipadoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, parser.tipoActual, aleft+PanelPrincipal.totalLineas, aright); RESULT=a.toString(); :}
     |            numero:a                                           {:  String tipo ="Integer";  parser.verif.verificarNumero(tipo, parser.tabla.getObJava(), parser.tipoActual, a.toString(), aleft+PanelPrincipal.totalLineas, aright);  RESULT=a.toString(); :}
+    |            METODO_COND:a                                      {:  if(!a.getTipo().equals(parser.tipoActual)){
+                                                                            if(parser.verif.verificarPadreVar(parser.tabla.getObJava(), a.getTipo(), parser.tipoActual)){
+                                                                                PanelPrincipal.errores += "Fila: " + aleft+PanelPrincipal.totalLineas + " Columna: " + aright + " Tipo de error: SEMANTICO - Causa: Conflicto en tipadoL: "+a.getTipo() +" - "+ parser.tipoActual +".\n";
+                                                                            }
+                                                                        }
+                                                                        RESULT = a.getId(); :}        
+    |            menos METODO_COND:a                                      {:  if(!a.getTipo().equals(parser.tipoActual)){
+                                                                            if(parser.verif.verificarPadreVar(parser.tabla.getObJava(), a.getTipo(), parser.tipoActual)){
+                                                                                PanelPrincipal.errores += "Fila: " + aleft+PanelPrincipal.totalLineas + " Columna: " + aright + " Tipo de error: SEMANTICO - Causa: Conflicto en tipadoL: "+a.getTipo() +" - "+ parser.tipoActual +".\n";
+                                                                            }
+                                                                        }
+                                                                        RESULT = "-"+a.getId(); :}        
     |            numero:a punto:b numero:c                          {:  String tipo="Float"; parser.verif.verificarNumero(tipo, parser.tabla.getObJava(), parser.tipoActual, a.toString()+b.toString()+c.toString(), aleft+PanelPrincipal.totalLineas, aright); RESULT=a.toString()+b.toString()+c.toString(); :}  
     |            comillaSimple:a id:b comillaSimple:c               {:  RESULT=a.toString()+b.toString()+c.toString();  :}
     |            comillaSimple:a numero:b comillaSimple:c           {:  RESULT=a.toString()+b.toString()+c.toString();  :}
@@ -208,6 +222,60 @@ parser code {:
     |            menos:a id:b                                       {:  parser.verif.verificarTipadoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, parser.tipoActual, bleft+PanelPrincipal.totalLineas, bright); RESULT=a.toString()+b.toString(); :}
     |            menos:a numero:b                                   {:  String tipo ="Integer";  parser.verif.verificarNumero(tipo, parser.tabla.getObJava(), parser.tipoActual, a.toString(), bleft+PanelPrincipal.totalLineas, bright); RESULT=a.toString()+b.toString(); :}
     |            menos:a numero:b punto:c numero:d                  {: String tipo="Float"; parser.verif.verificarNumero(tipo, parser.tabla.getObJava(), parser.tipoActual, a.toString()+b.toString()+c.toString(), bleft+PanelPrincipal.totalLineas, bright); RESULT=a.toString()+b.toString()+c.toString()+d.toString(); :}  
+;
+
+/*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    METODO_COND ::= id:a parentesis_a PARAM_METODOS:b parentesis_b puntoComa      {:  boolean existe = parser.verif.verificarMetodo(parser.tabla.getObJava(), a.toString(), aleft+PanelPrincipal.totalLineas, aright);
+                                                                                    String et = parser.manejoJV.devolverEtiquetaMetodo(parser.tabla, a.toString(), parser.clase, b, aleft+PanelPrincipal.totalLineas);
+                                                                                    String tip = "";
+                                                                                    if(existe){
+                                                                                        tip = parser.tabla.getObJava().getMisClases().get(parser.tabla.getObJava().getMisClases().size()-1).getMisMetodos().get(VerifJAVA.iterador).getRetorno();
+                                                                                    }
+                                                                                    RESULT = new NodoBoolean(tip, et);   :}
+;
+
+/*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    METODO_OP ::= id:a parentesis_a PARAM_METODOS:b parentesis_b puntoComa        {:  parser.verif.verificarMetodo(parser.tabla.getObJava(), a.toString(), aleft+PanelPrincipal.totalLineas, aright);
+                                                                                      RESULT = parser.manejoJV.devolverEtiquetaMetodo(parser.tabla, a.toString(), parser.clase, b, aleft+PanelPrincipal.totalLineas);   :}
+;
+
+/*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    METODO_VOID ::= id:a parentesis_a PARAM_METODOS:b parentesis_b puntoComa      {:    parser.verif.verificarMetodo(parser.tabla.getObJava(), a.toString(), aleft+PanelPrincipal.totalLineas, aright);
+                                                                                        parser.manejoJV.invocarMetodo(parser.tabla, a.toString(), parser.clase, b, aleft+PanelPrincipal.totalLineas);   :}
+;
+
+/*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    PARAM_METODOS ::= PARAM:a                       {: RESULT = a; :}
+    |                                               {: RESULT = new ArrayList<>(); :}
+;
+
+/*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    PARAM ::= PARAM2:a OP_COND:b                                    {:  if(a != null){
+                                                                        if(!b.getTipo().equals("")){
+                                                                            a.add(b);
+                                                                            RESULT = a;
+                                                                        } else {
+                                                                            RESULT = null;
+                                                                        }
+                                                                    }  :}
+;
+
+/*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    PARAM2 ::= PARAM2:a OP_COND:b coma                          {:  if(a != null){
+                                                                        if(!b.getTipo().equals("")){
+                                                                            a.add(b);
+                                                                            RESULT = a;
+                                                                        } else {
+                                                                            RESULT = null;
+                                                                        }
+                                                                    } :}
+    |                                                           {:  RESULT = new ArrayList<>(); :}
 ;
 
 /*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -226,7 +294,8 @@ parser code {:
                                                                             parser.manejoJV.crearMetodo(parser.tabla.getObJava(), b.toString(), h, a);      :}  
                 llave_a ENTER CUERPO_METODO:f RETORNO:g                 {:  parser.op.comprobarReturnMetodo(parser.tabla.getObJava(), f, g, b.toString(), a);     :} 
                 llave_b ENTER                                           {:  parser.manejoJV.finMetodo(parser.tabla.getObJava());  
-                                                                            parser.jerarquia--; :}
+                                                                            parser.jerarquia--;
+                                                                            parser.metodo = ""; :}
     |           tipoPublic TIPO_METODO:a id:b parentesis_a parentesis_b {:  parser.tipoMetodo=a; 
                                                                             parser.jerarquia++; 
                                                                             parser.exe.agregarMetodo(parser.tabla, b.toString(), a, parser.clase);
@@ -249,11 +318,12 @@ parser code {:
                                                             if(!h.equals("")){
                                                                 parser.metodo = a.toString()+"_"+h;
                                                                 parser.exe.actualizarParametrosMetodo(parser.tabla, parser.clase, parser.metodo);
-                                                            }    :} 
+                                                            }    
+                                                            parser.manejoJV.inicializarThis(parser.tabla, parser.metodo, parser.clase);    :} 
                     llave_a ENTER CUERPO_METODO:b       {:  if(b){                      
                                                                 System.out.println("Constructor incapaz de retornar un valor"); 
                                                             }  
-                                                            parser.exe.agregarReturn(parser.tabla, parser.metodo, parser.clase); :} 
+                                                            //parser.exe.agregarReturn(parser.tabla, parser.metodo, parser.clase); :} 
                     llave_b ENTER                       {:  parser.manejoJV.finMetodo(parser.tabla.getObJava()); 
                                                             parser.metodo = "";
                                                             parser.jerarquia--; :}
@@ -261,11 +331,12 @@ parser code {:
                                                             parser.metodo = a.toString();
                                                             parser.exe.agregarConstructor(parser.tabla, a.toString());
                                                             parser.op.agregarNuevoConstructor(parser.tabla.getObJava(), a.toString(), aleft+PanelPrincipal.totalLineas, aright); :} 
-                    parentesis_b                        {:  parser.manejoJV.crearMetodo(parser.tabla.getObJava(), a.toString(), "", "void");  :} 
+                    parentesis_b                        {:  parser.manejoJV.crearMetodo(parser.tabla.getObJava(), a.toString(), "", "void");  
+                                                            parser.manejoJV.inicializarThis(parser.tabla, parser.metodo, parser.clase); :} 
                     llave_a ENTER CUERPO_METODO:b       {:  if(b){ 
                                                                 System.out.println("Constructor incapaz de retornar un valor"); 
                                                             }   
-                                                            parser.exe.agregarReturn(parser.tabla, parser.metodo, parser.clase);    :} 
+                                                            //parser.exe.agregarReturn(parser.tabla, parser.metodo, parser.clase);    :} 
                     llave_b ENTER                       {:  parser.manejoJV.finMetodo(parser.tabla.getObJava());
                                                             parser.metodo = "";
                                                             parser.jerarquia--;  :}
@@ -303,17 +374,18 @@ parser code {:
     |               tipoInt     {: RESULT="Integer"; :}
     |               tipoVoid    {: RESULT="void"; :}
 ;
-    CUERPO_METODO ::= CUERPO_METODO:a VARIABLES         {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=a; } } else { RESULT=null; } :}
-    |                 CUERPO_METODO:a ASIGNACIONES      {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=a; } } else { RESULT=null; } :}
-    |                 CUERPO_METODO:a IF:b              {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=b; } } else { RESULT=null; } :}
-    |                 CUERPO_METODO:a FOR:b             {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=b; } } else { RESULT=null; } :}
-    |                 CUERPO_METODO:a WHILE:b           {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=b; } } else { RESULT=null; } :}
-    |                 CUERPO_METODO:a DO_WHILE:b        {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=b; } } else { RESULT=null; } :}
-    |                 CUERPO_METODO:a MENSAJE           {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=a; } } else { RESULT=null; } :} 
-    |                 CUERPO_METODO:a SWITCH:b          {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=b; } } else { RESULT=null; } :} 
-    |                 CUERPO_METODO:a LECTURA_DATOS     {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=a; } } else { RESULT=null; } :}
-    |                 CUERPO_METODO:a COMENTARIO_B      {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=a; } } else { RESULT=null; } :}
-    |                 CUERPO_METODO:a COMENTARIO_A      {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=a; } } else { RESULT=null; } :}
+    CUERPO_METODO ::= CUERPO_METODO:a VARIABLES         {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=a; } } else { RESULT=null; } :}
+    |                 CUERPO_METODO:a ASIGNACIONES      {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=a; } } else { RESULT=null; } :}
+    |                 CUERPO_METODO:a IF:b              {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=b; } } else { RESULT=null; } :}
+    |                 CUERPO_METODO:a FOR:b             {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=b; } } else { RESULT=null; } :}
+    |                 CUERPO_METODO:a WHILE:b           {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=b; } } else { RESULT=null; } :}
+    |                 CUERPO_METODO:a DO_WHILE:b        {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=b; } } else { RESULT=null; } :}
+    |                 CUERPO_METODO:a MENSAJE           {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=a; } } else { RESULT=null; } :} 
+    |                 CUERPO_METODO:a SWITCH:b          {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=b; } } else { RESULT=null; } :} 
+    |                 CUERPO_METODO:a LECTURA_DATOS     {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=a; } } else { RESULT=null; } :}
+    |                 CUERPO_METODO:a COMENTARIO_B      {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=a; } } else { RESULT=null; } :}
+    |                 CUERPO_METODO:a COMENTARIO_A      {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=a; } } else { RESULT=null; } :}
+    |                 CUERPO_METODO:a METODO_VOID       {: if(a != null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas;   PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; } else { RESULT=a; } } else { RESULT=null; } :}
     |                                                   {: RESULT=false; :}
     |                 CUERPO_METODO:a error             {: RESULT = a; :}
 ;
@@ -553,6 +625,9 @@ parser code {:
     VAL_COND ::= id:a                                               {:  String tip = parser.op.buscarVariable(parser.tabla.getObJava(), a.toString(), parser.jerarquia, aleft+PanelPrincipal.totalLineas, aright); RESULT = new NodoBoolean(tip, a.toString()); :}
     |            numero:a                                           {:  RESULT = new NodoBoolean("Integer", a.toString()); :}
     |            numero:a punto:b numero:c                          {:  RESULT = new NodoBoolean("Float", a.toString()+b.toString()+c.toString()); :} 
+    |            METODO_COND:a                                      {:  RESULT = a; :}
+    |            menos METODO_COND:a                                {:  String et = "-"+a.getId();
+                                                                        RESULT = new NodoBoolean(a.getTipo(), et); :}
     |            comillaSimple:a id:b comillaSimple:c               {:  RESULT = new NodoBoolean("Char", a.toString()+b.toString()+c.toString()); :}
     |            comillaSimple:a numero:b comillaSimple:c           {:  RESULT = new NodoBoolean("Char", a.toString()+b.toString()+c.toString());  :}
     |            menos:d comillaSimple:a id:b comillaSimple:c       {:  RESULT = new NodoBoolean("Char", d.toString()+a.toString()+b.toString()+c.toString()); :}

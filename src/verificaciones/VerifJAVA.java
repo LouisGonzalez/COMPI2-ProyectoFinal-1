@@ -307,4 +307,20 @@ public class VerifJAVA {
         return tipo;
     }
 
+    //verifica si el metodo invocado dentro de la clase existe
+    public boolean verificarMetodo(ObjetosJAVA jv, String idMetodo, int fila, int columna) {
+        boolean existe = false;
+        for (int i = 0; i < jv.getMisClases().get(jv.getMisClases().size() - 1).getMisMetodos().size(); i++) {
+            if (jv.getMisClases().get(jv.getMisClases().size() - 1).getMisMetodos().get(i).getIdMetodo().equals(idMetodo)) {
+                existe = true;
+                iterador = i;
+                break;
+            }
+        }
+        if(!existe){
+            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe ningun metodo en la clase: " + jv.getMisClases().get(jv.getMisClases().size() - 1).getId() + " con el id: " + idMetodo + "\n";
+         }
+        return existe;
+    }
+
 }
