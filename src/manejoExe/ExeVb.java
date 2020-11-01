@@ -28,6 +28,7 @@ public class ExeVb {
         }
         if(!existe){
             tabla.getTablaExe().add(new Tabla(idMetodo, tipo, -1, "global", null, "metodo", "VB"));
+            agregarReturn(tabla, idMetodo);
         }
     }
 
@@ -47,7 +48,7 @@ public class ExeVb {
     
     public void actualizarParametrosMetodo(TablaSimbolos tabla, String idMetodo){
         for (int i = 0; i < tabla.getTablaExe().size(); i++) {
-            if(tabla.getTablaExe().get(i).getRol().equals("parametro") && tabla.getTablaExe().get(i).getLenguaje().equals("VB")){
+            if((tabla.getTablaExe().get(i).getRol().equals("parametro") || tabla.getTablaExe().get(i).getId().equals("return")) && tabla.getTablaExe().get(i).getLenguaje().equals("VB")){
                 if(!tabla.getTablaExe().get(i).isParamMarcado()){
                     tabla.getTablaExe().get(i).setAmbito(idMetodo);
                     tabla.getTablaExe().get(i).setParamMarcado(true);

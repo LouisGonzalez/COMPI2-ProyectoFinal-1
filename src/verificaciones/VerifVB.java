@@ -6,6 +6,7 @@
 package verificaciones;
 
 import Operaciones.OperacionesVB;
+import Tablas.TablaSimbolos;
 import Tablas.Tipado;
 import gramaticaVB.SintaxVB;
 import interfaz.PanelPrincipal;
@@ -72,15 +73,19 @@ public class VerifVB {
     }
 
     //verifica que al usar un tipo de input la variable que se lea exista y sea del mismo valor que se quiere asignar
-    public boolean verificarVarInput(ObjetosVB vb, int iterador, String id, String tipoBase, Tipado tipado) {
+    public boolean verificarVarInput(ObjetosVB vb, int iterador, String id, String tipoBase, Tipado tipado, int jerarquia) {
         boolean todoCorrecto = false;
         for (int i = 0; i < vb.getMisMetodos().get(iterador).getMisVariables().size(); i++) {
             if (vb.getMisMetodos().get(iterador).getMisVariables().get(i).getId().equals(id)) {
                 if (vb.getMisMetodos().get(iterador).getMisVariables().get(i).getTipo().equals(tipoBase)) {
+                    vb.getMisMetodos().get(iterador).getMisVariables().get(i).getListAsignaciones().add(jerarquia);
+                    vb.getMisMetodos().get(iterador).getMisVariables().get(i).setValor(true);
                     todoCorrecto = true;
                     break;
                 } else {
                     if (verificarPadre(vb, vb.getMisMetodos().get(iterador).getMisVariables().get(i).getTipo(), tipoBase, tipado)) {
+                        vb.getMisMetodos().get(iterador).getMisVariables().get(i).getListAsignaciones().add(jerarquia);
+                        vb.getMisMetodos().get(iterador).getMisVariables().get(i).setValor(true);
                         todoCorrecto = true;
                         break;
                     }
@@ -207,12 +212,12 @@ public class VerifVB {
     }
 
     //verifica a la variable iterable de un FOR
-    public void verificarVarFor(String id, String tipoVar, ObjetosVB vb, int iterador, Tipado tipado, int nivel, Boolean step, int fila, int columna) {
+    public void verificarVarFor(String id, String tipoVar, ObjetosVB vb, int iterador, Tipado tipado, int nivel, Boolean step, int fila, int columna, int jerarquia) {
 
         if (step || step == null) {
             //si tipoVar es vacio hace alusion que esa variable ya existe dentro del metodo
             if (tipoVar.equals("")) {
-                if (!verificarVarInput(vb, iterador, id, "Integer", tipado)) {
+                if (!verificarVarInput(vb, iterador, id, "Integer", tipado, jerarquia)) {
                     PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe una variable con el id " + id + " dentro del metodo.\n";
                     
                 }
@@ -288,6 +293,21 @@ public class VerifVB {
             PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Variable: " + id + " no existe dentro del archivo VB.\n";
 
         }
+    }
+    
+    public boolean verificarMetodo(TablaSimbolos tabla, String idMetodo, int fila, int columna){
+        boolean existe = false;
+        for (int i = 0; i < tabla.getObVb().getMisMetodos().size(); i++) {
+            if(tabla.getObVb().getMisMetodos().get(i).getIdMetodo().equals(idMetodo)){
+                existe = true;
+                iteradorVar = i;
+                break;
+            }
+        }
+        if(!existe){
+            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe ningun metodo con el id: " + idMetodo + " dentro del archivo VB\n";
+        }
+        return existe;
     }
 
 }

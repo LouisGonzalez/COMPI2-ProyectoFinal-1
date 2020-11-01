@@ -556,7 +556,7 @@ public class VerifC {
             if (todoCorrecto) {
                 c.getListVariables().get(VerifObjetos.iterador).getListAsignaciones().add(jerarquia);
                 c.getListVariables().get(VerifObjetos.iterador).setValor(true);
-
+                
             }
         } else {
             op.agregarNuevaVar(c, id, "Integer", "Variable", jerarquia, true, id, null, fila, columna, dimensiones);

@@ -7,8 +7,8 @@
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/ObjetosC/VerifObjetos.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/manejoCuartetos/ManejoC.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/verificaciones/VerifPY.java</file>
-            <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/gramaticaPYTHON/SintaxPYTHON.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/gramaticaC/LexerC.flex</file>
+            <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/manejoExe/ExePython.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/gramaticaPYTHON/LexerPYTHON.flex</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/gramaticaPYTHON/SintaxPYTHON.cup</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/manejoCuartetos/ManejoJava.java</file>
@@ -19,11 +19,10 @@
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/Operaciones/OperacionesC.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/cuartetos/Nodo.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/gramaticaC/SintaxC.cup</file>
-            <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/manejoCuartetos/ManejoVb.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/ejecutable/Tabla.java</file>
+            <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/manejoCuartetos/ManejoVb.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/objetos/ObjetosVB.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/objetosApoyo/NodoOperacion.java</file>
-            <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/gramaticaC/AnalizadorLexico4.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/manejoCuartetos/ManejoCondiciones.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/interfaz/ManejoTexto.java</file>
             <file>file:/home/luisitopapurey/Escritorio/Compiladores%202/ProyectoFinal/src/interfaz/GuardarArchivo.java</file>

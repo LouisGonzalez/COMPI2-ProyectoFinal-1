@@ -69,7 +69,7 @@ parser code {:
              condWhile, condIf, condElif, intInput, charInput, floatInput, condDef, numero, id, resto, condEnd, 
              condDel, tab, condPass, enter, comentario_a, comentario_b, comentario_c;
 
-    non terminal INICIO, METODOS, RETURN,  
+    non terminal INICIO, METODOS, RETURN, METODO_VOID,  
                  CUERPO_METODO, VARIABLES, OP_FOR, ENTER2,
                  VARIABLES2, VARS, VARS3, FOR, WHILE, 
                  IF, NOT, ELSE, BORRAR, MENSAJES, CONC, ID, ADM, END, LECTURA_DATOS,
@@ -91,7 +91,11 @@ parser code {:
 
     non terminal String TEXTO, RESTO_MENSAJE, VAR_MENSAJE;
 
-    non terminal NodoBoolean OPERACION, TIPO_VAL, RETORNO;
+    non terminal NodoBoolean OPERACION, TIPO_VAL, RETORNO, METODO_COND;
+
+    non terminal ArrayList<NodoBoolean> PARAM_METODOS, PARAM, PARAM2;
+
+    
 
     precedence left mas, menos;
     precedence left por, div, porcentaje;
@@ -119,6 +123,55 @@ parser code {:
                                                                     parser.instrucciones.add(0); :} 
                 CUERPO_METODO                                   {:  parser.manejoPY.finMetodo(parser.tabla.getObPython());  
                                                                     parser.jerarquia--; :}
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    METODO_COND ::= id:a parentesis_a PARAM_METODOS:b parentesis_b      {:  boolean existe = parser.verif.verificarMetodo(parser.tabla, a.toString(), aleft+PanelPrincipal.totalLineas, aright);
+                                                                            String et = parser.manejoPY.devolverEtiquetaMetodo(parser.tabla, a.toString(), b, aleft+PanelPrincipal.totalLineas);
+                                                                            String tip = "";
+                                                                            if(existe){
+                                                                                tip = "Metodo";
+                                                                            }  
+                                                                            RESULT = new NodoBoolean(tip, et);  :}
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    METODO_VOID ::= TAB:c id:a parentesis_a PARAM_METODOS:b parentesis_b ENTER     {:   parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, c, true, parser.tipoInstruccion);
+                                                                                        parser.verif.verificarMetodo(parser.tabla, a.toString(), aleft+PanelPrincipal.totalLineas, aright);
+                                                                                        parser.manejoPY.invocarMetodo(parser.tabla, a.toString(), b, aleft+PanelPrincipal.totalLineas); :}           
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    PARAM_METODOS ::=  PARAM:a                                     {: RESULT = a; :}
+    |                                                               {: RESULT = new ArrayList<>(); :}
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    PARAM ::= PARAM2:a OPERACION:b                                  {:  if(a != null){
+                                                                            if(!b.getTipo().equals("")){
+                                                                                a.add(b);
+                                                                                RESULT = a;
+                                                                            } else {
+                                                                                RESULT = null;
+                                                                            }
+                                                                        } :}
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    PARAM2 ::= PARAM2:a OPERACION:b coma                                {:  if(a != null){
+                                                                            if(!b.getTipo().equals("")){
+                                                                                a.add(b);
+                                                                                RESULT = a;
+                                                                            } else {
+                                                                                RESULT = null;
+                                                                            }
+                                                                        } :}
+    |                                                               {: RESULT = new ArrayList<>(); :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -165,24 +218,43 @@ parser code {:
     |             OPERACION:a por OPERACION:b               {: RESULT = parser.manejoPY.concatenarOperacion(parser.tabla.getObPython(), a, b, "mult", aleft+PanelPrincipal.totalLineas, aright); :}
     |             OPERACION:a div OPERACION:b               {: RESULT = parser.manejoPY.concatenarOperacion(parser.tabla.getObPython(), a, b, "div", aleft+PanelPrincipal.totalLineas, aright); :}
     |             OPERACION:a porcentaje OPERACION:b        {: RESULT = parser.manejoPY.concatenarOperacion(parser.tabla.getObPython(), a, b, "modulo",aleft+PanelPrincipal.totalLineas, aright); :}
-    |             TIPO_VAL:a                                {: RESULT = parser.manejoPY.operacionIndividual(parser.tabla, a, parser.metodo); :}
+    |             TIPO_VAL:a                                {: RESULT = a; :}
 ;
-    TIPO_VAL ::= id:a                                                   {: String tip = parser.op.buscarVariable(parser.tabla.getObPython(), a.toString(), parser.jerarquia); if(tip.equals("")){ int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: La variable "+a.toString()+" no existe dentro del archivo PYTHON.\n"; }  RESULT = new NodoBoolean(tip, a.toString());   :}
-    |            numero:a                                               {: RESULT = new NodoBoolean("Integer", a.toString()); :}
-    |            numero:a punto:b numero:c                              {: RESULT = new NodoBoolean("Float", a.toString()+b.toString()+c.toString()); :}
-    |            comillaSimple:a id:b comillaSimple:c                   {: RESULT = new NodoBoolean("Char", a.toString()+b.toString()+c.toString()); :}
-    |            comillaSimple:a numero:b comillaSimple:c               {: RESULT = new NodoBoolean("Char", a.toString()+b.toString()+c.toString()); :}
-    |            menos:d comillaSimple:a id:b comillaSimple:c           {: RESULT = new NodoBoolean("Char", d.toString()+a.toString()+b.toString()+c.toString()); :}
-    |            menos:d comillaSimple:a numero:b comillaSimple:c       {: RESULT = new NodoBoolean("Char", d.toString()+a.toString()+b.toString()+c.toString()); :}
-    |            menos:b id:a                                           {: String tip=parser.op.buscarVariable(parser.tabla.getObPython(), a.toString(), parser.jerarquia);   if(tip.equals("")){ int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Fila: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: La variable "+a.toString()+" no existe dentro del archivo PYTHON.\n"; }     RESULT = new NodoBoolean(tip, b.toString()+a.toString()); :}
-    |            menos:a numero:b                                       {: RESULT = new NodoBoolean("Integer", a.toString()+b.toString()); :}
-    |            menos:a numero:b punto:c numero:d                      {: RESULT = new NodoBoolean("Float", a.toString()+b.toString()+c.toString()+d.toString()); :}
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    TIPO_VAL ::= id:a                                                   {:  String tip = parser.op.buscarVariable(parser.tabla.getObPython(), a.toString(), parser.jerarquia); if(tip.equals("")){ 
+                                                                                int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: La variable "+a.toString()+" no existe dentro del archivo PYTHON.\n"; 
+                                                                            }
+                                                                            RESULT = parser.manejoPY.devEtiquetaId(parser.tabla, a.toString(), parser.metodo, tip, false); :}
+    |            numero:a                                               {:  RESULT = new NodoBoolean("Integer", a.toString()); :}
+    |            METODO_COND:a                                          {:  RESULT = a; :}
+    |            menos METODO_COND:a                                    {:  String et = "-"+a.getId();
+                                                                            RESULT = new NodoBoolean(a.getTipo(), et);  :}
+    |            numero:a punto:b numero:c                              {:  RESULT = new NodoBoolean("Float", a.toString()+b.toString()+c.toString()); :}
+    |            comillaSimple:a id:b comillaSimple:c                   {:  RESULT = new NodoBoolean("Char", a.toString()+b.toString()+c.toString()); :}
+    |            comillaSimple:a numero:b comillaSimple:c               {:  RESULT = new NodoBoolean("Char", a.toString()+b.toString()+c.toString()); :}
+    |            menos:d comillaSimple:a id:b comillaSimple:c           {:  RESULT = new NodoBoolean("Char", d.toString()+a.toString()+b.toString()+c.toString()); :}
+    |            menos:d comillaSimple:a numero:b comillaSimple:c       {:  RESULT = new NodoBoolean("Char", d.toString()+a.toString()+b.toString()+c.toString()); :}
+    |            menos:b id:a                                           {:  String tip=parser.op.buscarVariable(parser.tabla.getObPython(), a.toString(), parser.jerarquia);   
+                                                                            if(tip.equals("")){ 
+                                                                                int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Fila: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: La variable "+a.toString()+" no existe dentro del archivo PYTHON.\n"; 
+                                                                            }     
+                                                                            RESULT = parser.manejoPY.devEtiquetaId(parser.tabla, a.toString(), parser.metodo, tip, true);  :}                    
+    |            menos:a numero:b                                       {:  RESULT = new NodoBoolean("Integer", a.toString()+b.toString()); :}
+    |            menos:a numero:b punto:c numero:d                      {:  RESULT = new NodoBoolean("Float", a.toString()+b.toString()+c.toString()+d.toString()); :}
 ;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
     TIPO_VAL2 ::= comilla id comilla    {: RESULT="Char"; :}
     |             id:a                  {: RESULT=parser.op.buscarVariable(parser.tabla.getObPython(), a.toString(), parser.jerarquia); :}
     |             numero                {: RESULT="Integer"; :}
     |             numero punto numero   {: RESULT="Float"; :}
 ;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
     CUERPO_METODO ::= VARIABLES3 CUERPO_METODO
     |                 FOR CUERPO_METODO
     |                 WHILE CUERPO_METODO
@@ -195,6 +267,7 @@ parser code {:
     |                 COMENTARIO_B CUERPO_METODO
     |                 COMENTARIO_A CUERPO_METODO
     |                 RETURN CUERPO_METODO
+    |                 METODO_VOID CUERPO_METODO
     |                
     |                 error CUERPO_METODO
 ;    
@@ -310,7 +383,10 @@ parser code {:
     |              charInput {: RESULT="Char"; :}
     |              floatInput {: RESULT="Float"; :}
 ;
-    MENSAJES ::= TAB:a mensaje parentesis_a TEXTO:c parentesis_b ENTER {:  parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion); parser.manejoPY.mostrarMensaje(parser.tabla.getObPython(), c); :}                             
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    MENSAJES ::= TAB:a mensaje parentesis_a TEXTO:c parentesis_b ENTER {:  parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion); :}                             
     |            TAB:a mensaje parentesis_a parentesis_b ENTER {: parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion); :}
 ; 
     CONC ::= coma
@@ -319,8 +395,11 @@ parser code {:
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    TEXTO ::= VAR_MENSAJE:a RESTO_MENSAJE:b                 {: RESULT = parser.manejoPY.concatenarMensaje2(parser.tabla, a, b, parser.metodo); :}
-    |         comilla:a TEXTO2:b comilla:c RESTO_MENSAJE:d  {: RESULT = parser.manejoPY.concatenarMensaje(parser.tabla.getObPython(), a.toString()+b.toString()+c.toString(), d); :}
+    TEXTO ::= VAR_MENSAJE:a                     {: parser.manejoPY.mostrarMensaje(parser.tabla.getObPython(), a); :}
+              RESTO_MENSAJE:b                 
+    |         comilla:a TEXTO2:b comilla:c      {:  String et = a.toString() + b + c.toString();
+                                                    parser.manejoPY.mostrarMensaje(parser.tabla.getObPython(), et); :}
+              RESTO_MENSAJE:d 
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/

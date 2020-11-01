@@ -116,6 +116,9 @@ public class OperacionesC {
                     c.getListConstantes().add(new Constantes(id, tipoDato, nivel));
                 } else {
                     c.getListVariables().add(new Variable(id, tipoDato, valor, nivel));
+                    if(valor){
+                        c.getListVariables().get(c.getListVariables().size()-1).getListAsignaciones().add(1);
+                    }
                 }
             }
         } else {
@@ -135,6 +138,9 @@ public class OperacionesC {
                     c.getListConstantes().add(new Constantes(id, tipoDato, nivel));
                 } else {
                     c.getListVariables().add(new Variable(id, tipoDato, valor, nivel));
+                    if(valor){
+                        c.getListVariables().get(c.getListVariables().size()-1).getListAsignaciones().add(1);
+                    }
                 }
             }
         }
@@ -165,15 +171,32 @@ public class OperacionesC {
     }
 
     //devuelve el tipo de dato de una variable
-    public String devolverTipoVar(ObjetosC c, String id, int jerarquia, int fila, int columna) {
+    public String devolverTipoVar(ObjetosC c, int jerarquia, String id, int fila, int columna) {
         String tipo = "";
-        VerifObjetos verif2 = new VerifObjetos();
-        if (verif2.verifIdVar(c, jerarquia, id)) {
-            tipo = c.getListVariables().get(VerifObjetos.iterador).getTipo();
-        } else if (verif2.verifIdVarGlobal(c, jerarquia, id)) {
-            tipo = c.getListVariables().get(VerifObjetos.iterador).getTipo();
+        VerifObjetos verif = new VerifObjetos();
+        if (jerarquia == 0) {
+            if (verif.verifIdConstGlobal(c, jerarquia, id)) {
+                tipo = c.getListConstantes().get(VerifObjetos.iterador).getTipo();
+            } else if (verif.verifIdVarGlobal(c, jerarquia, id)) {
+                tipo = c.getListVariables().get(VerifObjetos.iterador).getTipo();
+            }
         } else {
-            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Variable: " + id + " inexistente dentro del archivo.\n";
+            if (!verif.verifIdConst(c, jerarquia, id)) {
+                if (!verif.verifIdVar(c, jerarquia, id)) {
+                    if (verif.verifIdConstGlobal(c, jerarquia, id)) {
+                        tipo = c.getListConstantes().get(VerifObjetos.iterador).getTipo();
+                    } else if (verif.verifIdVarGlobal(c, jerarquia, id)) {
+                        tipo = c.getListVariables().get(VerifObjetos.iterador).getTipo();
+                    }
+                } else {
+                    tipo = c.getListVariables().get(VerifObjetos.iterador).getTipo();
+                }
+            } else {
+                tipo = c.getListConstantes().get(VerifObjetos.iterador).getTipo();
+            }
+        }
+        if (tipo.equals("")) {
+            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable: " + id + " no existe dentro del archivo\n";
         }
         return tipo;
     }
@@ -189,14 +212,15 @@ public class OperacionesC {
             }
         }
         if (itClase != null) {
-            for (int i = 0; i < tabla.getObJava().getMisClases().get(itClase).getMisMetodos().size(); i++) {
+            /*for (int i = 0; i < tabla.getObJava().getMisClases().get(itClase).getMisMetodos().size(); i++) {
                 if (tabla.getObJava().getMisClases().get(itClase).getMisMetodos().get(i).getIdMetodo().equals(idClase)) {
                     if (compararParametros(tabla.getObC(), tabla.getObJava().getMisClases().get(itClase).getMisMetodos().get(i), posibles)) {
                         encontrado = true;
                         break;
                     }
                 }
-            }
+            }*/
+            encontrado = true;
             if (!encontrado) {
                 if(!posibles.isEmpty()){
                     PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe constructor dentro de la clase: " + idClase + " que cumpla con los parametros que se necesitan\n";
@@ -219,9 +243,9 @@ public class OperacionesC {
         if (jerarquia == 0) {
             if (verif.verifClaseGlobal(c, jerarquia, id)) {
                 PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe un variable de tipo clase con id: " + id + "\n";
-            } else if (verif.verifIdConstGlobal(c, jerarquia, id)) {
+         /*   } else if (verif.verifIdConstGlobal(c, jerarquia, id)) {
                 PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe un variable de tipo constante con id: " + id + "\n";
-            } else if (verif.verifIdVarGlobal(c, jerarquia, id)) {
+            */} else if (verif.verifIdVarGlobal(c, jerarquia, id)) {
                 PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe un variable de tipo constante con id: " + id + "\n";
             } else if (verif.verifVectorGlobal(c, jerarquia, id)) {
                 PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Ya existe un arreglo con id: " + id + "\n";

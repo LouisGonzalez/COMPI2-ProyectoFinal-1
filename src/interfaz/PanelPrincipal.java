@@ -7,6 +7,7 @@ package interfaz;
 
 import Tablas.TablaSimbolos;
 import cuartetos.CreacionCodigo;
+import cuartetos.CreacionEjecutable;
 import cuartetos.Nodo;
 import ejecutable.Tabla;
 import gramaticaC.AnalizadorLexico4;
@@ -41,8 +42,12 @@ public class PanelPrincipal extends javax.swing.JPanel {
     public static int lineasC = 0;
 
     private String codigo = "";
+    private String codExe = "";
     private ArrayList<Nodo> cuarpeta = new ArrayList<>();
+    private ArrayList<Nodo> ejecutable = new ArrayList<>();
+
     private CreacionCodigo creacion = new CreacionCodigo();
+    private CreacionEjecutable creacion2 = new CreacionEjecutable();
 
     public static String codigoPython = "";
     public static String codigoJava = "";
@@ -189,16 +194,13 @@ public class PanelPrincipal extends javax.swing.JPanel {
 
          //----------------------------------------------------------------------------------------------------
             
-            //MUEESTRA LA TABLA DEW SIMBOLOS
            for (int i = 0; i < tabla.getTablaExe().size(); i++) {
                 Tabla exe = tabla.getTablaExe().get(i);
-            //  if (exe.getLenguaje().equals("JV")) {
-                    System.out.println(exe.getId() + " - " + exe.getTipo() + " - " + exe.getPosMemoria() + " - " + exe.getAmbito() + " - " + exe.getSize() + " - " + exe.getRol() + " - " + exe.getLenguaje() + " - "+exe.getListParametros());
-              // }
+                System.out.println(exe.getId() + " - " + exe.getTipo() + " - " + exe.getPosMemoria() + " - " + exe.getAmbito() + " - " + exe.getSize() + " - " + exe.getRol() + " - " + exe.getLenguaje() + " - "+exe.getListParametros());
             }
-
             creacion.unificarCuarpetas(cuarpeta, tabla);
             codigo = creacion.crearCodigo(cuarpeta);
+            codExe = creacion2.crearEjecutable(ejecutable, cuarpeta, tabla.getObC().getContVars());
             //  if(errores.equals("")){
             txt3d.setText(codigo);
             /*} else {

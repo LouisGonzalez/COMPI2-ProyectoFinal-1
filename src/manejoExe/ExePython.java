@@ -26,6 +26,7 @@ public class ExePython {
         }
         if (!existe) {
             tabla.getTablaExe().add(new Tabla(idMetodo, "void", -1, "global", null, "metodo", "PY"));
+            agregarReturn(tabla, idMetodo, "Float");
         }
     }
 

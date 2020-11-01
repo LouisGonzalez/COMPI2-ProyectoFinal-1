@@ -212,9 +212,12 @@ public class OperacionesPY {
         VerifPY verif = new VerifPY();
         int itMetodo = py.getMisMetodos().size() - 1;
         if (verif.verifVarLocal(py, id)) {
+            py.getMisMetodos().get(itMetodo).getMisVariables().get(VerifPY.iteradorVar).getListAsignaciones().add(jerarquia);
             py.getMisMetodos().get(itMetodo).getMisVariables().get(VerifPY.iteradorVar).setTipo(tipoVar);
         } else {
             py.getMisMetodos().get(itMetodo).getMisVariables().add(new Variable(id, tipoVar, true, jerarquia));
+            py.getMisMetodos().get(itMetodo).getMisVariables().get(py.getMisMetodos().get(itMetodo).getMisVariables().size()-1).getListAsignaciones().add(jerarquia);
+        
         }
     }
 

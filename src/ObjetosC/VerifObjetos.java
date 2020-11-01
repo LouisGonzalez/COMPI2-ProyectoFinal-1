@@ -57,8 +57,9 @@ public class VerifObjetos {
                     existe = true;
                     iterador = i;
                     break;
-                }
+                } 
             }
+            
         }
         return existe;
     }

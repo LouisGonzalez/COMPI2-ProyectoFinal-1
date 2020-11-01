@@ -9,6 +9,7 @@ import Tablas.TablaSimbolos;
 import cuartetos.Nodo;
 import gramaticaPYTHON.SintaxPYTHON;
 import java.util.ArrayList;
+import manejoExe.ExePython;
 import objetos.ObjetosPYTHON;
 import objetosApoyo.NodoBoolean;
 import verificaciones.VerifPY;
@@ -76,7 +77,68 @@ public class ManejoPython {
         }
         return et;
     }
+    
+    /*------------------------------------------- LLAMADO A METODOS ---------------------------------------------*/
 
+    public String devolverEtiquetaMetodo(TablaSimbolos tabla, String idMetodo, ArrayList<NodoBoolean> etiquetas, int linea){
+        invocarMetodo(tabla, idMetodo, etiquetas, linea);
+        String posReturn = buscarPosicionMemoria(tabla, "return", idMetodo);
+        int posMemoria = determinarSizeAmbito(tabla, idMetodo);
+        if(!posReturn.equals("")){
+            String t = definirTemporal(tabla);
+            tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t, null));
+            String t2 = definirTemporal(tabla);
+            tabla.getObPython().getCuarpeta().add(new Nodo("suma", t, posReturn, t2, null));
+            String t3 = definirTemporal(tabla);
+            tabla.getObPython().getCuarpeta().add(new Nodo("asig", "stack["+t2+"]", null, t3, null));
+            return t3;
+        } else {
+            return "";
+        }
+    }
+    
+    public void invocarMetodo(TablaSimbolos tabla, String idMetodo, ArrayList<NodoBoolean> etiquetas, int linea){
+        pasoParametros(tabla, idMetodo, etiquetas);
+        int posVar = determinarSizeAmbito(tabla, idMetodo);
+        tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", posVar, "p", null));
+        tabla.getObPython().getCuarpeta().add(new Nodo("CALL", idMetodo+"();", null, null, null));
+        tabla.getObPython().getCuarpeta().add(new Nodo("resta", "p", posVar, "p", null));
+    }
+    
+    public void pasoParametros(TablaSimbolos tabla, String ambito, ArrayList<NodoBoolean> etiquetas){
+        int cont = 0;
+        int posVar = determinarSizeAmbito(tabla, ambito);
+        for (int i = 0; i < tabla.getTablaExe().size(); i++) {
+            if(tabla.getTablaExe().get(i).getRol().equals("parametro") && tabla.getTablaExe().get(i).getAmbito().equals(ambito) && tabla.getTablaExe().get(i).getLenguaje().equals("PY")){
+                if(!tabla.getTablaExe().get(i).isChequeado()){
+                    String t = definirTemporal(tabla);
+                    tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", posVar, t, null));
+                    String t2 = definirTemporal(tabla);
+                    tabla.getObPython().getCuarpeta().add(new Nodo("suma", t, tabla.getTablaExe().get(i).getPosMemoria(), t2, null));
+                    tabla.getObPython().getCuarpeta().add(new Nodo("asig", etiquetas.get(cont).getId(), null, "stack["+t2+"]", null));
+                    tabla.getTablaExe().get(i).setChequeado(true);
+                    cont++;
+                }
+            }
+        }
+        for (int i = 0; i < tabla.getTablaExe().size(); i++) {
+            tabla.getTablaExe().get(i).setChequeado(false);
+        }
+    }
+    
+    public int determinarSizeAmbito(TablaSimbolos tabla, String ambito){
+        int size = 0;
+        for (int i = 0; i < tabla.getTablaExe().size(); i++) {
+            if(tabla.getTablaExe().get(i).getId().equals(ambito) && tabla.getTablaExe().get(i).getLenguaje().equals("PY")){
+                size = tabla.getTablaExe().get(i).getSize();
+                break;
+            }
+        }
+        return size;
+    }
+    
+    
+    
     /*------------------------------------------- METODOS -------------------------------------------------*/
     public void crearMetodo(ObjetosPYTHON py, String idMetodo, ArrayList<String> parametros, String retorno) {
         String nombre = "PY_" + idMetodo;
@@ -108,17 +170,17 @@ public class ManejoPython {
     }
 
     /*---------------------------------------- MANEJO DE PILA -------------------------------------------------*/
-    public NodoBoolean operacionIndividual(TablaSimbolos tabla, NodoBoolean nodo, String idMetodo) {
-        if (!esId(nodo.getId())) {
-            return nodo;
-        } else {
-            String t = definirTemporal(tabla);
-            String valMemoria = buscarPosicionMemoria(tabla, nodo.getId(), idMetodo);
-            tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
-            String t2 = definirTemporal(tabla);
-            tabla.getObPython().getCuarpeta().add(new Nodo("asig", "stack[" + t + "]", null, t2, null));
-            return new NodoBoolean(nodo.getTipo(), t2);
+    
+    public NodoBoolean devEtiquetaId(TablaSimbolos tabla, String idVar, String idMetodo, String tipo, boolean negativo){
+        String t = definirTemporal(tabla);
+        String valMemoria = buscarPosicionMemoria(tabla, idVar, idMetodo);
+        tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
+        String t2 = definirTemporal(tabla);
+        tabla.getObPython().getCuarpeta().add(new Nodo("asig", "stack["+t+"]", null, t2, null));
+        if(negativo){
+            t2 = "-"+t2;
         }
+        return new NodoBoolean(tipo, t2);
     }
     
     public String buscarPosicionMemoria(TablaSimbolos tabla, String idVar, String idMetodo) {
@@ -163,7 +225,18 @@ public class ManejoPython {
         py.setContVars(py.getContVars() + 1);
         py.getCuarpeta().add(new Nodo(tipoOp, ladoA.getId(), ladoB.getId(), var, null));
         if (!ladoA.getTipo().equals("") && !ladoB.getTipo().equals("")) {
-            String tip = verif.verificarTipoOperacion(py, ladoA.getTipo(), ladoB.getTipo(), fila, columna);
+            String tip = "";
+            if(!ladoA.getTipo().equals("Metodo") && !ladoB.getTipo().equals("Metodo")){
+                tip = verif.verificarTipoOperacion(py, ladoA.getTipo(), ladoB.getTipo(), fila, columna);
+            } else {
+                if(!ladoA.getTipo().equals("Metodo")){
+                    tip = ladoA.getTipo();
+                } else if(!ladoB.getTipo().equals("Metodo")){
+                    tip = ladoB.getTipo();
+                } else {
+                    tip = "Float";
+                }
+            }
             return new NodoBoolean(tip, var);
         } else {
             return new NodoBoolean("", var);
@@ -175,7 +248,9 @@ public class ManejoPython {
         ArrayList<Nodo> list = new ArrayList<>();
         if (ladoA != null && ladoB != null) {
             if (!ladoA.getTipo().equals("") && !ladoB.getTipo().equals("")) {
-                verif.verificarTipoOperacion(py, ladoA.getTipo(), ladoB.getTipo(), fila, columna);
+                if(!ladoA.getTipo().equals("Metodo") && !ladoB.getTipo().equals("Metodo")){
+                    verif.verificarTipoOperacion(py, ladoA.getTipo(), ladoB.getTipo(), fila, columna);
+                }
             }
             
             String et = definirEtiqueta2(py);
@@ -376,28 +451,6 @@ public class ManejoPython {
     }
 
     /*----------------------------------------- MENSAJES ---------------------------------------------------*/
-    public String concatenarMensaje(ObjetosPYTHON py, String ladoA, String ladoB) {
-        String et = "t" + py.getContVars();
-        py.setContVars(py.getContVars() + 1);
-        py.getCuarpeta().add(new Nodo("asig", ladoA, ladoB, et, null));
-        return et;
-    }
-    
-    public String concatenarMensaje2(TablaSimbolos tabla, String ladoA, String ladoB, String idMetodo) {
-        if (esId(ladoA)) {
-            String t = definirTemporal(tabla);
-            String valMemoria = buscarPosicionMemoria(tabla, ladoA, idMetodo);
-            tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
-            String t2 = definirTemporal(tabla);
-            tabla.getObPython().getCuarpeta().add(new Nodo("asig", "stack[" + t + "]", null, t2, null));
-            String t3 = definirTemporal(tabla);
-            tabla.getObPython().getCuarpeta().add(new Nodo("asig", t2, ladoB, t3, null));
-            return t3;
-        } else {
-            return concatenarMensaje(tabla.getObPython(), ladoA, ladoB);
-        }
-        
-    }
     
     public void mostrarMensaje(ObjetosPYTHON py, String id) {
         py.getCuarpeta().add(new Nodo("PRINT", null, null, id, null));

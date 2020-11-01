@@ -7,7 +7,6 @@ package manejoExe;
 
 import Tablas.TablaSimbolos;
 import ejecutable.Tabla;
-import java.util.ArrayList;
 
 /**
  *
@@ -24,8 +23,8 @@ public class ExeJava {
             }
         }
         if (!existe) {
-            tabla.getTablaExe().add(new Tabla(idClase, null, -1, "global", null, "clase", "JV"));
-            constructorPorDefecto(tabla, idClase);
+            tabla.getTablaExe().add(new Tabla(idClase, null, -1, "global", 0, "clase", "JV"));
+            //constructorPorDefecto(tabla, idClase);
         }
     }
 
@@ -52,6 +51,7 @@ public class ExeJava {
         if (!existe) {
             tabla.getTablaExe().add(new Tabla(id, tipo, -1, idClase, null, "metodo", "JV"));
             agregarThis(tabla, idMetodo, idClase);
+            agregarReturn(tabla, idMetodo, idClase);
         }
     }
 
@@ -78,12 +78,12 @@ public class ExeJava {
     public void actualizarParametrosMetodo(TablaSimbolos tabla, String idClase, String ambito) {
         String id = idClase + "_" + ambito;
         for (int i = 0; i < tabla.getTablaExe().size(); i++) {
-            if (tabla.getTablaExe().get(i).getRol().equals("parametro") && tabla.getTablaExe().get(i).getLenguaje().equals("JV")) {
+            if ((tabla.getTablaExe().get(i).getRol().equals("parametro") || tabla.getTablaExe().get(i).getId().equals("return")) && tabla.getTablaExe().get(i).getLenguaje().equals("JV")) {
                 if (!tabla.getTablaExe().get(i).isParamMarcado()) {
                     tabla.getTablaExe().get(i).setAmbito(id);
                     tabla.getTablaExe().get(i).setParamMarcado(true);
                 }
-            } else if (tabla.getTablaExe().get(i).getId().equals("this")) {
+            } else if (tabla.getTablaExe().get(i).getId().equals("this") && tabla.getTablaExe().get(i).getLenguaje().equals("JV")) {
                 if (tabla.getTablaExe().get(i - 1).getId().equals(id)) {
                     if (!tabla.getTablaExe().get(i).isParamMarcado()) {
                         tabla.getTablaExe().get(i).setAmbito(id);
@@ -107,7 +107,8 @@ public class ExeJava {
                 }
             }
             if (!existe) {
-                tabla.getTablaExe().add(new Tabla(idVar, tipo, tabla.getTablaExe().get(tabla.getTablaExe().size() - 1).getPosMemoria() + 1, idClase, 1, "variable", "JV"));
+                int posMemoria = agregarPosicionVariable(tabla, idClase, idClase, tabla.getTablaExe().get(tabla.getTablaExe().size() - 1).getPosMemoria());
+                tabla.getTablaExe().add(new Tabla(idVar, tipo, posMemoria, idClase, 1, "variable", "JV"));
                 sumarMemoriaClase(tabla, idClase);
             }
         } else {
@@ -122,11 +123,32 @@ public class ExeJava {
                 }
             }
             if (!existe) {
-                tabla.getTablaExe().add(new Tabla(idVar, tipo, tabla.getTablaExe().get(tabla.getTablaExe().size() - 1).getPosMemoria() + 1, ambito, 1, "variable", "JV"));
+                tabla.getTablaExe().add(new Tabla(idVar, tipo, tabla.getTablaExe().get(tabla.getTablaExe().size() - 1).getPosMemoria()+1, ambito, 1, "variable", "JV"));
                 sumarMemoriaMetodo(tabla, idClase, idMetodo);
             }
         }
     }
+    
+    public Integer agregarPosicionVariable(TablaSimbolos tabla, String ambito, String idClase, int noBase){
+        Integer devolver = null;
+        Integer muestra = null;
+        if(ambito.equals(idClase)){
+            for (int i = 0; i < tabla.getTablaExe().size(); i++) {
+                if(tabla.getTablaExe().get(i).getRol().equals("variable") && tabla.getTablaExe().get(i).getAmbito().equals(idClase) && tabla.getTablaExe().get(i).getLenguaje().equals("JV")){
+                    muestra = tabla.getTablaExe().get(i).getPosMemoria();
+                }
+            }
+            if(muestra != null){
+                devolver = muestra + 1;
+            } else {
+                devolver = 0;
+            }
+        } else {
+            devolver = noBase + 1;
+        }
+        return devolver;
+    }
+    
 
     public void agregarParametro(TablaSimbolos tabla, String idVar, String idClase, String idMetodo, String tipo) {
         String ambito = idClase + "_" + idMetodo;

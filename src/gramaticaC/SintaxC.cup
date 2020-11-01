@@ -47,6 +47,7 @@ parser code {:
 
     public ArrayList<String> dimensiones = new ArrayList<>();
     public String idArreglo = "";
+    public boolean esArreglo = false;
     public String claseAux = "";
     public ExeC exe = new ExeC();
 
@@ -79,7 +80,7 @@ parser code {:
                  LECTURA_DATOS, TIPO, MENSAJE, RESTO_MENSAJE, CLSCR, GETCH, VAR_TEXTO, PARAMETROS, PARAMETROS2,
                  AND, OR, VARS2, COMENTARIO_A, ENTER, ENTER2, COMENTARIO_B, TEXTO_COM;
 
-    non terminal String METODOS, TEXTO, TEXTO2, JAVA_CLASES, TIPO_VAR, MODULOS, TIPO_VAR_FOR, OP;
+    non terminal String METODOS, TEXTO, TEXTO2, JAVA_CLASES, TIPO_VAR, MODULOS, TIPO_VAR_FOR, OP, VAR_SCANF;
     
     non terminal Boolean  METODOS_MAIN;
 
@@ -279,11 +280,15 @@ parser code {:
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
     VECTOR_COND ::= id:a                        {:  parser.idArreglo = a.toString(); :} 
-                    DIM:b                       {:  String tip = parser.op.devolverTipoArreglo(parser.tabla.getObC(), a.toString(), b.getSize(), parser.jerarquia, aleft+PanelPrincipal.totalLineas, aright);
+                    DIM:b                       {:  
+                                                    String tip = "";
+                                                  //  if(b != null){
+                                                        tip = parser.op.devolverTipoArreglo(parser.tabla.getObC(), a.toString(), b.getSize(), parser.jerarquia, aleft+PanelPrincipal.totalLineas, aright);
+                                                   // }
                                                     String et = "";
-                                                    if(b != null){
+                                                   // if(b != null){
                                                         et = parser.manejoc.etiquetaArreglo(parser.tabla, b.getEtiqueta(), a.toString());
-                                                    }
+                                                   // }
                                                     RESULT = new NodoBoolean(tip, et); :}
 ;
 
@@ -448,25 +453,25 @@ parser code {:
 
     CLASES ::= java:a punto id:b id:c                                   {:  parser.idClase = b.toString(); 
                                                                             parser.exe.agregarVariable(parser.tabla, c.toString(), 1, false, b.toString()); :} 
-               CONSTRUCTOR:d                                            {:  parser.manejoc.agregarConstructor(parser.tabla, b.toString(), c.toString(), d.size(), d);    
-                                                                            parser.op.crearClase(parser.tabla, d, b.toString(), c.toString(), parser.jerarquia, cleft+PanelPrincipal.totalLineas, cright); :} 
+               CONSTRUCTOR:d                                            {:  parser.op.crearClase(parser.tabla, d, b.toString(), c.toString(), parser.jerarquia, cleft+PanelPrincipal.totalLineas, cright);
+                                                                            parser.manejoc.agregarConstructor(parser.tabla, b.toString(), c.toString(), d.size(), d);     :} 
                CLASES2 puntoComa ENTER2
     |          java:a punto id:b id:c                                   {:  parser.idClase = b.toString(); 
                                                                             parser.exe.agregarVariable(parser.tabla, c.toString(), 1, false, b.toString());
-                                                                            parser.manejoc.agregarConstructor(parser.tabla, b.toString(), c.toString(), 0, new ArrayList<>());      
-                                                                            parser.op.agregarClase(parser.tabla.getObC(), c.toString(), b.toString(), parser.jerarquia, bleft+PanelPrincipal.totalLineas, bright); :} 
+                                                                            parser.op.agregarClase(parser.tabla.getObC(), c.toString(), b.toString(), parser.jerarquia, bleft+PanelPrincipal.totalLineas, bright);
+                                                                            parser.manejoc.agregarConstructor(parser.tabla, b.toString(), c.toString(), 0, new ArrayList<>());       :} 
                CLASES2 puntoComa ENTER2
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    CLASES2 ::= coma id:a CONSTRUCTOR:b                                 {:  parser.manejoc.agregarConstructor(parser.tabla, parser.idClase, a.toString(), b.size(), b);  
-                                                                            parser.exe.agregarVariable(parser.tabla, a.toString(), 1, false, parser.idClase);
-                                                                            parser.op.crearClase(parser.tabla, b, parser.idClase, a.toString(), parser.jerarquia, aleft+PanelPrincipal.totalLineas, aright); :}  
+    CLASES2 ::= coma id:a CONSTRUCTOR:b                                 {:  parser.op.crearClase(parser.tabla, b, parser.idClase, a.toString(), parser.jerarquia, aleft+PanelPrincipal.totalLineas, aright);
+                                                                            parser.exe.agregarVariable(parser.tabla, a.toString(), 1, false, parser.idClase); 
+                                                                            parser.manejoc.agregarConstructor(parser.tabla, parser.idClase, a.toString(), b.size(), b);  :}
                 CLASES2
-    |           coma id:a                                               {:  parser.manejoc.agregarConstructor(parser.tabla, parser.idClase, a.toString(), 0, new ArrayList<>());     
+    |           coma id:a                                               {:  parser.op.agregarClase(parser.tabla.getObC(), a.toString(), parser.idClase, parser.jerarquia, aleft+PanelPrincipal.totalLineas, aright);
                                                                             parser.exe.agregarVariable(parser.tabla, a.toString(), 1, false, parser.idClase);
-                                                                            parser.op.agregarClase(parser.tabla.getObC(), a.toString(), parser.idClase, parser.jerarquia, aleft+PanelPrincipal.totalLineas, aright); :}  
+                                                                            parser.manejoc.agregarConstructor(parser.tabla, parser.idClase, a.toString(), 0, new ArrayList<>());     :}  
                 CLASES2
     |
 ;
@@ -587,7 +592,7 @@ parser code {:
     |            METODO_COND:a                                      {:  parser.idClase2 = ""; 
                                                                         parser.contParam = 0; 
                                                                         RESULT = new NodoBoolean(a.getTipo(), a.getId());  :}
-    |            id:a                                               {:  String tip = parser.op.devolverTipoVar(parser.tabla.getObC(), a.toString(), parser.jerarquia, aleft+PanelPrincipal.totalLineas, aright);  
+    |            id:a                                               {:  String tip = parser.op.devolverTipoVar(parser.tabla.getObC(), parser.jerarquia, a.toString(), aleft+PanelPrincipal.totalLineas, aright);  
                                                                         RESULT = parser.manejoc.devolverEtiquetaId(parser.tabla, a.toString(), tip, false); :}
     |            menos:a numero:b                                   {:  RESULT = new NodoBoolean("Integer", a.toString()+b.toString()); :}
     |            menos:a numero:b punto:c numero:d                  {:  RESULT = new NodoBoolean("Float", a.toString()+b.toString()+c.toString()+d.toString()); :}
@@ -596,7 +601,7 @@ parser code {:
     |            menos METODO_COND:a                                {:  parser.idClase2 = ""; 
                                                                         parser.contParam = 0; 
                                                                         RESULT = new NodoBoolean(a.getTipo(), "-"+a.getId()); :}
-    |            menos:b id:a                                       {:  String tip = parser.op.devolverTipoVar(parser.tabla.getObC(), a.toString(), parser.jerarquia, aleft+PanelPrincipal.totalLineas, aright); 
+    |            menos:b id:a                                       {:  String tip = parser.op.devolverTipoVar(parser.tabla.getObC(), parser.jerarquia, a.toString(), aleft+PanelPrincipal.totalLineas, aright); 
                                                                         RESULT = parser.manejoc.devolverEtiquetaId(parser.tabla, a.toString(), tip, true); :}
 ;    
 
@@ -635,9 +640,10 @@ parser code {:
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
     FOR ::= condFor                                                         {:  parser.usoPila.add(false);  
-                                                                                parser.jerarquia++; parser.pilaFalsas.add(new ArrayList<>());  :} 
+                                                                                parser.jerarquia++; 
+                                                                                parser.pilaFalsas.add(new ArrayList<>());  :} 
             parentesis_a TIPO_VAR_FOR:a id:b igual VAR_FOR:h puntoComa      {:  if(h.getValor()){ 
-                                                                                    parser.auxFor= parser.verif.verifVarFor(parser.tabla.getObC(), b.toString(), a, "Integer", parser.jerarquia, bleft+PanelPrincipal.totalLineas, bright, parser.dimensiones); 
+                                                                                    parser.auxFor = parser.verif.verifVarFor(parser.tabla.getObC(), b.toString(), a, "Integer", parser.jerarquia, bleft+PanelPrincipal.totalLineas, bright, parser.dimensiones); 
                                                                                 } else { 
                                                                                     parser.auxFor=false; 
                                                                                 } 
@@ -744,7 +750,8 @@ parser code {:
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
     LECTURA_DATOS ::= scanf parentesis_a comilla TEXTO MODULOS:a                    {:  parser.tipoActual=a; :} 
-                      comilla coma ampersand VAR_LECTURA:b parentesis_b puntoComa   {:  parser.manejoc.crearScanf(parser.tabla, b, a); :} 
+                      comilla coma ampersand VAR_SCANF:b parentesis_b puntoComa   {:  parser.manejoc.crearScanf(parser.tabla, b, a, parser.esArreglo); 
+                                                                                      parser.esArreglo = false;   :} 
                       ENTER2
 ;
 
@@ -768,6 +775,21 @@ parser code {:
                                                                     RESULT = ""; 
                                                                 } :}
 ;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    VAR_SCANF ::= id:a                                      {:  parser.verif.verificarIdOperacion(parser.tabla.getObC(), a.toString(), parser.jerarquia, parser.tipoActual, aleft+PanelPrincipal.totalLineas, aright); 
+                                                                RESULT = a.toString(); :}
+    |               numero:a                                {:  RESULT = a.toString(); :}
+    |               comillaSimple:a id:b comillaSimple:c    {:  RESULT = a.toString()+b.toString()+c.toString(); :}
+    |               VECTOR:a                                {:  parser.esArreglo = true;
+                                                                if(a != null){ 
+                                                                    RESULT = a.getId(); 
+                                                                } else { 
+                                                                    RESULT = ""; 
+                                                                } :}
+;
+
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
@@ -817,7 +839,7 @@ parser code {:
     |             ampersand id
     |             VECTOR:a                                                      {: RESULT=a.getValor(); :}
     |             ampersand VECTOR 
-    |             METODOS:a                                                     {:  :}
+    |             METODOS:a                                                     {: RESULT = a; :}
     |             numero                                                        {: RESULT=true; :}
     |             numero punto numero                                           {: RESULT=true; :}
 ;

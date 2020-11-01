@@ -175,12 +175,14 @@ public class VerifJAVA {
     }
 
     //revisa que el id que se ingrese en un input cumpla con las condiciones
-    public void verifInput(ObjetosJAVA jv, String id, String tipoBase, int fila, int columna) {
+    public void verifInput(ObjetosJAVA jv, String id, String tipoBase, int fila, int columna, int jerarquia) {
         boolean todoCorrecto = false;
         int itClase = jv.getMisClases().size() - 1;
         int itMetodo = jv.getMisClases().get(itClase).getMisMetodos().size() - 1;
         if (verifVarLocal(jv, id)) {
             if (jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getTipo().equals(tipoBase)) {
+                jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getListAsignaciones().add(jerarquia);
+                jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).setValor(true);
                 todoCorrecto = true;
             } else {
                 PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no es de tipo: " + tipoBase + "\n";
@@ -189,6 +191,8 @@ public class VerifJAVA {
         } else {
             if (verifVarGlobal(jv, id)) {
                 if (jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getTipo().equals(tipoBase)) {
+                    jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getListAsignaciones().add(jerarquia);
+                    jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).setValor(true);
                     todoCorrecto = true;
                 } else {
                     PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no es de tipo: " + tipoBase + "\n";

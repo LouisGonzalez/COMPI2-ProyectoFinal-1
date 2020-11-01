@@ -8,7 +8,9 @@ package manejoCuartetos;
 import Tablas.TablaSimbolos;
 import cuartetos.Nodo;
 import gramaticaVB.SintaxVB;
+import interfaz.PanelPrincipal;
 import java.util.ArrayList;
+import manejoExe.ExeVb;
 import objetos.ObjetosVB;
 import objetos.Variable;
 import objetosApoyo.NodoBoolean;
@@ -46,6 +48,125 @@ public class ManejoVb {
             }
         }
         return et;
+    }
+    
+    /*---------------------------------------- LLAMADO A METODOS ----------------------------------------------*/
+    
+    public String devolverEtiquetaMetodo(TablaSimbolos tabla, String idMetodo, ArrayList<NodoBoolean> etiquetas, int linea){
+        invocarMetodo(tabla, idMetodo, etiquetas, linea);
+        String idTotal = encontrarIdMetodo(tabla, idMetodo);
+        String posReturn = buscarPosicionMemoria(tabla, "return", idTotal);
+        int posMemoria = determinarSizeAmbito(tabla, idTotal);
+        if(!posReturn.equals("")){
+            String t = definirTemporal(tabla);
+            tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t, null));
+            String t2 = definirTemporal(tabla);
+            tabla.getObVb().getCuarpeta().add(new Nodo("suma", t, posReturn, t2, null));
+            String t3 = definirTemporal(tabla);
+            tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack["+t2+"]", null, t3, null));
+            return t3;
+        } else {
+            return "";
+        }
+    }
+    
+    public void invocarMetodo(TablaSimbolos tabla, String idMetodo, ArrayList<NodoBoolean> etiquetas, int linea){
+        VerifVB verif = new VerifVB();
+        ExeVb exe = new ExeVb();
+        ManejoC manejoc = new ManejoC();
+        String parametros = "";
+        for (int i = 0; i < etiquetas.size(); i++) {
+            if(i == 0){
+                parametros = etiquetas.get(i).getTipo();
+            } else {
+                parametros += "_"+etiquetas.get(i).getTipo();
+            }
+        }
+        String [] arregloParam = parametros.split("_");
+        String varTotal = manejoc.encontrarIdMetodo(tabla, idMetodo, "", "VB");
+        if(verificarParametrosCorrectos(tabla, varTotal, arregloParam, verif, linea)){
+            pasoParametros(tabla, varTotal, etiquetas, exe);
+            int posVar = determinarSizeAmbito(tabla, varTotal);
+            tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", posVar, "p", null));
+            tabla.getObVb().getCuarpeta().add(new Nodo("CALL", varTotal+"();", null, null, null));
+            tabla.getObVb().getCuarpeta().add(new Nodo("resta", "p", posVar, "p", null));
+            
+        }
+    }
+    
+    public void pasoParametros(TablaSimbolos tabla, String ambito, ArrayList<NodoBoolean> etiquetas, ExeVb exe){
+        int cont = 0;
+        int posVar = determinarSizeAmbito(tabla, ambito);
+        for (int i = 0; i < tabla.getTablaExe().size(); i++) {
+            if(tabla.getTablaExe().get(i).getRol().equals("parametro") && tabla.getTablaExe().get(i).getAmbito().equals(ambito) && tabla.getTablaExe().get(i).getLenguaje().equals("VB")){
+                if(!tabla.getTablaExe().get(i).isChequeado()){
+                    String t = definirTemporal(tabla);
+                    tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", posVar, t, null));
+                    String t2 = definirTemporal(tabla);
+                    tabla.getObVb().getCuarpeta().add(new Nodo("suma", t, tabla.getTablaExe().get(i).getPosMemoria(), t2, null));
+                    tabla.getObVb().getCuarpeta().add(new Nodo("asig", etiquetas.get(cont).getId(), null, "stack["+t2+"]", null));
+                    tabla.getTablaExe().get(i).setChequeado(true);
+                    cont++;
+                }
+            }
+        }
+        for (int i = 0; i < tabla.getTablaExe().size(); i++) {
+            tabla.getTablaExe().get(i).setChequeado(false);
+        }
+    }
+    
+    public boolean verificarParametrosCorrectos(TablaSimbolos tabla, String id, String[] arregloParam, VerifVB verif, int linea){
+        boolean todoCorrecto = true;
+        for (int i = 0; i < tabla.getTablaExe().size(); i++) {
+            if(tabla.getTablaExe().get(i).getRol().equals("metodo") && tabla.getTablaExe().get(i).getId().equals(id) && tabla.getTablaExe().get(i).getLenguaje().equals("VB")){
+                if(!tabla.getTablaExe().get(i).getListParametros().equals("")){
+                    String[] arregloParam2 = tabla.getTablaExe().get(i).getListParametros().split("_");
+                    if(arregloParam.length == arregloParam2.length){
+                        for (int j = 0; j < arregloParam.length; j++) {
+                            if(!arregloParam[j].equals(arregloParam2[j])){
+                                if(!verif.verificarPadre(tabla.getObVb(), arregloParam[j], arregloParam2[j], tabla.getObVb().getTablaTipos())){
+                                    todoCorrecto = false;
+                                    PanelPrincipal.errores += "Fila: " + linea + " Tipo de error: SEMANTICO - Causa: Parametros equivocados en metodo: " + id + " dentro de archivo VB\n";
+                                    break;
+                                }
+                            }
+                        }
+                        if(todoCorrecto){
+                            break;
+                        }
+                    } else {
+                        todoCorrecto = false;
+                    }
+                }
+            }
+        }
+        return todoCorrecto;
+    }
+    
+    public String encontrarIdMetodo(TablaSimbolos tabla, String idMetodo){
+        String id = idMetodo;
+        String aDevolver = "";
+        for (int i = 0; i < tabla.getTablaExe().size(); i++) {
+            if(tabla.getTablaExe().get(i).getRol().equals("metodo") && tabla.getTablaExe().get(i).getLenguaje().equals("VB")){
+                String[] arreglo = tabla.getTablaExe().get(i).getId().split("_");
+                if(arreglo[0].equals(idMetodo)){
+                    aDevolver = tabla.getTablaExe().get(i).getId();
+                    break;
+                }
+            }
+        }
+        return aDevolver;
+    }
+    
+    public int determinarSizeAmbito(TablaSimbolos tabla, String ambito){
+        int size = 0;
+        for (int i = 0; i < tabla.getTablaExe().size(); i++) {
+            if(tabla.getTablaExe().get(i).getId().equals(ambito) && tabla.getTablaExe().get(i).getLenguaje().equals("VB")){
+                size = tabla.getTablaExe().get(i).getSize();
+                break;
+            }
+        }
+        return size;
     }
 
     /*----------------------------------------- METODOS ----------------------------------------------------*/
@@ -124,6 +245,15 @@ public class ManejoVb {
         }
         return aDevolver;
     }
+    
+    public String etiquetaId(TablaSimbolos tabla, String idVar, String idMetodo){
+        String t = definirTemporal(tabla);
+        String valMemoria = buscarPosicionMemoria(tabla, idVar, idMetodo);
+        tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
+        String t2 = definirTemporal(tabla);
+        tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack["+t+"]", null, t2, null));
+        return t2;
+    }
 
     //busca dentro de la pila la posicion de una variable
     public String buscarPosicionMemoria(TablaSimbolos tabla, String idVar, String idMetodo) {
@@ -194,21 +324,16 @@ public class ManejoVb {
         }
     }
 
-    //Devuelve una etiqueta despues de agregarsele o no un valor dentro del stack
-    public NodoBoolean devolverEtiqueta(TablaSimbolos tabla, NodoBoolean devuelto, String idMetodo) {
-        if (esId(devuelto.getId())) {
-            String t = "t" + tabla.getObVb().getContVars();
-            tabla.getObVb().setContVars(tabla.getObVb().getContVars() + 1);
-            String valMemoria = buscarPosicionMemoria(tabla, devuelto.getId(), idMetodo);
-            tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
-            String t2 = "t" + tabla.getObVb().getContVars();
-            tabla.getObVb().setContVars(tabla.getObVb().getContVars() + 1);
-            tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack[" + t + "]", null, t2, null));
-            NodoBoolean aDevolver = new NodoBoolean(devuelto.getTipo(), t2);
-            return aDevolver;
-        } else {
-            return devuelto;
+    public NodoBoolean devolverEtiquetaId(TablaSimbolos tabla, String idVar, String idMetodo, String tipo, boolean negativo){
+        String t = definirTemporal(tabla);
+        String posMemoria = buscarPosicionMemoria(tabla, idVar, idMetodo);
+        tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t, null));
+        String t2 = definirTemporal(tabla);
+        tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack["+t+"]", null, t2, null));
+        if(negativo){
+            t2 = "-"+t2;
         }
+        return new NodoBoolean(tipo, t2);
     }
 
     public ArrayList<Nodo> agregarBooleans(ObjetosVB vb, ArrayList<ArrayList<Nodo>> pilaFalsas, NodoBoolean lado1, NodoBoolean lado2, String op, int jerarquia) {

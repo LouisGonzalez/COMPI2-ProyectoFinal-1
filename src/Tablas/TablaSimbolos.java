@@ -5,6 +5,7 @@
  */
 package Tablas;
 
+import cuartetos.Nodo;
 import ejecutable.Tabla;
 import java.util.ArrayList;
 import objetos.*;

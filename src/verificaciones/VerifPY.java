@@ -6,6 +6,7 @@
 package verificaciones;
 
 import Operaciones.OperacionesPY;
+import Tablas.TablaSimbolos;
 import interfaz.PanelPrincipal;
 import java.util.Objects;
 import objetos.ObjetosPYTHON;
@@ -196,5 +197,20 @@ public class VerifPY {
                 PanelPrincipal.errores += "Fila: "+fila+" Columna: "+columna+" Tipo de error: SEMANTICO - Causa: Error en definicion print().\n";
             }
         }
+    }
+    
+    public boolean verificarMetodo(TablaSimbolos tabla, String idMetodo, int fila, int columna){
+        boolean existe = false;
+        for (int i = 0; i < tabla.getObPython().getMisMetodos().size(); i++) {
+            if(tabla.getObPython().getMisMetodos().get(i).getIdMetodo().equals(idMetodo)){
+                existe = true;
+                iteradorVar = i;
+                break;
+            }
+        }
+        if(!existe){
+            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe ningun metodo con el id: " + idMetodo + " dentro del archivo PYTHON\n";
+        }
+        return existe;
     }
 }

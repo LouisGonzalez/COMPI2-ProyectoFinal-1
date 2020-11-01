@@ -98,13 +98,16 @@ public class ManejoTexto {
         tabla.getObJava().setContEtFin(tabla.getObVb().getContEtFin()+1);
         tabla.getObJava().setContFor(tabla.getObVb().getContFor()+1);
         tabla.getObJava().setContWhile(tabla.getObVb().getContEtWhile()+1);
+        tabla.getObJava().setContVars(tabla.getObVb().getContVars()+1);
+        
     }
     
     public void sumarVariablesC(TablaSimbolos tabla){
         tabla.getObC().setContEt(tabla.getObPython().getContEt()+1);
         tabla.getObC().setContEtFin(tabla.getObPython().getContEtFin()+1);
         tabla.getObC().setContFor(tabla.getObPython().getContFor()+1);
-        tabla.getObC().setContWhile(tabla.getObJava().getContWhile()+1);
+        tabla.getObC().setContVars(tabla.getObPython().getContVars()+1);
+        tabla.getObC().setContWhile(tabla.getObPython().getContWhile()+1);
     }
     
 
