@@ -76,11 +76,11 @@ parser code {:
 
     non terminal INICIO, LIBRERIAS, VARIABLES, CONSTANTES, ASIGNACIONES, VARS, BREAK,
                  MAIN, CUERPO_MAIN, VARIABLES_MAIN, CLASES, VECTOR_GETCH,
-                 CLASES2, IF, ELSE, FOR, WHILE, DO_WHILE, SWITCH, CASES,   
-                 LECTURA_DATOS, TIPO, MENSAJE, RESTO_MENSAJE, CLSCR, GETCH, VAR_TEXTO, PARAMETROS, PARAMETROS2,
+                 CLASES2, IF, ELSE, FOR, WHILE, DO_WHILE, SWITCH, CASES, TEXTO3,  
+                 LECTURA_DATOS, TIPO, MENSAJE, RESTO_MENSAJE, CLSCR, GETCH, PARAMETROS, PARAMETROS2,
                  AND, OR, VARS2, COMENTARIO_A, ENTER, ENTER2, COMENTARIO_B, TEXTO_COM;
 
-    non terminal String METODOS, TEXTO, TEXTO2, JAVA_CLASES, TIPO_VAR, MODULOS, TIPO_VAR_FOR, OP, VAR_SCANF;
+    non terminal String METODOS, TEXTO, TEXTO2, JAVA_CLASES, TIPO_VAR, MODULOS, TIPO_VAR_FOR, OP, VAR_SCANF, VAR_TEXTO;
     
     non terminal Boolean  METODOS_MAIN;
 
@@ -642,12 +642,16 @@ parser code {:
     FOR ::= condFor                                                         {:  parser.usoPila.add(false);  
                                                                                 parser.jerarquia++; 
                                                                                 parser.pilaFalsas.add(new ArrayList<>());  :} 
-            parentesis_a TIPO_VAR_FOR:a id:b igual VAR_FOR:h puntoComa      {:  if(h.getValor()){ 
+            parentesis_a TIPO_VAR_FOR:a id:b                                {:  if(!a.equals("")){
+                                                                                    parser.exe.agregarVariable(parser.tabla, b.toString(), 1, false, a);
+                                                                                }    :} 
+            igual VAR_FOR:h puntoComa                                       {:  if(h.getValor()){ 
                                                                                     parser.auxFor = parser.verif.verifVarFor(parser.tabla.getObC(), b.toString(), a, "Integer", parser.jerarquia, bleft+PanelPrincipal.totalLineas, bright, parser.dimensiones); 
                                                                                 } else { 
                                                                                     parser.auxFor=false; 
                                                                                 } 
-                                                                                parser.tipoActual="Integer"; :} 
+                                                                                parser.tipoActual="Integer"; 
+                                                                                parser.manejoc.agregarPreludioFor(parser.tabla, b.toString(), h.getId(), parser.jerarquia);  :} 
             BOOLEAN:c puntoComa id:d igual id:e mas VAR_FOR:f parentesis_b  {:  parser.manejoc.agregarFor(parser.tabla, b.toString(), h.getId(), c, parser.jerarquia, a);  
                                                                                 parser.verif.verificarFor(parser.tabla.getObC(), parser.jerarquia, parser.auxFor, d.toString(), e.toString(), parser.tipoActual, f.getValor(), a, b.toString());  :} 
             ENTER2 llave_a ENTER2 CUERPO_MAIN llave_b                       {:  parser.manejoc.retornarFor(parser.tabla, parser.usoPila, d.toString(), e.toString(), f.getId(), parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);  
@@ -794,15 +798,21 @@ parser code {:
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
     MENSAJE ::= printf parentesis_a                                                     {: parser.tipoActual="Float"; :} 
-                comilla TEXTO2  comilla RESTO_MENSAJE parentesis_b puntoComa ENTER2
-    |           printf parentesis_a                                                     {: parser.tipoActual="Float"; :} 
-                VAR_TEXTO RESTO_MENSAJE parentesis_b puntoComa ENTER2
+                TEXTO3 parentesis_b puntoComa ENTER2                                    {: parser.manejoc.mostrarQuiebre(parser.tabla); :}
+;
+
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    TEXTO3 ::= VAR_TEXTO:a                                          {: parser.manejoc.mostrarMensaje(parser.tabla, a, "%f"); :} 
+               RESTO_MENSAJE
+    |          comilla:a TEXTO2:b comilla:c                         {: parser.manejoc.mostrarMensaje(parser.tabla, a.toString()+b.toString()+c.toString(), null); :} 
+               RESTO_MENSAJE
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    RESTO_MENSAJE ::= coma comilla TEXTO2 comilla RESTO_MENSAJE
-    |                 coma VAR_TEXTO RESTO_MENSAJE
+    RESTO_MENSAJE ::= coma TEXTO3
     |
 ;
 
@@ -835,13 +845,14 @@ parser code {:
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-   VAR_TEXTO ::=  id:a                                                          {: RESULT=parser.verif.verificarIdOperacion(parser.tabla.getObC(), a.toString(), parser.jerarquia, parser.tipoActual, aleft+PanelPrincipal.totalLineas, aright); :}
+   VAR_TEXTO ::=  id:a                                                          {: parser.verif.verificarIdOperacion(parser.tabla.getObC(), a.toString(), parser.jerarquia, parser.tipoActual, aleft+PanelPrincipal.totalLineas, aright); 
+                                                                                   RESULT = parser.manejoc.etiquetaId(parser.tabla, a.toString());   :}
     |             ampersand id
-    |             VECTOR:a                                                      {: RESULT=a.getValor(); :}
+    |             VECTOR:a                                                      {: RESULT=a.getId(); :}
     |             ampersand VECTOR 
     |             METODOS:a                                                     {: RESULT = a; :}
-    |             numero                                                        {: RESULT=true; :}
-    |             numero punto numero                                           {: RESULT=true; :}
+    |             numero:a                                                      {: RESULT = a.toString(); :}
+    |             numero:a punto:b numero:c                                     {: RESULT = a.toString()+b.toString()+c.toString(); :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/

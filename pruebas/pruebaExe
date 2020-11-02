@@ -1,0 +1,62 @@
+%%VB
+
+Public Sub Factorial()
+    Dim Fact as integer
+    for a as Integer = 0 to 10 step 1
+	Console.writeLine(a)
+    next a
+End Sub
+
+
+
+
+%%JAVA
+public class algo {
+	
+
+	public void suma(int a, int b){
+		int c = a + b;
+		System.out.println("La suma es: "+c);
+		for(int i = 0; i < 10; i=i+1){
+			System.out.println(i);
+		}
+
+	}
+
+	public algo(){
+
+	}
+}
+%%PY
+
+def edadmeses():
+	print("HOla mundo")
+	for a in range(0, 10, 1):
+		print(a)
+	print("equis")
+
+%%PROGRAMA
+#include "VB"
+#include "PY"
+#include "JAVA.*"
+
+int x = 1;
+int y = 2;
+
+void main()
+{
+	//JAVA.algo id();
+
+	//JAVA.id.suma(x, y);
+	//PY.edadmeses();
+	//VB.Factorial();
+
+	for(int i = 0; i < 10; i=i+1){
+		printf(i);
+	}
+
+}
+
+
+
+

@@ -72,6 +72,7 @@ public class OperacionesPY {
                         } else if (tipoInstruccion.get(tipoInstruccion.size() - 1).equals("WHILE")) {
                             manejoPY.retornoWhile(py, usoPila, pilaCuarpeta, pilaFalsas);
                         } else if (tipoInstruccion.get(tipoInstruccion.size() - 1).equals("FOR")) {
+                            System.out.println("ENTRO AQUI DEBIDO AL FOR MIS PANAS");
                             manejoPY.retornoFor(py, usoPila, pilaCuarpeta, pilaFalsas, pilaFor);
                         }
                         System.out.println(tipoInstruccion.get(tipoInstruccion.size() - 1) + "      " + tipoInstruccion.size());

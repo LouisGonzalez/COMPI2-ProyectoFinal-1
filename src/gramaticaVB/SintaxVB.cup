@@ -515,16 +515,31 @@ parser code {:
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    FOR ::= condFor {: parser.usoPila.add(false); parser.jerarquia++; parser.pilaFalsas.add(new ArrayList<>()); parser.pilaFor.add(new ArrayList<>()); :} id:a {: parser.idFor = a.toString(); :} TIPO_VARIABLE:b igual OPERACION:c condTo OPERACION:d STEP:e {: parser.manejoVB.agregarFor(parser.tabla.getObVb(), parser.pilaFalsas, a.toString(), c, d, parser.jerarquia, b); parser.verif.verificarVarFor(a.toString(), b, parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size()-1, parser.tabla.getObVb().getTablaTipos(), parser.jerarquia, e, aleft+PanelPrincipal.totalLineas, aright, parser.jerarquia); :} ENTER  CONTENIDO:h condNext ID  ENTER {: parser.manejoVB.retornoFor(parser.tabla.getObVb(), parser.usoPila, parser.pilaFor, a.toString(), parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);  parser.operacion.eliminarVariables(parser.jerarquia, parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size() - 1); parser.jerarquia--; RESULT=parser.operacion.retornoFor(h); :}
+    FOR ::= condFor                                                         {:  parser.usoPila.add(false); 
+                                                                                parser.jerarquia++; 
+                                                                                parser.pilaFalsas.add(new ArrayList<>()); 
+                                                                                parser.pilaFor.add(new ArrayList<>()); :} 
+            id:a                                                            {:  parser.idFor = a.toString(); :} 
+            TIPO_VARIABLE:b                                                 {:  if(!b.equals("")){ 
+                                                                                    parser.exe.agregarVariable(parser.tabla, a.toString(), parser.metodoExe, b);
+                                                                                }   
+                                                                            :} 
+            igual OPERACION:c                                               {:  parser.manejoVB.agregarPreludioFor(parser.tabla, a.toString(), c, parser.jerarquia, parser.metodoExe);  :} 
+            condTo OPERACION:d STEP:e                                       {:  parser.manejoVB.agregarFor(parser.tabla, parser.pilaFalsas, a.toString(), c, d, parser.jerarquia, b, parser.metodoExe); 
+                                                                                parser.verif.verificarVarFor(a.toString(), b, parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size()-1, parser.tabla.getObVb().getTablaTipos(), parser.jerarquia, e, aleft+PanelPrincipal.totalLineas, aright, parser.jerarquia); :} 
+            ENTER  CONTENIDO:h condNext ID  ENTER                           {:  parser.manejoVB.retornoFor(parser.tabla.getObVb(), parser.usoPila, parser.pilaFor, a.toString(), parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);  
+                                                                                parser.operacion.eliminarVariables(parser.jerarquia, parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size() - 1); 
+                                                                                parser.jerarquia--; 
+                                                                                RESULT=parser.operacion.retornoFor(h); :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    STEP ::= condStep numero:a                  {: parser.manejoVB.agregarAuxPilaFor(parser.tabla.getObVb(), parser.pilaFor, a.toString(), parser.idFor); RESULT=true; :}
-    |        condStep menos:a numero:b          {: parser.manejoVB.agregarAuxPilaFor(parser.tabla.getObVb(), parser.pilaFor, a.toString()+b.toString(), parser.idFor); RESULT = true; :}
-    |        condStep id:a                      {:  parser.manejoVB.agregarAuxPilaFor(parser.tabla.getObVb(), parser.pilaFor, a.toString(), parser.idFor);  RESULT = parser.verif.verifVarOp(parser.tabla.getObVb(),  parser.tabla.getObVb().getMisMetodos().size()-1, a.toString(), "Float", parser.tabla.getObVb().getTablaTipos(), aleft+PanelPrincipal.totalLineas, aright);  :}
-    |        condStep menos:a id:b              {: parser.manejoVB.agregarAuxPilaFor(parser.tabla.getObVb(), parser.pilaFor, a.toString()+b.toString(), parser.idFor); RESULT = parser.verif.verifVarOp(parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size()-1, b.toString(), "Float", parser.tabla.getObVb().getTablaTipos(), aleft+PanelPrincipal.totalLineas, aright);  :}
-    |                                           {: parser.manejoVB.agregarAuxPilaFor(parser.tabla.getObVb(), parser.pilaFor, "1", parser.idFor); RESULT = true; :}
+    STEP ::= condStep numero:a                  {: parser.manejoVB.agregarAuxPilaFor(parser.tabla, parser.pilaFor, a.toString(), parser.idFor, parser.metodoExe, true, false); RESULT=true; :}
+    |        condStep menos:a numero:b          {: parser.manejoVB.agregarAuxPilaFor(parser.tabla, parser.pilaFor, a.toString()+b.toString(), parser.idFor, parser.metodoExe, true, true); RESULT = true; :}
+    |        condStep id:a                      {:  parser.manejoVB.agregarAuxPilaFor(parser.tabla, parser.pilaFor, a.toString(), parser.idFor, parser.metodoExe, false, false);  RESULT = parser.verif.verifVarOp(parser.tabla.getObVb(),  parser.tabla.getObVb().getMisMetodos().size()-1, a.toString(), "Float", parser.tabla.getObVb().getTablaTipos(), aleft+PanelPrincipal.totalLineas, aright);  :}
+    |        condStep menos:a id:b              {: parser.manejoVB.agregarAuxPilaFor(parser.tabla, parser.pilaFor, a.toString()+b.toString(), parser.idFor, parser.metodoExe, false, true); RESULT = parser.verif.verifVarOp(parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size()-1, b.toString(), "Float", parser.tabla.getObVb().getTablaTipos(), aleft+PanelPrincipal.totalLineas, aright);  :}
+    |                                           {: parser.manejoVB.agregarAuxPilaFor(parser.tabla, parser.pilaFor, "1", parser.idFor, parser.metodoExe, true, false); RESULT = true; :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -534,18 +549,18 @@ parser code {:
 ;
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    MENSAJE ::=  mensaje parentesis_a TEXTO3:a parentesis_b ENTER
+    MENSAJE ::=  mensaje parentesis_a TEXTO3:a parentesis_b ENTER {: parser.manejoVB.mostrarQuiebre(parser.tabla); :}
     |           mensaje2 parentesis_a TEXTO3:a parentesis_b ENTER
-    |           mensaje parentesis_a parentesis_b ENTER
+    |           mensaje parentesis_a parentesis_b ENTER {: parser.manejoVB.mostrarQuiebre(parser.tabla); :}
     |           mensaje2 parentesis_a parentesis_b ENTER
 ;   
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    TEXTO3 ::=  VAL_TEXTO:a                         {:  parser.manejoVB.mostrarMensaje(parser.tabla.getObVb(), a); :}
+    TEXTO3 ::=  VAL_TEXTO:a                         {:  parser.manejoVB.mostrarMensaje(parser.tabla.getObVb(), a, "%f"); :}
                 TEXTO_CONT:b                
     |           comilla:a TEXTO:b comilla:c         {:  String et = a.toString()+b+c.toString();
-                                                        parser.manejoVB.mostrarMensaje(parser.tabla.getObVb(), et);  :}
+                                                        parser.manejoVB.mostrarMensaje(parser.tabla.getObVb(), et, null);  :}
                 TEXTO_CONT:d    
 ;
 
@@ -558,10 +573,12 @@ parser code {:
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    VAL_TEXTO ::= id:a                                      {: parser.verif.verifVarMensaje(parser.tabla.getObVb(), a.toString(), aleft+PanelPrincipal.totalLineas, aright);  RESULT = a.toString(); :}
+    VAL_TEXTO ::= id:a                                      {: parser.verif.verifVarMensaje(parser.tabla.getObVb(), a.toString(), aleft+PanelPrincipal.totalLineas, aright);  
+                                                               RESULT = parser.manejoVB.etiquetaId(parser.tabla, a.toString(), parser.metodoExe); :}
     |            numero:a                                   {: RESULT = a.toString(); :}
     |            numero:a punto:b numero:c                  {: RESULT = a.toString()+b.toString()+c.toString(); :}
-    |            menos:a id:b                               {: parser.verif.verifVarMensaje(parser.tabla.getObVb(), b.toString(), aleft+PanelPrincipal.totalLineas, aright); RESULT = a.toString()+b.toString(); :}
+    |            menos:a id:b                               {: parser.verif.verifVarMensaje(parser.tabla.getObVb(), b.toString(), aleft+PanelPrincipal.totalLineas, aright); 
+                                                               RESULT = parser.manejoVB.etiquetaId(parser.tabla, a.toString(), parser.metodoExe); :}
     |            menos:a numero:b                           {: RESULT = a.toString()+b.toString(); :}
     |            menos:a numero:b punto:c numero:d          {: RESULT =  a.toString()+b.toString()+c.toString()+d.toString(); :}
 ;
@@ -581,7 +598,7 @@ parser code {:
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    LECTURA_DATOS ::= id:a igual TIPO_INPUT:b parentesis_a TEXTO3:c parentesis_b    {:  parser.manejoVB.mostrarMensaje(parser.tabla.getObVb(), c);  
+    LECTURA_DATOS ::= id:a igual TIPO_INPUT:b parentesis_a TEXTO3:c parentesis_b    {:  parser.manejoVB.mostrarMensaje(parser.tabla.getObVb(), c, null);  
                                                                                         parser.manejoVB.crearScanf(parser.tabla, a.toString(), b, parser.metodoExe);     
                                                                                         if(parser.verif.verificarVarInput(parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size()-1, a.toString(), b, parser.tabla.getObVb().getTablaTipos(), parser.jerarquia)){
                                                                                         } else {
@@ -592,7 +609,7 @@ parser code {:
                                                                                         } else {  
                                                                                         }  
                                                                                     :} ENTER
-    |                 TIPO_INPUT:b parentesis_a TEXTO3:c parentesis_b               {:  parser.manejoVB.mostrarMensaje(parser.tabla.getObVb(), c);  
+    |                 TIPO_INPUT:b parentesis_a TEXTO3:c parentesis_b               {:  parser.manejoVB.mostrarMensaje(parser.tabla.getObVb(), c, null);  
                                                                                         parser.manejoVB.crearScanf(parser.tabla, null, b, parser.metodoExe); 
                                                                                     :} ENTER
     |                 TIPO_INPUT:b parentesis_a parentesis_b                        {: parser.manejoVB.crearScanf(parser.tabla, null, b.toString(), parser.metodoExe); :} ENTER

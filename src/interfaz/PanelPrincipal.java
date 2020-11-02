@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import objetosApoyo.DatosGuardado;
 
 /**
  *
@@ -55,22 +56,23 @@ public class PanelPrincipal extends javax.swing.JPanel {
     public static String codigoC = "";
 
     public static String errores = "";
-
-    private ArrayList<String> textos = new ArrayList<>();
+    private String path;
+    private ArrayList<DatosGuardado> datos = new ArrayList<>();
     private int itTab;
 
     /**
      * Creates new form PanelPrincipal
      */
-    public PanelPrincipal(String texto, String path, ArrayList<String> textos, int itTab) {
+    public PanelPrincipal(String texto, String path, ArrayList<DatosGuardado> datos, int itTab) {
         initComponents();
         txtTexto.setText(texto);
-        this.textos = textos;
+        this.datos = datos;
         this.itTab = itTab;
-        if (textos.size() <= itTab) {
-            textos.add(texto);
+        this.path = path;
+        if (datos.size() <= itTab) {
+            datos.add(new DatosGuardado(texto, path));
         } else {
-            textos.set(itTab, texto);
+            datos.set(itTab, new DatosGuardado(texto, path));
         }
         numeracion = new NumeracionLineas(txtTexto);
         jScrollPane1.setRowHeaderView(numeracion);
@@ -153,7 +155,7 @@ public class PanelPrincipal extends javax.swing.JPanel {
         reiniciarDatos();
         tabla = new TablaSimbolos();
         cuarpeta = new ArrayList<>();
-        textos.set(itTab, txtTexto.getText());
+        datos.set(itTab, new DatosGuardado(txtTexto.getText(), path));
         divTexto.manejarTexto(tabla, txtTexto.getText());
         AnalizadorLexico lexer = new AnalizadorLexico(new StringReader(codigoJava));
 
@@ -202,7 +204,9 @@ public class PanelPrincipal extends javax.swing.JPanel {
             codigo = creacion.crearCodigo(cuarpeta);
             codExe = creacion2.crearEjecutable(ejecutable, cuarpeta, tabla.getObC().getContVars());
             //  if(errores.equals("")){
-            txt3d.setText(codigo);
+            txt3d.setText(codExe);
+            codigo = "";
+            codExe = "";
             /*} else {
                 JOptionPane.showMessageDialog(null, "Error en la gramatica, por favor verifica la ventana de errores");
            // }*/

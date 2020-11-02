@@ -90,7 +90,7 @@ public class ManejoPython {
             String t2 = definirTemporal(tabla);
             tabla.getObPython().getCuarpeta().add(new Nodo("suma", t, posReturn, t2, null));
             String t3 = definirTemporal(tabla);
-            tabla.getObPython().getCuarpeta().add(new Nodo("asig", "stack["+t2+"]", null, t3, null));
+            tabla.getObPython().getCuarpeta().add(new Nodo("asig", "stack[(int) "+t2+"]", null, t3, null));
             return t3;
         } else {
             return "";
@@ -115,7 +115,7 @@ public class ManejoPython {
                     tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", posVar, t, null));
                     String t2 = definirTemporal(tabla);
                     tabla.getObPython().getCuarpeta().add(new Nodo("suma", t, tabla.getTablaExe().get(i).getPosMemoria(), t2, null));
-                    tabla.getObPython().getCuarpeta().add(new Nodo("asig", etiquetas.get(cont).getId(), null, "stack["+t2+"]", null));
+                    tabla.getObPython().getCuarpeta().add(new Nodo("asig", etiquetas.get(cont).getId(), null, "stack[(int) "+t2+"]", null));
                     tabla.getTablaExe().get(i).setChequeado(true);
                     cont++;
                 }
@@ -154,7 +154,7 @@ public class ManejoPython {
         String t = definirTemporal(tabla);
         String valMemoria = buscarPosicionMemoria(tabla, idVar, idMetodo);
         tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
-        tabla.getObPython().getCuarpeta().add(new Nodo("asig", valoresVar.getId(), null, "stack[" + t + "]", null));
+        tabla.getObPython().getCuarpeta().add(new Nodo("asig", valoresVar.getId(), null, "stack[(int) " + t + "]", null));
         
     }
     
@@ -176,7 +176,7 @@ public class ManejoPython {
         String valMemoria = buscarPosicionMemoria(tabla, idVar, idMetodo);
         tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
         String t2 = definirTemporal(tabla);
-        tabla.getObPython().getCuarpeta().add(new Nodo("asig", "stack["+t+"]", null, t2, null));
+        tabla.getObPython().getCuarpeta().add(new Nodo("asig", "stack[(int) "+t+"]", null, t2, null));
         if(negativo){
             t2 = "-"+t2;
         }
@@ -382,21 +382,32 @@ public class ManejoPython {
     }
 
     /*-------------------------------------------- FOR ----------------------------------------------------*/
- /*public void agregarFor(ObjetosPYTHON py, String id1, String valId1, ArrayList<Nodo> booleano){
+ 
+    public void agregarFor(TablaSimbolos tabla, ArrayList<ArrayList<Nodo>> pilaFalsas, String id, String start, String stop, String idMetodo) {
+        String t1 = definirTemporal(tabla);
+        String posMemoria1 = buscarPosicionMemoria(tabla, id, idMetodo);
+        tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", posMemoria1, t1, null));
+        tabla.getObPython().getCuarpeta().add(new Nodo("asig", start, null, "stack[(int) "+t1+"]", null));
         
-    }*/
-    public void agregarFor(ObjetosPYTHON py, ArrayList<ArrayList<Nodo>> pilaFalsas, String id, String start, String stop) {
-        py.getCuarpeta().add(new Nodo("asig", start, null, id, null));
-        String etFor = "etFor_" + py.getContFor();
-        py.setContFor(py.getContFor() + 1);
-        py.getCuarpeta().add(new Nodo("ETIQUETA", etFor, null, null, SintaxPYTHON.jerarquia));
-        String et = definirEtiqueta2(py);
-        py.getCuarpeta().add(new Nodo("IF " + "<=", id, stop, et, SintaxPYTHON.jerarquia));
-        int sum = py.getContEt() + 1;
+
+        String etFor = "etFor_" + tabla.getObPython().getContFor();
+        tabla.getObPython().setContFor(tabla.getObPython().getContFor() + 1);
+        tabla.getObPython().getCuarpeta().add(new Nodo("ETIQUETA", etFor, null, null, SintaxPYTHON.jerarquia));
+        String et = definirEtiqueta2(tabla.getObPython());
+        
+        String t = definirTemporal(tabla);
+        String posMemoria = buscarPosicionMemoria(tabla, id, idMetodo);
+        tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t, null));
+        String t2 = definirTemporal(tabla);
+        tabla.getObPython().getCuarpeta().add(new Nodo("asig", "stack[(int) "+t+"]", null, t2, null));
+
+        tabla.getObPython().getCuarpeta().add(new Nodo("IF " + "<=", t2, stop, et, SintaxPYTHON.jerarquia));
+        int sum = tabla.getObPython().getContEt() + 1;
         String et2 = "et_" + sum;
-        py.getCuarpeta().add(new Nodo("GOTO", null, null, et, SintaxPYTHON.jerarquia));
+        tabla.getObPython().getCuarpeta().add(new Nodo("GOTO", null, null, et2, SintaxPYTHON.jerarquia));
         pilaFalsas.get(pilaFalsas.size() - 1).add(new Nodo("ETIQUETA", et2, null, null, SintaxPYTHON.jerarquia));
-        py.getCuarpeta().add(new Nodo("ETIQUETA", et, null, null, SintaxPYTHON.jerarquia));
+        tabla.getObPython().getCuarpeta().add(new Nodo("ETIQUETA", et, null, null, SintaxPYTHON.jerarquia));
+        
     }
     
     public void retornoFor(ObjetosPYTHON py, ArrayList<Boolean> usoPila, ArrayList<ArrayList<Nodo>> pilaCuarpeta, ArrayList<ArrayList<Nodo>> pilaFalsas, ArrayList<ArrayList<Nodo>> pilaFor) {
@@ -411,11 +422,27 @@ public class ManejoPython {
         manejo.agregarEtiquetaFinPY(py, SintaxPYTHON.jerarquia);
     }
     
-    public void agregarAuxPilaFor(ObjetosPYTHON py, ArrayList<ArrayList<Nodo>> pilaFor, String numero, String varAsignar) {
-        String et = "t" + py.getContVars();
-        py.setContVars(py.getContVars() + 1);
-        pilaFor.get(pilaFor.size() - 1).add(new Nodo("suma", numero, varAsignar, et, null));
-        pilaFor.get(pilaFor.size() - 1).add(new Nodo("asig", et, null, varAsignar, null));
+    public void agregarAuxPilaFor(TablaSimbolos tabla, ArrayList<ArrayList<Nodo>> pilaFor, String id, String varAsignar, boolean esNumero, String idMetodo) {
+        if(!esNumero){
+            String t = definirTemporal(tabla);
+            String posMemoria = buscarPosicionMemoria(tabla, id, idMetodo);
+            pilaFor.get(pilaFor.size()-1).add(new Nodo("suma", "p", posMemoria, t, null));
+            String t2 = definirTemporal(tabla);
+            String posMemoria2 = buscarPosicionMemoria(tabla, varAsignar, idMetodo);
+            pilaFor.get(pilaFor.size()-1).add(new Nodo("suma", "p", posMemoria2, t2, null));
+            String temp1 = definirTemporal(tabla);
+            pilaFor.get(pilaFor.size()-1).add(new Nodo("suma", "stack[(int) "+t2+"]", "stack[(int) "+t+"]", temp1, null));
+            pilaFor.get(pilaFor.size()-1).add(new Nodo("asig", temp1, null, "stack[(int) "+t2+"]", null));
+        } else {
+            String t = definirTemporal(tabla);
+            pilaFor.get(pilaFor.size()-1).add(new Nodo("asig", id, null, t, null));
+            String t2 = definirTemporal(tabla);
+            String posMemoria2 = buscarPosicionMemoria(tabla, varAsignar, idMetodo);
+            pilaFor.get(pilaFor.size()-1).add(new Nodo("suma", "p", posMemoria2, t2, null));
+            String t3 = definirTemporal(tabla);
+            pilaFor.get(pilaFor.size()-1).add(new Nodo("suma", t, "stack[(int) "+t2+"]", t3, null));
+            pilaFor.get(pilaFor.size()-1).add(new Nodo("asig", t3, null, "stack[(int) "+t2+"]", null));
+        }
     }
     
     public String buscarUltimoFor(ObjetosPYTHON vb, int jerarquia) {
@@ -446,22 +473,35 @@ public class ManejoPython {
         String posMemoria = buscarPosicionMemoria(tabla, id, idMetodo);
         String t2 = definirTemporal(tabla);
         tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t2, null));
-        tabla.getObPython().getCuarpeta().add(new Nodo("asig", t, null, "stack["+t2+"]", null));
+        tabla.getObPython().getCuarpeta().add(new Nodo("asig", t, null, "stack[(int) "+t2+"]", null));
         
     }
 
     /*----------------------------------------- MENSAJES ---------------------------------------------------*/
     
-    public void mostrarMensaje(ObjetosPYTHON py, String id) {
-        py.getCuarpeta().add(new Nodo("PRINT", null, null, id, null));
+    public void mostrarMensaje(ObjetosPYTHON py, String id, String mascara) {
+        py.getCuarpeta().add(new Nodo("PRINT", mascara, null, id, null));
     }
 
+    public String retornarEtiquetaId(TablaSimbolos tabla, String id, String idMetodo){
+        String t = definirTemporal(tabla);
+        String posMemoria = buscarPosicionMemoria(tabla, id, idMetodo);
+        tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t, null));
+        String t2 = definirTemporal(tabla);
+        tabla.getObPython().getCuarpeta().add(new Nodo("asig", "stack[(int) "+t+"]", null, t2, null));
+        return t2;
+    }
+    
+    public void mostrarQuiebre(TablaSimbolos tabla){
+        tabla.getObPython().getCuarpeta().add(new Nodo("PRINT", null, null, "\"\\n\"",null));
+    }
+    
     /*------------------------------------------ RETURN ------------------------------------------------------*/
     public void agregarReturn(TablaSimbolos tabla, String id, String idMetodo) {
         String t = definirTemporal(tabla);
         String valMemoria = buscarPosicionMemoria(tabla, "return", idMetodo);
         tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
-        tabla.getObPython().getCuarpeta().add(new Nodo("asig", id, null, "stack[" + t + "]", null));
+        tabla.getObPython().getCuarpeta().add(new Nodo("asig", id, null, "stack[(int) " + t + "]", null));
         
     }
     

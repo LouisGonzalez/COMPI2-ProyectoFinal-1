@@ -175,12 +175,12 @@ public class ManejoC {
                 String t2 = definirTemporal(tabla.getObC());
                 tabla.getObC().getCuarpeta().add(new Nodo("suma", t, tabla.getTablaExe().get(nodoReturn).getPosMemoria().toString(), t2, null));
                 String t3 = definirTemporal(tabla.getObC());
-                tabla.getObC().getCuarpeta().add(new Nodo("asig", "stack[" + t2 + "]", null, t3, null));
+                tabla.getObC().getCuarpeta().add(new Nodo("asig", "stack[(int)" + t2 + "]", null, t3, null));
                 //obtener casilla del constructor
                 String posMemoria = buscarPosicionMemoria(tabla, id);
                 String t4 = definirTemporal(tabla.getObC());
                 tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t4, null));
-                tabla.getObC().getCuarpeta().add(new Nodo("asig", t3, null, "stack[" + t4 + "]", null));
+                tabla.getObC().getCuarpeta().add(new Nodo("asig", t3, null, "stack[(int)" + t4 + "]", null));
             }
         } 
     }
@@ -207,7 +207,7 @@ public class ManejoC {
                     tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", posVar, t1, null));
                     String t2 = definirTemporal(tabla.getObC());
                     tabla.getObC().getCuarpeta().add(new Nodo("suma", t1, tabla.getTablaExe().get(i).getPosMemoria().toString(), t2, null));
-                    tabla.getObC().getCuarpeta().add(new Nodo("asig", etiquetas.get(cont).getId(), null, "stack[" + t2 + "]", null));
+                    tabla.getObC().getCuarpeta().add(new Nodo("asig", etiquetas.get(cont).getId(), null, "stack[(int)" + t2 + "]", null));
                     tabla.getTablaExe().get(i).setChequeado(true);
                     cont++;
                 }
@@ -224,13 +224,13 @@ public class ManejoC {
         String posMemoria = buscarPosicionMemoria(tabla, objetoClase);
         tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t, null));
         String t2 = definirTemporal(tabla.getObC());
-        tabla.getObC().getCuarpeta().add(new Nodo("asig","stack["+t+"]", null, t2, null));
+        tabla.getObC().getCuarpeta().add(new Nodo("asig","stack[(int)"+t+"]", null, t2, null));
         
         String t3 = definirTemporal(tabla.getObC());
         tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", totalGlobales, t3, null));
         String t4 = definirTemporal(tabla.getObC());
         tabla.getObC().getCuarpeta().add(new Nodo("suma", t3, "0", t4, null));
-        tabla.getObC().getCuarpeta().add(new Nodo("asig", t2, null, "stack["+t4+"]", null));
+        tabla.getObC().getCuarpeta().add(new Nodo("asig", t2, null, "stack[(int)"+t4+"]", null));
     }
 
     public Integer buscarConstructorIndicado(TablaSimbolos tabla, String parametros, String idClase) {
@@ -398,7 +398,7 @@ public class ManejoC {
         String t = definirTemporal(tabla.getObC());
         String posMemoria = buscarPosicionMemoria(tabla, id);
         tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t, null));
-        tabla.getObC().getCuarpeta().add(new Nodo("asig", valEt, null, "stack[" + t + "]", null));
+        tabla.getObC().getCuarpeta().add(new Nodo("asig", valEt, null, "stack[(int)" + t + "]", null));
     }
 
     public void crearVariableConValor(TablaSimbolos tabla, String id, String tipo, NodoOperacion valor) {
@@ -406,7 +406,7 @@ public class ManejoC {
             String t = definirTemporal(tabla.getObC());
             String posMemoria = buscarPosicionMemoria(tabla, id);
             tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t, null));
-            tabla.getObC().getCuarpeta().add(new Nodo("asig", valor.getId(), null, "stack[" + t + "]", null));
+            tabla.getObC().getCuarpeta().add(new Nodo("asig", valor.getId(), null, "stack[(int)" + t + "]", null));
         }
     }
 
@@ -414,7 +414,7 @@ public class ManejoC {
         String t = definirTemporal(tabla.getObC());
         String posMemoria = buscarPosicionMemoria(tabla, id);
         tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t, null));
-        tabla.getObC().getCuarpeta().add(new Nodo("asig", valor, null, "stack[" + t + "]", null));
+        tabla.getObC().getCuarpeta().add(new Nodo("asig", valor, null, "stack[(int)" + t + "]", null));
     }
 
     /*-------------------------------------- MANEJO OPERACIONES -----------------------------------------------*/
@@ -430,7 +430,7 @@ public class ManejoC {
         String posMemoria = buscarPosicionMemoria(tabla, idVar);
         tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t, null));
         String t2 = definirTemporal(tabla.getObC());
-        tabla.getObC().getCuarpeta().add(new Nodo("asig", "stack[" + t + "]", null, t2, null));
+        tabla.getObC().getCuarpeta().add(new Nodo("asig", "stack[(int)" + t + "]", null, t2, null));
         return t2;
     }
 
@@ -441,7 +441,7 @@ public class ManejoC {
         String t2 = definirTemporal(tabla.getObC());
         tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", t, t2, null));
         String t3 = definirTemporal(tabla.getObC());
-        tabla.getObC().getCuarpeta().add(new Nodo("asig", "stack[" + t2 + "]", null, t3, null));
+        tabla.getObC().getCuarpeta().add(new Nodo("asig", "stack[(int)" + t2 + "]", null, t3, null));
         return t3;
     }
 
@@ -465,7 +465,7 @@ public class ManejoC {
             String t2 = definirTemporal(tabla.getObC());
             tabla.getObC().getCuarpeta().add(new Nodo("suma", t, tabla.getTablaExe().get(posReturn).getPosMemoria(), t2, null));
             String t3 = definirTemporal(tabla.getObC());
-            tabla.getObC().getCuarpeta().add(new Nodo("asig", "stack[" + t2 + "]", null, t3, null));
+            tabla.getObC().getCuarpeta().add(new Nodo("asig", "stack[(int)" + t2 + "]", null, t3, null));
             return t3;
         } else {
             System.out.println("ENTRO AQUI POR ALGUNA RAZON");
@@ -503,7 +503,7 @@ public class ManejoC {
         String posMemoria = buscarPosicionMemoria(tabla, idVar);
         tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t, null));
         String t2 = definirTemporal(tabla.getObC());
-        tabla.getObC().getCuarpeta().add(new Nodo("asig", "stack[" + t + "]", null, t2, null));
+        tabla.getObC().getCuarpeta().add(new Nodo("asig", "stack[(int)" + t + "]", null, t2, null));
         if (negativo) {
             t2 = "-" + t2;
         }
@@ -700,19 +700,19 @@ public class ManejoC {
     }
 
     /*-------------------------------------------- FOR --------------------------------------------------------*/
-    public void agregarFor(TablaSimbolos tabla, String id1, String valId1, ArrayList<Nodo> booleano, int jerarquia, String tipo) {
-        ExeC exe = new ExeC();
-        if (!tipo.equals("")) {
-//            c.getCuarpeta().add(new Nodo("CREACION_VAR", tipo, null, id1, null));
-            exe.agregarVariable(tabla, id1, 1, false, "Integer");
-        }
+    
+    public void agregarPreludioFor(TablaSimbolos tabla, String id1, String valId1, int jerarquia){
         String posMemoria = buscarPosicionMemoria(tabla, id1);
         String t = definirTemporal(tabla.getObC());
         tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t, null));
-        tabla.getObC().getCuarpeta().add(new Nodo("asig", valId1, null, "stack[" + t + "]", jerarquia));
+        tabla.getObC().getCuarpeta().add(new Nodo("asig", valId1, null, "stack[(int)" + t + "]", jerarquia));
         String etFor = "etFor_" + tabla.getObC().getContFor();
         tabla.getObC().setContFor(tabla.getObC().getContFor() + 1);
         tabla.getObC().getCuarpeta().add(new Nodo("ETIQUETA", etFor, null, null, jerarquia));
+        
+    }
+    
+    public void agregarFor(TablaSimbolos tabla, String id1, String valId1, ArrayList<Nodo> booleano, int jerarquia, String tipo) {
         primerChequeoIf(tabla.getObC(), booleano);
     }
 
@@ -723,13 +723,13 @@ public class ManejoC {
         String posMemoria = buscarPosicionMemoria(tabla, varAumento);
         tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t, null));
         String t2 = definirTemporal(tabla.getObC());
-        tabla.getObC().getCuarpeta().add(new Nodo("asig", "stack[" + t + "]", null, t2, null));
+        tabla.getObC().getCuarpeta().add(new Nodo("asig", "stack[(int)" + t + "]", null, t2, null));
         String t3 = definirTemporal(tabla.getObC());
         tabla.getObC().getCuarpeta().add(new Nodo("suma", t2, varAumento2, t3, null));
         String t4 = definirTemporal(tabla.getObC());
         String posMemoria2 = buscarPosicionMemoria(tabla, id);
         tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", posMemoria2, t4, null));
-        tabla.getObC().getCuarpeta().add(new Nodo("asig", t3, null, "stack[" + t4 + "]", null));
+        tabla.getObC().getCuarpeta().add(new Nodo("asig", t3, null, "stack[(int)" + t4 + "]", null));
         tabla.getObC().getCuarpeta().add(new Nodo("GOTO", null, null, etFor, jerarquia));
         segundoChequeoIf(tabla.getObC(), usoPila, pilaCuarpeta, pilaFalsas, jerarquia);
         manejo.agregarEtiquetaFinC(tabla.getObC(), jerarquia);
@@ -774,7 +774,7 @@ public class ManejoC {
             } else {
                 String posMemoria = buscarPosicionMemoria(tabla, id);
                 tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t, null));
-                tabla.getObC().getCuarpeta().add(new Nodo("GETCH", null, null, "stack["+t+"]", null));
+                tabla.getObC().getCuarpeta().add(new Nodo("GETCH", null, null, "stack[(int)"+t+"]", null));
             }   
         } else {
             tabla.getObC().getCuarpeta().add(new Nodo("GETCH", null, null, null, null));
@@ -802,7 +802,7 @@ public class ManejoC {
             String t2 = definirTemporal(tabla.getObC());
             String posMemoria = buscarPosicionMemoria(tabla, id);
             tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t2, null));
-            tabla.getObC().getCuarpeta().add(new Nodo("asig", t, null, "stack["+t2+"]", null));
+            tabla.getObC().getCuarpeta().add(new Nodo("asig", t, null, "stack[(int)"+t2+"]", null));
         }
     }
 
@@ -889,11 +889,21 @@ public class ManejoC {
         tabla.getObC().getCuarpeta().add(new Nodo("suma", posMemoria, et, t, null));
         String t2 = definirTemporal(tabla.getObC());
         tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", t, t2, null));
-        return "stack[" + t2 + "]";
+        return "stack[(int)" + t2 + "]";
     }
 
     public void asignarValorNodo(TablaSimbolos tabla, String posStack, String et) {
         tabla.getObC().getCuarpeta().add(new Nodo("asig", et, null, posStack, null));
+    }
+    
+    /*-------------------------------------------- MENSAJES -------------------------------------------------------*/
+    
+    public void mostrarMensaje(TablaSimbolos tabla, String id, String mascara){
+        tabla.getObC().getCuarpeta().add(new Nodo("PRINT", mascara, null, id, null));
+    }
+    
+    public void mostrarQuiebre(TablaSimbolos tabla){
+        tabla.getObC().getCuarpeta().add(new Nodo("PRINT", null, null, "\"\\n\"", null));
     }
 
 }

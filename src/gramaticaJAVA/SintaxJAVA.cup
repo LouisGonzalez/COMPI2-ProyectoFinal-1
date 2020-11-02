@@ -460,7 +460,8 @@ parser code {:
                                                                                     if(!a.equals("")){
                                                                                         parser.exe.agregarVariable(parser.tabla, b.toString(), parser.metodo, parser.clase, a); 
                                                                                     } :} 
-            igual VAL_FOR:c puntoComa EXT2:d puntoComa id:f INC:g parentesis_b  {:  parser.manejoJV.agregarFor(parser.tabla, b.toString(), c, d, parser.jerarquia, parser.metodo, parser.clase);  
+            igual VAL_FOR:c puntoComa                                           {:  parser.manejoJV.agregarPreludioFor(parser.tabla, b.toString(), c, parser.jerarquia, parser.metodo, parser.clase); :}
+            EXT2:d puntoComa id:f INC:g parentesis_b                            {:  parser.manejoJV.agregarFor(parser.tabla, b.toString(), c, d, parser.jerarquia, parser.metodo, parser.clase);  
                                                                                     boolean idInc = parser.verif.verificarTipadoVar(parser.tabla.getObJava(), f.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, "Integer", fleft+PanelPrincipal.totalLineas, fright);  
                                                                                     parser.verif.comprobarFor(parser.tabla.getObJava(), b.toString(), a.toString(), parser.jerarquia); :} 
             ENTER2 llave_a ENTER CUERPO_METODO:j llave_b ENTER                  {:  parser.manejoJV.retornoFor(parser.tabla, parser.usoPila, parser.pilaFor, f.toString(), parser.pilaCuarpeta, parser.pilaFalsas, g, parser.jerarquia, parser.metodo, parser.clase);  
@@ -660,12 +661,12 @@ parser code {:
 
 /*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    LECTURA_DATOS ::= id:a igual TIPO_INPUT:b parentesis_a TEXTO:c parentesis_b puntoComa       {:  parser.manejoJV.mostrarMensaje(parser.tabla.getObJava(), c); 
+    LECTURA_DATOS ::= id:a igual TIPO_INPUT:b parentesis_a TEXTO:c parentesis_b puntoComa       {:  parser.manejoJV.mostrarMensaje(parser.tabla.getObJava(), c, null); 
                                                                                                     parser.manejoJV.crearScanf(parser.tabla, a.toString(), b, parser.metodo, parser.clase);  
                                                                                                     parser.verif.verifInput(parser.tabla.getObJava(), a.toString(), b, aleft+PanelPrincipal.totalLineas, aright, parser.jerarquia); :} ENTER 
     |                 id:a igual TIPO_INPUT:b parentesis_a parentesis_b puntoComa               {:  parser.manejoJV.crearScanf(parser.tabla, a.toString(), b, parser.metodo, parser.clase);   
                                                                                                     parser.verif.verifInput(parser.tabla.getObJava(), a.toString(), b, aleft+PanelPrincipal.totalLineas, aright, parser.jerarquia); :} ENTER 
-    |                 TIPO_INPUT:a parentesis_a TEXTO:c parentesis_b puntoComa                  {:  parser.manejoJV.mostrarMensaje(parser.tabla.getObJava(), c);   
+    |                 TIPO_INPUT:a parentesis_a TEXTO:c parentesis_b puntoComa                  {:  parser.manejoJV.mostrarMensaje(parser.tabla.getObJava(), c, null);   
                                                                                                     parser.manejoJV.crearScanf(parser.tabla, "", a, parser.metodo, parser.clase); :} ENTER 
     |                 TIPO_INPUT:a parentesis_a parentesis_b puntoComa                          {:  parser.manejoJV.crearScanf(parser.tabla, "", a, parser.metodo, parser.clase); :} ENTER 
 ;
@@ -679,16 +680,16 @@ parser code {:
 
 /*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    MENSAJE ::= mensaje parentesis_a TEXTO:a parentesis_b puntoComa ENTER   
-    |           mensaje2 parentesis_a TEXTO:a parentesis_b puntoComa ENTER  
+    MENSAJE ::= mensaje parentesis_a TEXTO:a parentesis_b puntoComa ENTER       {:  parser.manejoJV.mostrarQuiebre(parser.tabla);  :} 
+    |           mensaje2 parentesis_a TEXTO:a parentesis_b puntoComa ENTER      {:  parser.manejoJV.mostrarQuiebre(parser.tabla); :}
 ;
 
 /*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    TEXTO ::= VAL_TEXTO:a                               {: parser.manejoJV.mostrarMensaje(parser.tabla.getObJava(), a); :}
+    TEXTO ::= VAL_TEXTO:a                               {: parser.manejoJV.mostrarMensaje(parser.tabla.getObJava(), a, "%f"); :}
               TEXTO2:b                                
     |         comilla:a TEXTO_PLANO:b comilla:c         {: String et = a.toString()+b+c.toString(); 
-                                                           parser.manejoJV.mostrarMensaje(parser.tabla.getObJava(), et);  :}
+                                                           parser.manejoJV.mostrarMensaje(parser.tabla.getObJava(), et, null);  :}
              TEXTO2:d          
 ;
 

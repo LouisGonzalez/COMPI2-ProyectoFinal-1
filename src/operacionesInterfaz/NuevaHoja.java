@@ -21,6 +21,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import objetosApoyo.DatosGuardado;
 
 /**
  *
@@ -28,7 +29,7 @@ import javax.swing.JTabbedPane;
  */
 public class NuevaHoja {
 
-    public void crearHoja(File archivo, FileReader reader, BufferedReader buffer, String texto, JTabbedPane principal, ArrayList<String> textos){
+    public void crearHoja(File archivo, FileReader reader, BufferedReader buffer, String texto, JTabbedPane principal, ArrayList<DatosGuardado> textos){
         try {
             reader = new FileReader(archivo.toString());
             buffer = new BufferedReader(reader);
@@ -44,7 +45,7 @@ public class NuevaHoja {
         
     }
     
-    public void abrirPanel(String texto, String path, String titulo, JTabbedPane principal, ArrayList<String> textos, int itTab){
+    public void abrirPanel(String texto, String path, String titulo, JTabbedPane principal, ArrayList<DatosGuardado> textos, int itTab){
         PanelPrincipal panel = new PanelPrincipal(texto, path, textos, itTab);
         principal.addTab(titulo, panel);
         principal.setTabComponentAt(principal.getTabCount()-1, crearCabecera(titulo, principal));

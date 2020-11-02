@@ -63,7 +63,7 @@ public class ManejoVb {
             String t2 = definirTemporal(tabla);
             tabla.getObVb().getCuarpeta().add(new Nodo("suma", t, posReturn, t2, null));
             String t3 = definirTemporal(tabla);
-            tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack["+t2+"]", null, t3, null));
+            tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack[(int) "+t2+"]", null, t3, null));
             return t3;
         } else {
             return "";
@@ -104,7 +104,7 @@ public class ManejoVb {
                     tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", posVar, t, null));
                     String t2 = definirTemporal(tabla);
                     tabla.getObVb().getCuarpeta().add(new Nodo("suma", t, tabla.getTablaExe().get(i).getPosMemoria(), t2, null));
-                    tabla.getObVb().getCuarpeta().add(new Nodo("asig", etiquetas.get(cont).getId(), null, "stack["+t2+"]", null));
+                    tabla.getObVb().getCuarpeta().add(new Nodo("asig", etiquetas.get(cont).getId(), null, "stack[(int) "+t2+"]", null));
                     tabla.getTablaExe().get(i).setChequeado(true);
                     cont++;
                 }
@@ -241,7 +241,7 @@ public class ManejoVb {
             tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
             aDevolver = "t" + tabla.getObVb().getContVars();
             tabla.getObVb().setContVars(tabla.getObVb().getContVars() + 1);
-            tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack[" + t + "]", null, aDevolver, null));
+            tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack[(int) " + t + "]", null, aDevolver, null));
         }
         return aDevolver;
     }
@@ -251,7 +251,7 @@ public class ManejoVb {
         String valMemoria = buscarPosicionMemoria(tabla, idVar, idMetodo);
         tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
         String t2 = definirTemporal(tabla);
-        tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack["+t+"]", null, t2, null));
+        tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack[(int) "+t+"]", null, t2, null));
         return t2;
     }
 
@@ -305,7 +305,7 @@ public class ManejoVb {
             tabla.getObVb().setContVars(tabla.getObVb().getContVars() + 1);
             String valMemoria = buscarPosicionMemoria(tabla, id, idMetodo);
             tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
-            tabla.getObVb().getCuarpeta().add(new Nodo("asig", val, null, "stack[" + t + "]", null));
+            tabla.getObVb().getCuarpeta().add(new Nodo("asig", val, null, "stack[(int) " + t + "]", null));
         }
     }
 
@@ -329,7 +329,7 @@ public class ManejoVb {
         String posMemoria = buscarPosicionMemoria(tabla, idVar, idMetodo);
         tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t, null));
         String t2 = definirTemporal(tabla);
-        tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack["+t+"]", null, t2, null));
+        tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack[(int) "+t+"]", null, t2, null));
         if(negativo){
             t2 = "-"+t2;
         }
@@ -504,7 +504,7 @@ public class ManejoVb {
         String valMemoria = buscarPosicionMemoria(tabla, idVar, idMetodo);
         tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
         String t2 = definirTemporal(tabla);
-        tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack[" + t + "]", null, t2, null));
+        tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack[(int) " + t + "]", null, t2, null));
         return t2;
     }
 
@@ -523,22 +523,32 @@ public class ManejoVb {
     }
 
     /*----------------------------------------- FOR ------------------------------------------------------*/
-    public void agregarFor(ObjetosVB vb, ArrayList<ArrayList<Nodo>> pilaFalsas, String id1, String ladoA, String ladoB, int jerarquia, String tipoVar) {
-        if (!tipoVar.equals("")) {
-            vb.getCuarpeta().add(new Nodo("CREACION_VAR", tipoVar, null, id1, jerarquia));
-        }
-        vb.getCuarpeta().add(new Nodo("asig", ladoA, null, id1, null));
-        String etFor = "etFor_" + vb.getContFor();
-        vb.setContFor(vb.getContFor() + 1);
-        vb.getCuarpeta().add(new Nodo("ETIQUETA", etFor, null, null, jerarquia));
-        String et = definirEtiqueta2(vb);
-        vb.getCuarpeta().add(new Nodo("IF <=", id1, ladoB, et, jerarquia));
-        int sum = vb.getContEt() + 1;
-        vb.setContEt(sum);
+    
+    public void agregarPreludioFor(TablaSimbolos tabla, String id1, String ladoA,  int jerarquia, String idMetodo){
+        String t = definirTemporal(tabla);
+        String posMemoria = buscarPosicionMemoria(tabla, id1, idMetodo);
+        tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t, null));
+        tabla.getObVb().getCuarpeta().add(new Nodo("asig", ladoA, null, "stack[(int) "+t+"]", null));
+        String etFor = "etFor_" + tabla.getObVb().getContFor();
+        tabla.getObVb().setContFor(tabla.getObVb().getContFor() + 1);
+        tabla.getObVb().getCuarpeta().add(new Nodo("ETIQUETA", etFor, null, null, jerarquia));
+        
+    }
+    
+    public void agregarFor(TablaSimbolos tabla, ArrayList<ArrayList<Nodo>> pilaFalsas, String id1, String ladoA, String ladoB, int jerarquia, String tipoVar, String idMetodo) {
+        String et = definirEtiqueta2(tabla.getObVb());
+        String t = definirTemporal(tabla);
+        String posMemoria = buscarPosicionMemoria(tabla, id1, idMetodo);
+        tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t, null));
+        String t2 = definirTemporal(tabla);
+        tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack[(int) "+t+"]", null, t2, null));
+        tabla.getObVb().getCuarpeta().add(new Nodo("IF <=", t2, ladoB, et, jerarquia));
+        int sum = tabla.getObVb().getContEt() + 1;
+        tabla.getObVb().setContEt(sum);
         String et2 = "et_" + sum;
-        vb.getCuarpeta().add(new Nodo("GOTO", null, null, et2, jerarquia));
+        tabla.getObVb().getCuarpeta().add(new Nodo("GOTO", null, null, et2, jerarquia));
         pilaFalsas.get(pilaFalsas.size() - 1).add(new Nodo("ETIQUETA", et2, null, null, jerarquia));
-        vb.getCuarpeta().add(new Nodo("ETIQUETA", et, null, null, jerarquia));
+        tabla.getObVb().getCuarpeta().add(new Nodo("ETIQUETA", et, null, null, jerarquia));
 
     }
 
@@ -554,11 +564,36 @@ public class ManejoVb {
         manejo.agregarEtiquetaFinVB(vb, jerarquia);
     }
 
-    public void agregarAuxPilaFor(ObjetosVB vb, ArrayList<ArrayList<Nodo>> pilaFor, String numero, String varAsignar) {
-        String et = "t" + vb.getContVars();
-        vb.setContVars(vb.getContVars() + 1);
-        pilaFor.get(pilaFor.size() - 1).add(new Nodo("suma", numero, varAsignar, et, null));
-        pilaFor.get(pilaFor.size() - 1).add(new Nodo("asig", et, null, varAsignar, null));
+    public void agregarAuxPilaFor(TablaSimbolos tabla, ArrayList<ArrayList<Nodo>> pilaFor, String numero, String varAsignar, String idMetodo, boolean esNumero, boolean negativo) {
+        if(esNumero){
+            String t = definirTemporal(tabla);
+            String posMemoria = buscarPosicionMemoria(tabla, varAsignar, idMetodo);
+            pilaFor.get(pilaFor.size()-1).add(new Nodo("suma", "p", posMemoria, t, null));
+            String t2 = definirTemporal(tabla);
+            if(negativo){
+                pilaFor.get(pilaFor.size()-1).add(new Nodo("suma", "stack[(int) "+t+"]", "-"+numero, t2, null));
+            } else {
+                pilaFor.get(pilaFor.size()-1).add(new Nodo("suma", "stack[(int) "+t+"]", numero, t2, null));
+            }
+            pilaFor.get(pilaFor.size()-1).add(new Nodo("asig", t2, null, "stack[(int) "+t+"]", null));
+        } else {
+            String t = definirTemporal(tabla);
+            String posMemoria = buscarPosicionMemoria(tabla, varAsignar, idMetodo);
+            pilaFor.get(pilaFor.size()-1).add(new Nodo("suma", "p", posMemoria, t, null));
+            
+            String temp1 = definirTemporal(tabla);
+            String posMemoria2 = buscarPosicionMemoria(tabla, numero, idMetodo);
+            pilaFor.get(pilaFor.size()-1).add(new Nodo("suma", "p", posMemoria2, temp1, null));
+            
+            String t2 = definirTemporal(tabla);
+            if(negativo){
+                pilaFor.get(pilaFor.size()-1).add(new Nodo("suma", "stack[(int) "+t+"]", "-stack[(int) "+temp1+"]", t2, null));
+            } else {
+                pilaFor.get(pilaFor.size()-1).add(new Nodo("suma", "stack[(int) "+t+"]", "stack[(int) "+temp1+"]", t2, null));
+            }
+            pilaFor.get(pilaFor.size()-1).add(new Nodo("asig", t2, null, "stack[(int) "+t+"]", null));
+            
+        }
     }
 
     public String buscarUltimoFor(ObjetosVB vb, int jerarquia) {
@@ -589,7 +624,7 @@ public class ManejoVb {
         String posMemoria = buscarPosicionMemoria(tabla, id, idMetodo);
         String t2 = definirTemporal(tabla);
         tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", posMemoria, t2, null));
-        tabla.getObVb().getCuarpeta().add(new Nodo("asig", t, null, "stack["+t2+"]", null));
+        tabla.getObVb().getCuarpeta().add(new Nodo("asig", t, null, "stack[(int) "+t2+"]", null));
     }
 
     /*-------------------------------------------- RETURNS ----------------------------------------------------*/
@@ -597,7 +632,7 @@ public class ManejoVb {
             String var = definirTemporal(tabla);
             String valMemoria = buscarPosicionMemoria(tabla, "return", idMetodo);
             tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", valMemoria, var, null));
-            tabla.getObVb().getCuarpeta().add(new Nodo("asig", id, null, "stack["+var+"]", null));
+            tabla.getObVb().getCuarpeta().add(new Nodo("asig", id, null, "stack[(int) "+var+"]", null));
     }
 
     /*------------------------------------------- MENSAJES ---------------------------------------------------*/
@@ -614,7 +649,7 @@ public class ManejoVb {
             String valMemoria = buscarPosicionMemoria(tabla, idVar, idMetodo);
             tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
             String t2 = definirTemporal(tabla);
-            tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack[" + t + "]", null, t2, null));
+            tabla.getObVb().getCuarpeta().add(new Nodo("asig", "stack[(int) " + t + "]", null, t2, null));
             String t3 = definirTemporal(tabla);
             tabla.getObVb().getCuarpeta().add(new Nodo("asig", t2, ladoB, t3, null));
             return t3;
@@ -623,8 +658,12 @@ public class ManejoVb {
         }
     }
 
-    public void mostrarMensaje(ObjetosVB vb, String id) {
-        vb.getCuarpeta().add(new Nodo("PRINT", null, null, id, null));
+    public void mostrarMensaje(ObjetosVB vb, String id, String mascara) {
+        vb.getCuarpeta().add(new Nodo("PRINT", mascara, null, id, null));
+    }
+    
+    public void mostrarQuiebre(TablaSimbolos tabla){
+        tabla.getObVb().getCuarpeta().add(new Nodo("PRINT", null, null, "\"\\n\"", null));
     }
 
 }

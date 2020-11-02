@@ -14,11 +14,8 @@ import interfaz.Principal;
 public class main {
 
     public static void main(String[] args) {
-        System.out.println("HOLA MUNDO");
         Principal principal = new Principal();
         principal.setVisible(true);
-
-        String decimal = "a";
         
     }
 

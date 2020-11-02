@@ -50,7 +50,7 @@ int b = 1;
 int c = 3;
 int d = 4;
 int Valor1, Valor2;
-double Resultado_1 ;
+float Resultado_1 ;
   int Respuesta1;
   int Respuesta2;
   int Respuesta3;
@@ -76,7 +76,7 @@ void main()
   scanf("%d",&Valor1);
   scanf("Ingrese el segudo valor entero %d",&Valor2);
 
-  Resultado4 = PY.MODULO(Valor1,Valor2);
+  Respuesta4 = PY.MODULO(Valor1,Valor2);
   
   Respuesta1 = VB.SUMAR(Valor1,Valor2);
   Respuesta2 = VB.RESTAR(Valor1,Valor2);

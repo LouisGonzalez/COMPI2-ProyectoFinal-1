@@ -33,22 +33,24 @@ public class CreacionEjecutable {
         String codigo = "";
         codigo += "#include <stdio.h>\n";
         codigo += "#include <stdlib.h>\n";
-        codigo += "#include <iostream>\n";
-        codigo += "float stack[100000000]\n";
-        codigo += "float heap[1000000]\n";
+        codigo += "float stack[100000000];\n";
+        codigo += "float heap[10000000];\n";
+        codigo += "int p;\n";
+        codigo += "int h;\n";
         for (int i = 0; i < ejecutable.size(); i++) {
             if (ejecutable.get(i).getOperacion().equals("TEMP")) {
                 codigo += "float " + ejecutable.get(i).getVar() + ";\n";
             } else if (ejecutable.get(i).getOperacion().equals("CREACION_METODO")) {
-                codigo += "void " + ejecutable.get(i).getVar() + " {\n";
+                codigo += "void " + ejecutable.get(i).getVar()+ "()" + " {\n";
             } else if (ejecutable.get(i).getOperacion().equals("FIN_METODO")) {
+                codigo += "printf(\"\");\n";
                 codigo += "}\n";
             } else if (ejecutable.get(i).getOperacion().equals("ETIQUETA")) {
                 codigo += ejecutable.get(i).getDato1() + ":\n";
             } else if (ejecutable.get(i).getOperacion().equals("GOTO")) {
-                codigo += "goto " + ejecutable.get(i).getVar() + ":\n";
+                codigo += "goto " + ejecutable.get(i).getVar() + ";\n";
             } else if (ejecutable.get(i).getOperacion().equals("CREACION_VAR")) {
-                if (!ejecutable.get(i).getDato1().equals("")) {
+              /*  if (!ejecutable.get(i).getDato1().equals("")) {
                     if (ejecutable.get(i).getDato1().equals("Integer")) {
                         codigo += "int " + ejecutable.get(i).getVar() + ";\n";
                     } else if (ejecutable.get(i).getDato1().equals("Char")) {
@@ -56,12 +58,16 @@ public class CreacionEjecutable {
                     } else if (ejecutable.get(i).getDato1().equals("Float")) {
                         codigo += "float " + ejecutable.get(i).getVar() + ";\n";
                     }
-                }
+                }*/
 
             } else if (ejecutable.get(i).getOperacion().equals("asig")) {
                 codigo += ejecutable.get(i).getVar() + " = " + ejecutable.get(i).getDato1() + ";\n";
             } else if (ejecutable.get(i).getOperacion().equals("PRINT")) {
-                codigo += "print(" + ejecutable.get(i).getVar() + ");\n";
+                if(ejecutable.get(i).getDato1() != null){
+                    codigo += "printf(\""+ejecutable.get(i).getDato1().toString()+"\","+ejecutable.get(i).getVar()+");\n";
+                } else {
+                    codigo += "printf(" + ejecutable.get(i).getVar() + ");\n";
+                }
             } else if (ejecutable.get(i).getOperacion().equals("mult")) {
                 codigo += ejecutable.get(i).getVar() + " = " + ejecutable.get(i).getDato1() + " * " + ejecutable.get(i).getDato2() + ";\n";
             } else if (ejecutable.get(i).getOperacion().equals("resta")) {
@@ -76,21 +82,20 @@ public class CreacionEjecutable {
                 codigo += "scanf(" + ejecutable.get(i).getDato1() + "," + ejecutable.get(i).getVar() + ");\n";
             } else if (ejecutable.get(i).getOperacion().equals("CALL")) {
                 codigo += ejecutable.get(i).getDato1() + "\n";
-
             } else if (ejecutable.get(i).getOperacion().equals("PARAM")) {
                 codigo += "param " + ejecutable.get(i).getVar() + "\n";
             } else if (ejecutable.get(i).getOperacion().equals("CLSCR")) {
                 codigo += "clscr();\n";
             } else if (ejecutable.get(i).getOperacion().equals("GETCH")) {
                 if (ejecutable.get(i).getVar() != null) {
-                    codigo += ejecutable.get(i).getVar() + " = " + "getch()\n";
+                    codigo += ejecutable.get(i).getVar() + " = " + "getch();\n";
                 } else {
                     codigo += "getch();\n";
                 }
             } else {
                 String[] posIf = ejecutable.get(i).getOperacion().split(" ");
                 if (posIf[0].equals("IF")) {
-                    codigo += "if(" + ejecutable.get(i).getDato1() + " " + posIf[1] + " " + ejecutable.get(i).getDato2() + ") goto " + ejecutable.get(i).getVar() + "\n";
+                    codigo += "if(" + ejecutable.get(i).getDato1() + " " + posIf[1] + " " + ejecutable.get(i).getDato2() + ") { goto " + ejecutable.get(i).getVar() + "; }\n";
                 }
             }
         }
