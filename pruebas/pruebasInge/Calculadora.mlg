@@ -74,7 +74,8 @@ void main()
 
   printf("Ingrese el primer valor entero");
   scanf("%d",&Valor1);
-  scanf("Ingrese el segudo valor entero %d",&Valor2);
+  printf("Ingrese el segudo valor entero");
+  scanf("%d",&Valor2);
 
   Respuesta4 = PY.MODULO(Valor1,Valor2);
   
@@ -107,8 +108,8 @@ void main()
 		printf("Arreglo [ %d ] [ 0 ] su contenido es %d", Contador,a);
 		printf("Arreglo [ %d ] [ 1 ] su contenido es %d", Contador, b);
 		}else{
-		printf("Arreglo [ %d ] [ 0 ] su contenido es %d", Contador, c);
-		printf("Arreglo [ %d ] [ 1 ] su contenido es %d", Contador,d);
+		printf("Arrseglo [ %d ] [ 0 ] su contenido es %d", Contador, c);
+		printf("Arrseglo [ %d ] [ 1 ] su contenido es %d", Contador,d);
 		}
   }
 }

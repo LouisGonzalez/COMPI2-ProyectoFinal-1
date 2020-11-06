@@ -17,10 +17,10 @@ import java.util.logging.Logger;
  * @author luisGonzalez
  */
 public class Guardado {
-    
-    public void guardarArchivo(String path, String texto){
+
+    public void guardarArchivo(String path, String texto) {
         File archivo = new File(path);
-        if(archivo.exists()){
+        if (archivo.exists()) {
             archivo.delete();
             guardarArchivo(path, texto);
         } else {
@@ -35,5 +35,42 @@ public class Guardado {
             }
         }
     }
+
+    public void crearEjecutable(String path, String texto) {
+        File archivo = new File(path);
+        if (archivo.exists()) {
+            archivo.delete();
+            crearEjecutable(path, texto);
+        } else {
+            try {
+                archivo.createNewFile();
+                FileWriter write = new FileWriter(archivo);
+                BufferedWriter buffer = new BufferedWriter(write);
+                buffer.write(texto);
+                buffer.close();
+            } catch (IOException ex) {
+                Logger.getLogger(Guardado.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+    }
     
+    public void crearAssembler(String path, String texto){
+        File archivo = new File(path);
+        if(archivo.exists()){
+            archivo.delete();
+            crearAssembler(path, texto);
+        } else {
+            try {
+                archivo.createNewFile();
+                FileWriter write = new FileWriter(archivo);
+                BufferedWriter buffer = new BufferedWriter(write);
+                buffer.write(texto);
+                buffer.close();
+            } catch (IOException ex) {
+                Logger.getLogger(Guardado.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
 }

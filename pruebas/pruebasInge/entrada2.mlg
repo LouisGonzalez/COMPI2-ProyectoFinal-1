@@ -8,14 +8,16 @@ public class OperacionAlgebraica
   float num2;
   float resultado;
   int hasta;
-  int contador=1;
-  int x = 0;
+  int contador;
+  int x;
   
   public OperacionAlgebraica()
   {
  num1 = 0.0;
  num2 = 0.0;
  resultado = 0.0;
+ contador = 4;
+ x = 0;
   }
   
   public void Suma()
@@ -31,10 +33,10 @@ public class OperacionAlgebraica
   {
     System.out.println("\n Ingrese el numero hasta donde quiera contar");
     hasta = intinput("cccc");
-    do
-	{
+    do {
 	    System.out.println("");
 		contador = contador + 1;
+		System.out.println(contador);
 	} while (contador <= hasta);
   }
   
@@ -59,7 +61,7 @@ public class OperacionAlgebraica
 %%PY
 def Continuar(a):
     print("Desea Repetir el Proceso [s]i o [n]o")
-    a = floatinput("eee")
+    a = charinput("eee")
     return a
 %%PROGRAMA
 #include "JAVA.OperacionAlgebraica"
@@ -74,8 +76,8 @@ void main()
 JAVA.OperacionAlgebraica ObjX();
 
 	  clrscr();
-	  while (1 != 1)
-	  {
+	  //while (1 == 1)
+	  //{
 		JAVA.ObjX.Suma();
 		getch();
 		clrscr();
@@ -83,8 +85,8 @@ JAVA.OperacionAlgebraica ObjX();
 		getch();
 		clrscr();
 		JAVA.ObjX.ElevarCuadrado();
-		Op = PY.Continuar(Op);
-	  }
+	//	Op = PY.Continuar(Op);
+	//  }
 
 	  getch();
   }

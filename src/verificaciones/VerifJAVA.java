@@ -80,14 +80,14 @@ public class VerifJAVA {
                     if (jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getValor()) {
                         todoCorrecto = true;
                     } else {
-                        PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
+                       // PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
                     }
                 } else {
                     if (verificarPadreVar(jv, jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getTipo(), tipoBase)) {
                         if (jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getValor()) {
                             todoCorrecto = true;
                         } else {
-                            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
+                          //  PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
                         }
                     } else {
                         PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no es compatible con el tipo de operacion.\n";
@@ -121,14 +121,14 @@ public class VerifJAVA {
                     if (jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getValor()) {
                         todoCorrecto = true;
                     } else {
-                        PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
+                       // PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
                     }
                 } else {
                     if (verificarPadreVar(jv, jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getTipo(), tipoBase)) {
                         if (jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getValor()) {
                             todoCorrecto = true;
                         } else {
-                            PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
+                            //PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
                         }
                     } else {
                         PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no es compatible con el tipo de operacion.\n";
@@ -191,8 +191,8 @@ public class VerifJAVA {
         } else {
             if (verifVarGlobal(jv, id)) {
                 if (jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getTipo().equals(tipoBase)) {
-                    jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getListAsignaciones().add(jerarquia);
-                    jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).setValor(true);
+                    jv.getMisClases().get(itClase).getGlobales().get(iterador).getListAsignaciones().add(jerarquia);
+                    jv.getMisClases().get(itClase).getGlobales().get(iterador).setValor(true);
                     todoCorrecto = true;
                 } else {
                     PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no es de tipo: " + tipoBase + "\n";

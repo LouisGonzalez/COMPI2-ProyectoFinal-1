@@ -1,0 +1,77 @@
+%%VB
+
+
+%%JAVA
+
+public class operaciones {
+
+int global1 = 12;
+
+public void vereficar(int a, int b){
+	System.out.println("valor de global1: "+global1);
+	if(a < b){
+		while(b > a){
+			a = a + 1;
+			System.out.println("estoy alcanzando a "+b+" "+a);
+		}
+		System.out.println("ya lo alcanze");
+	} else {
+		while(a > b){
+			b = b + 1;
+			System.out.println("estoy alcanzando a "+a+" "+b); 
+		}
+
+	}
+}
+
+public void suma(int a, int b){
+	int suma = a + b;
+	System.out.println("El resultado de la suma: "+suma); 
+}
+
+public void resta(int a, int b){
+	int resta = a - b;
+	System.out.println("El resultado de la resta es: "+resta);
+}
+	
+public operaciones(){
+
+}
+
+}
+
+%%PY
+
+%%PROGRAMA
+
+#include "VB"
+#include "JAVA.*"
+
+void main()
+{
+	int x, y, menu;
+	printf("Opciones: ");
+	printf("1. Sumar: ");
+	printf("2. Restar: ");
+	printf("3. Alcanzar: ");
+	printf("Ingrese primer numero: ");
+	scanf("%d", &x);
+	printf("Ingrese segundo numero: ");
+	scanf("%d", &y);
+	JAVA.operaciones op();
+	printf("Ingrese numero menu: ");
+	scanf("%d", &menu);
+	switch(menu){
+		case 1:
+			JAVA.op.suma(x, y); 
+		break;
+		case 2:
+			JAVA.op.resta(x, y);
+		break;
+		case 3:
+			JAVA.op.vereficar(x, y);			
+		break;
+	}
+
+
+}

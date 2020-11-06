@@ -29,14 +29,14 @@ import objetosApoyo.DatosGuardado;
  */
 public class NuevaHoja {
 
-    public void crearHoja(File archivo, FileReader reader, BufferedReader buffer, String texto, JTabbedPane principal, ArrayList<DatosGuardado> textos){
+    public void crearHoja(File archivo, FileReader reader, BufferedReader buffer, String texto, JTabbedPane principal, ArrayList<DatosGuardado> textos, String path2){
         try {
             reader = new FileReader(archivo.toString());
             buffer = new BufferedReader(reader);
             while(buffer.ready()){
                 texto += buffer.readLine()+ "\n";
             }
-            abrirPanel(texto, archivo.getPath(), archivo.getName(), principal, textos, principal.getTabCount());
+            abrirPanel(texto, archivo.getPath(), archivo.getName(), principal, textos, principal.getTabCount(), path2);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(NuevaHoja.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -45,8 +45,8 @@ public class NuevaHoja {
         
     }
     
-    public void abrirPanel(String texto, String path, String titulo, JTabbedPane principal, ArrayList<DatosGuardado> textos, int itTab){
-        PanelPrincipal panel = new PanelPrincipal(texto, path, textos, itTab);
+    public void abrirPanel(String texto, String path, String titulo, JTabbedPane principal, ArrayList<DatosGuardado> textos, int itTab, String path2){
+        PanelPrincipal panel = new PanelPrincipal(texto, path, textos, itTab, principal, path2);
         principal.addTab(titulo, panel);
         principal.setTabComponentAt(principal.getTabCount()-1, crearCabecera(titulo, principal));
     }

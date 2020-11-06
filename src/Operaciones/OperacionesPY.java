@@ -254,7 +254,7 @@ public class OperacionesPY {
 
     public void agregarRetornoMetodo(ObjetosPYTHON py, String tipo) {
         if (!tipo.equals("")) {
-            py.getMisMetodos().get(py.getMisMetodos().size() - 1).setTipo(false);
+            py.getMisMetodos().get(py.getMisMetodos().size() - 1).setTipo(true);
             py.getMisMetodos().get(py.getMisMetodos().size() - 1).setRetorno(tipo);
         } else {
             py.getMisMetodos().get(py.getMisMetodos().size() - 1).setTipo(false);

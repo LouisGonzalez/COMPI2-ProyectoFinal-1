@@ -158,16 +158,10 @@ public class VerifObjetos {
     public boolean verifTipadoVar(ObjetosC c, String id, String tipoActual, Variable var, VerifC verif) {
         boolean correcto = false;
         if (var.getTipo().equals(tipoActual)) {
-            if (var.getValor()) {
-                correcto = true;
-            }
+            correcto = true;
         } else {
             if (verif.verificarPadre(c, var.getTipo(), tipoActual)) {
-                if (var.getValor()) {
                     correcto = true;
-                } else {
-                    System.out.println("La variable: " + id + " no tiene asignado un valor.");
-                }
             } else {
                 System.out.println("La variable: " + id + " no es compatible con la operacion");
             }

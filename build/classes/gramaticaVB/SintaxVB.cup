@@ -58,7 +58,7 @@ parser code {:
     }
 
     public void syntax_error(Symbol s){
-       // setAccion("ERROR", "Error sintaxis columna: "+s.right+" fila: "+s.left,"");      
+       setAccion("ERROR", "Error sintaxis columna: "+s.right+" fila: "+s.left,"");      
       int fila = s.left + PanelPrincipal.totalLineas;
             PanelPrincipal.errores += "Fila: "+fila+" Columna: "+s.right+" Token no reconocido: "+s.toString()+"\n";
     }
@@ -92,7 +92,7 @@ parser code {:
 
     non terminal String TEXTO, TIPO_VARIABLE, RETORNO,  TIPO_INPUT, TEXTO2;
 
-    non terminal Boolean STEP, RETURN;
+    non terminal Boolean STEP, RETURN, PUBLICO, CASE_ERROR, NEXT;
 
     non terminal String TIPO_VAL, OPERACION, VALOR_VAR, TIPO_VARIABLE2;
 
@@ -144,14 +144,18 @@ parser code {:
 /*-----------------------------------------------------------------------------------------------------------------------------*/
 
 
-    TIPO_VARIABLE ::= condAs tipoInt:a          {: RESULT="Integer"; :}
-    |                 condAs tipoFloat:a        {: RESULT="Float"; :}
-    |                 condAs tipoChar:a         {: RESULT="Char"; :}
-    |                                           {: RESULT=""; :}
+    TIPO_VARIABLE ::= condAs tipoInt:a          {:  RESULT="Integer"; :}
+    |                 condAs tipoFloat:a        {:  RESULT="Float"; :}
+    |                 condAs tipoChar:a         {:  RESULT="Char"; :}
+    |                                           {:  RESULT=""; :}
+    |                 error:a                   {:  PanelPrincipal.errores += "Fila: " + aleft + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en sentencia de variable, se esperaba un tipo de dato\n";
+                                                    RESULT=""; :}
 ;
-    TIPO_VARIABLE2 ::= condAs tipoInt:a         {: RESULT="Integer"; :}
-    |                 condAs tipoFloat:a        {: RESULT="Float"; :}
-    |                 condAs tipoChar:a         {: RESULT="Char"; :}
+    TIPO_VARIABLE2 ::= condAs tipoInt:a         {:  RESULT="Integer"; :}
+    |                 condAs tipoFloat:a        {:  RESULT="Float"; :}
+    |                 condAs tipoChar:a         {:  RESULT="Char"; :}
+    |                 error:a                   {:  PanelPrincipal.errores += "Fila: " + aleft + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en sentencia de variable, se esperaba un tipo de dato\n";
+                                                    RESULT="Integer"; :}  
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -201,7 +205,10 @@ parser code {:
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    METODOS ::= tipoPublic tipoFuncion id:a     {:  parser.metodo=a.toString();
+    METODOS ::= PUBLICO:z tipoFuncion id:a     {:   if(!z){
+                                                        PanelPrincipal.errores += "Fila: " + aleft + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Falta de atributo PUBLIC en funcion: "+a.toString()+"\n";
+                                                    }
+                                                    parser.metodo=a.toString();
                                                     parser.metodoExe = a.toString();
                                                     parser.operacion.crearMetodo(parser.tabla.getObVb(), a.toString(), true, aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas, aright+PanelPrincipal.totalLineas); 
                                                     parser.exe.agregarMetodo(parser.tabla, a.toString(), null);   
@@ -228,7 +235,10 @@ parser code {:
                                                 :} ENTER
 
 
-    |           tipoPublic tipoSub id:a         {:  parser.metodo=a.toString(); 
+    |           PUBLICO:z tipoSub id:a         {:   if(!z){
+                                                        PanelPrincipal.errores += "Fila: " + aleft + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Falta de atributo PUBLIC en procedimiento: "+a.toString()+"\n";
+                                                    }
+                                                    parser.metodo=a.toString(); 
                                                     parser.metodoExe = a.toString();
                                                     parser.exe.agregarMetodo(parser.tabla, a.toString(), "void");
                                                     parser.operacion.crearMetodo(parser.tabla.getObVb(), a.toString(), false, aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas, aright+PanelPrincipal.totalLineas); 
@@ -246,6 +256,12 @@ parser code {:
                 ENTER CONTENIDO fin tipoSub 
                                                 {:  parser.manejoVB.finMetodo(parser.tabla.getObVb());  
                                                     parser.jerarquia=0; :} ENTER
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    PUBLICO ::= tipoPublic      {: RESULT = true; :}
+    |                           {: RESULT = false; :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -281,6 +297,8 @@ parser code {:
                                                                         RESULT = null;
                                                                     }
                                                                 } :}
+    |       error:a                                          {: PanelPrincipal.errores += "Fila: " + aleft + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en definicion de parametros, se esperaba token id\n";
+                                                                RESULT = new ArrayList<>(); :}                                                                
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -294,6 +312,8 @@ parser code {:
                                                                     }
                                                                 } :}
     |                                                       {:  RESULT = new ArrayList<>(); :}
+    |         error:a                                       {:  PanelPrincipal.errores += "Fila: " + aleft + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en definicion de parametros del metodo: "+parser.metodoExe+", se esperaba token id\n";
+                                                                RESULT = new ArrayList<>(); :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -336,12 +356,12 @@ parser code {:
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    RETURN ::= condReturn {:    parser.tipoActual=parser.tipoMetodo; 
-                                parser.exe.agregarReturn(parser.tabla, parser.metodoExe);
-                                parser.tipoMetodo=""; :} 
-               VALOR_VAR:a {:   parser.manejoVB.crearReturn(parser.tabla, a, parser.metodoExe);  
-                                RESULT = true; :} ENTER
-    | {: RESULT=false; :}                                               
+    RETURN ::= condReturn                       {:  parser.tipoActual=parser.tipoMetodo; 
+                                                    parser.exe.agregarReturn(parser.tabla, parser.metodoExe);
+                                                    parser.tipoMetodo=""; :} 
+               VALOR_VAR:a                      {:  parser.manejoVB.crearReturn(parser.tabla, a, parser.metodoExe);  
+                                                    RESULT = true; :} ENTER
+    |                                           {:  RESULT=false; :}         
 ;                                                                           
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -349,11 +369,15 @@ parser code {:
     PARAMETROS ::= PARAMETROS2:a BYVAL id:b RETORNO:c   {:  if(parser.verif.verificarIdParam(a, b.toString())){ 
                                                                 System.out.println("ya existe una variable "+b.toString()); 
                                                             } else { 
-                                                                parser.tabla.getObVb().getMisMetodos().get(parser.tabla.getObVb().getMisMetodos().size()-1).getMisParametros().add(new Parametro(parser.tabla.getObVb().getMisMetodos().get(parser.tabla.getObVb().getMisMetodos().size()-1).getMisParametros().size()-1, c));  
-                                                                a.add(new Variable(b.toString(), c.toString(), true, parser.jerarquia)); a.get(a.size()-1).getListAsignaciones().add(parser.jerarquia); 
-                                                                parser.exe.agregarParametro(parser.tabla, b.toString(), parser.metodoExe, c);
+                                                                if(!parser.tabla.getObVb().getMisMetodos().isEmpty()){
+                                                                    parser.tabla.getObVb().getMisMetodos().get(parser.tabla.getObVb().getMisMetodos().size()-1).getMisParametros().add(new Parametro(parser.tabla.getObVb().getMisMetodos().get(parser.tabla.getObVb().getMisMetodos().size()-1).getMisParametros().size()-1, c));  
+                                                                    a.add(new Variable(b.toString(), c.toString(), true, parser.jerarquia)); a.get(a.size()-1).getListAsignaciones().add(parser.jerarquia); 
+                                                                    parser.exe.agregarParametro(parser.tabla, b.toString(), parser.metodoExe, c);
+                                                                }
                                                             } RESULT=a;  :}
-    |                                                   {: RESULT=new ArrayList<>(); :}                                   
+    |                                                   {: RESULT=new ArrayList<>(); :}     
+    |              error:a {: PanelPrincipal.errores += "Fila: " + aleft + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en definicion de parametros del metodo: "+parser.metodoExe+", se esperaba token id\n";
+                              RESULT = new ArrayList<>(); :}
 
 ;                                                                               
 
@@ -361,12 +385,16 @@ parser code {:
 
     PARAMETROS2 ::= PARAMETROS2:a BYVAL id:b RETORNO:c coma {:  if(parser.verif.verificarIdParam(a, b.toString())){ 
                                                                     System.out.println("ya existe una variable "+b.toString()); 
-                                                                } else { 
-                                                                    parser.tabla.getObVb().getMisMetodos().get(parser.tabla.getObVb().getMisMetodos().size()-1).getMisParametros().add(new Parametro(parser.tabla.getObVb().getMisMetodos().get(parser.tabla.getObVb().getMisMetodos().size()-1).getMisParametros().size()-1, c)); 
-                                                                    a.add(new Variable(b.toString(), c.toString(), true, parser.jerarquia)); a.get(a.size()-1).getListAsignaciones().add(parser.jerarquia); 
-                                                                    parser.exe.agregarParametro(parser.tabla, b.toString(), parser.metodoExe, c);
+                                                                } else {
+                                                                    if(!parser.tabla.getObVb().getMisMetodos().isEmpty()){
+                                                                        parser.tabla.getObVb().getMisMetodos().get(parser.tabla.getObVb().getMisMetodos().size()-1).getMisParametros().add(new Parametro(parser.tabla.getObVb().getMisMetodos().get(parser.tabla.getObVb().getMisMetodos().size()-1).getMisParametros().size()-1, c)); 
+                                                                        a.add(new Variable(b.toString(), c.toString(), true, parser.jerarquia)); a.get(a.size()-1).getListAsignaciones().add(parser.jerarquia); 
+                                                                        parser.exe.agregarParametro(parser.tabla, b.toString(), parser.metodoExe, c);
+                                                                    }
                                                                 } RESULT=a; :}
     |                                                       {: RESULT=new ArrayList<>(); :}                                                   
+    |               error:a {: PanelPrincipal.errores += "Fila: " + aleft + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en definicion de parametros del metodo: "+parser.metodoExe+", se esperaba token: id\n";
+                               RESULT = new ArrayList<>();  :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -380,6 +408,8 @@ parser code {:
     RETORNO ::= condAs tipoInt:a            {: RESULT="Integer"; :}
     |           condAs tipoChar:a           {: RESULT="Char"; :}
     |           condAs tipoFloat:a          {: RESULT="Float"; :}
+    |           error:a                     {: PanelPrincipal.errores += "Fila: " + aleft + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en devolucion de valor al metodo: "+parser.metodoExe+", se esperaba un tipo de dato.\n";
+                                               RESULT = "Integer";  :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -396,34 +426,58 @@ parser code {:
     |             CONTENIDO:a COMENTARIO_A      {: if(a!=null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; RESULT=null; } else { RESULT=false; } } :}
     |             CONTENIDO:a COMENTARIO_B      {: if(a!=null){ if(a){ int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Linea: "+linea+" Columna: "+aright+" Tipo de error: SEMANTICO - Causa: Lineas escritas luego de instruccion return.\n"; RESULT=null; } else { RESULT=false; } } :}
     |                                           {: RESULT=false; :}
-    |             CONTENIDO:a error             {: RESULT = a; :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    IF ::= condIf {: parser.usoPila.add(false); parser.jerarquia++; parser.pilaFalsas.add(new ArrayList<>()); :} EXT:h {: parser.manejoVB.primerChequeoIf(parser.tabla.getObVb(), h); :} THEN ENTER CONTENIDO:a {:  parser.manejo.irEtiquetaFinVB(parser.tabla.getObVb(), parser.jerarquia);  parser.manejoVB.segundoChequeoIf(parser.tabla.getObVb(), parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);          parser.operacion.eliminarVariables(parser.jerarquia, parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size()-1);   parser.jerarquia--;  :} ELSE:b fin condIf ENTER {: RESULT=parser.operacion.retornoIf(a, b, hleft+PanelPrincipal.totalLineas, hright);  :}
+    IF ::= condIf                                                           {:  parser.usoPila.add(false); 
+                                                                                parser.jerarquia++; 
+                                                                                parser.pilaFalsas.add(new ArrayList<>()); :} 
+           EXT:h                                                            {:  parser.manejoVB.primerChequeoIf(parser.tabla.getObVb(), h); :} 
+           THEN ENTER CONTENIDO:a                                           {:  parser.manejo.irEtiquetaFinVB(parser.tabla.getObVb(), parser.jerarquia);  
+                                                                                parser.manejoVB.segundoChequeoIf(parser.tabla.getObVb(), parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);          
+                                                                                parser.operacion.eliminarVariables(parser.jerarquia, parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size()-1);      
+                                                                                parser.jerarquia--;  :} 
+           ELSE:b fin condIf ENTER                                          {:  RESULT=parser.operacion.retornoIf(a, b, hleft+PanelPrincipal.totalLineas, hright);  :}
 ;        
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
     THEN ::= condThen
     |
+    |        error:a {: PanelPrincipal.errores += "Fila: " + aleft + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en declaracion de sentencia, se esperaba token THEN.\n"; :}
 ;                       
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    ELSE ::= condElse {: parser.jerarquia++; :} ENTER CONTENIDO:a {:  parser.manejo.irEtiquetaFinVB(parser.tabla.getObVb(), parser.jerarquia); parser.manejo.agregarEtiquetaFinVB(parser.tabla.getObVb(), parser.jerarquia);       parser.operacion.eliminarVariables(parser.jerarquia, parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size() - 1); parser.jerarquia--;  RESULT=a; :}
-    |        condElseIf {: parser.usoPila.add(false);  parser.jerarquia++; parser.pilaFalsas.add(new ArrayList<>()); :} EXT:h {: parser.manejoVB.primerChequeoIf(parser.tabla.getObVb(), h); :} THEN ENTER CONTENIDO:a {: parser.manejo.irEtiquetaFinVB(parser.tabla.getObVb(), parser.jerarquia);  parser.manejoVB.segundoChequeoIf(parser.tabla.getObVb(), parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);  parser.operacion.eliminarVariables(parser.jerarquia, parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size()-1);  parser.jerarquia--;  :} ELSE:b {: RESULT=parser.operacion.retornoIf(a, b, hleft+PanelPrincipal.totalLineas, hright); :}
-    |       {:  parser.manejo.agregarEtiquetaFinVB(parser.tabla.getObVb(), parser.jerarquia); RESULT=false; :}
+    ELSE ::= condElse                                                   {:  parser.jerarquia++; :} 
+             ENTER CONTENIDO:a                                          {:  parser.manejo.irEtiquetaFinVB(parser.tabla.getObVb(), parser.jerarquia); 
+                                                                            parser.manejo.agregarEtiquetaFinVB(parser.tabla.getObVb(), parser.jerarquia);       
+                                                                            parser.operacion.eliminarVariables(parser.jerarquia, parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size() - 1); 
+                                                                            parser.jerarquia--;  
+                                                                            RESULT = a; :}
+    |        condElseIf                                                 {:  parser.usoPila.add(false);  
+                                                                            parser.jerarquia++; 
+                                                                            parser.pilaFalsas.add(new ArrayList<>()); :} 
+             EXT:h                                                      {:  parser.manejoVB.primerChequeoIf(parser.tabla.getObVb(), h); :} 
+             THEN ENTER CONTENIDO:a                                     {:  parser.manejo.irEtiquetaFinVB(parser.tabla.getObVb(), parser.jerarquia);  
+                                                                            parser.manejoVB.segundoChequeoIf(parser.tabla.getObVb(), parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);  
+                                                                            parser.operacion.eliminarVariables(parser.jerarquia, parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size()-1);  
+                                                                            parser.jerarquia--;  :} 
+             ELSE:b                                                     {:  RESULT=parser.operacion.retornoIf(a, b, hleft+PanelPrincipal.totalLineas, hright); :}
+    |                                                                   {:  parser.manejo.agregarEtiquetaFinVB(parser.tabla.getObVb(), parser.jerarquia); 
+                                                                            RESULT=false; :}
 ; 
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    EXT ::= EXT:a condAnd EXT:b                             {: RESULT = parser.manejoVB.manejoAnd(a, b); :}
-    |       EXT:a condOr                                    {: parser.aux3 = parser.aux2; :}  EXT:b {: parser.manejoVB.manejoOr(parser.tabla.getObVb(), parser.usoPila, parser.pilaCuarpeta, a, b, parser.jerarquia); :}
-    |       CONDICION:a                                     {: RESULT = a; :}
-    |       condNot parentesis_a CONDICION:a parentesis_b   {: RESULT = parser.manejoVB.cambiarGotos(a); :}
-    |       condNot CONDICION:a                             {: RESULT = parser.manejoVB.cambiarGotos(a); :}
+    EXT ::= EXT:a condAnd EXT:b                             {:  RESULT = parser.manejoVB.manejoAnd(a, b); :}
+    |       EXT:a condOr                                    {:  parser.aux3 = parser.aux2; :}  EXT:b {: parser.manejoVB.manejoOr(parser.tabla.getObVb(), parser.usoPila, parser.pilaCuarpeta, a, b, parser.jerarquia); :}
+    |       CONDICION:a                                     {:  RESULT = a; :}
+    |       condNot parentesis_a CONDICION:a parentesis_b   {:  RESULT = parser.manejoVB.cambiarGotos(a); :}
+    |       condNot CONDICION:a                             {:  RESULT = parser.manejoVB.cambiarGotos(a); :}
+    |       error:a                                         {:  PanelPrincipal.errores += "Fila: " + aleft + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en declaracion de booleano.\n";
+                                                                RESULT = new ArrayList<>(); :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -433,13 +487,13 @@ parser code {:
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    OP_COND ::= parentesis_a OP_COND:a parentesis_b     {: RESULT=a; :}
-    |           OP_COND:a mas OP_COND:b                 {: RESULT = parser.manejoVB.concatenarOperacion(parser.tabla.getObVb(), a, b, "suma"); :}
-    |           OP_COND:a menos OP_COND:b               {: RESULT = parser.manejoVB.concatenarOperacion(parser.tabla.getObVb(), a, b, "resta");  :} 
-    |           OP_COND:a por OP_COND:b                 {: RESULT = parser.manejoVB.concatenarOperacion(parser.tabla.getObVb(), a, b, "mult"); :} 
-    |           OP_COND:a div OP_COND:b                 {: RESULT= parser.manejoVB.concatenarOperacion(parser.tabla.getObVb(), a, b, "div"); :}
-    |           OP_COND:a modulo OP_COND:b              {: RESULT = parser.manejoVB.concatenarOperacion(parser.tabla.getObVb(), a, b, "modulo"); :}
-    |           VAL_COND:a                              {: RESULT= a; :}
+    OP_COND ::= parentesis_a OP_COND:a parentesis_b     {:  RESULT=a; :}
+    |           OP_COND:a mas OP_COND:b                 {:  RESULT = parser.manejoVB.concatenarOperacion(parser.tabla.getObVb(), a, b, "suma"); :}
+    |           OP_COND:a menos OP_COND:b               {:  RESULT = parser.manejoVB.concatenarOperacion(parser.tabla.getObVb(), a, b, "resta");  :} 
+    |           OP_COND:a por OP_COND:b                 {:  RESULT = parser.manejoVB.concatenarOperacion(parser.tabla.getObVb(), a, b, "mult"); :} 
+    |           OP_COND:a div OP_COND:b                 {:  RESULT= parser.manejoVB.concatenarOperacion(parser.tabla.getObVb(), a, b, "div"); :}
+    |           OP_COND:a modulo OP_COND:b              {:  RESULT = parser.manejoVB.concatenarOperacion(parser.tabla.getObVb(), a, b, "modulo"); :}
+    |           VAL_COND:a                              {:  RESULT= a; :}
 ;   
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -469,30 +523,67 @@ parser code {:
     |      menorIgual2      {: RESULT = "<="; :}
     |      menor mayor      {: RESULT = "<>"; :}
     |      igual            {: RESULT = "=="; :}
+    |      error:a          {: PanelPrincipal.errores += "Fila: " + aleft + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en sentencia de operador logico.\n";
+                               RESULT = ">"; :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    SELECT ::= condSelect condCase {: parser.jerarquia++; :} VAL_SELECT:a {: parser.arrayFinales.add("etFinal_"+parser.contFinales); parser.contFinales++; parser.idSwitch = a;  parser.verif.verifVarSelect(parser.tabla.getObVb(), a, aleft+PanelPrincipal.totalLineas, aright); :} ENTER CASES:b fin condSelect ENTER {: parser.jerarquia--; parser.tabla.getObVb().getCuarpeta().add(new Nodo("ETIQUETA", parser.arrayFinales.get(parser.arrayFinales.size()-1), null, null, parser.jerarquia));  parser.arrayFinales.remove(parser.arrayFinales.size()-1);    RESULT=b; :}
-;                                                                                                   
+    SELECT ::= condSelect CASE_ERROR:d                                  {:  if(!d){
+                                                                                PanelPrincipal.errores += "Fila: " + dleft + " Columna: " + dright + " Tipo de error: SINTACTICO - Causa: Error en  SELECT, se esperaba token: case\n";
+                                                                            }
+                                                                            parser.jerarquia++; :} 
+               VAL_SELECT:a                                             {:  parser.arrayFinales.add("etFinal_"+parser.contFinales); 
+                                                                            parser.contFinales++; 
+                                                                            parser.idSwitch = a;  
+                                                                            parser.verif.verifVarSelect(parser.tabla.getObVb(), a, aleft+PanelPrincipal.totalLineas, aright); :} 
+               ENTER CASES:b fin condSelect ENTER                       {:  parser.jerarquia--; 
+                                                                            parser.tabla.getObVb().getCuarpeta().add(new Nodo("ETIQUETA", parser.arrayFinales.get(parser.arrayFinales.size()-1), null, null, parser.jerarquia));  
+                                                                            parser.arrayFinales.remove(parser.arrayFinales.size()-1);    
+                                                                            RESULT=b; :}
+;                             
+
+    CASE_ERROR ::= condCase             {: RESULT = true; :}
+    |              error                {: RESULT = false; :}
+;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    VAL_SELECT ::= id:a                                 {: RESULT = parser.manejoVB.devolverVarSwitch(parser.tabla, a.toString(), parser.metodoExe); :}                                        
-    |              comillaSimple:a id:b comillaSimple:c {: RESULT = a.toString() + b.toString() + c.toString(); :}
-    |              numero:a                             {: RESULT = a.toString(); :}                                            
+    VAL_SELECT ::= id:a                                 {:  RESULT = parser.manejoVB.devolverVarSwitch(parser.tabla, a.toString(), parser.metodoExe); :}                                        
+    |              comillaSimple:a id:b comillaSimple:c {:  RESULT = a.toString() + b.toString() + c.toString(); :}
+    |              numero:a                             {:  RESULT = a.toString(); :}                                            
+    |              error:a                              {: PanelPrincipal.errores += "Fila: " + aleft + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en definicion de variable dentro de SELECT.\n";
+                                                            RESULT = ""; :}
 ;                                                                                           
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    CASES ::= condCase VAL_SELECT:h {: parser.jerarquia++; parser.manejoVB.agregarCaseSwitch(parser.tabla.getObVb(), parser.jerarquia, parser.idSwitch, h, "=="); :} ENTER CONTENIDO:a {:  parser.manejoVB.agregarFinCase(parser.tabla.getObVb(), parser.arrayFinales, parser.jerarquia);    parser.operacion.eliminarVariables(parser.jerarquia, parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size()-1);  parser.jerarquia--; :} CASES:b {: RESULT=parser.operacion.retornoCaseSelect(a, b, hleft+PanelPrincipal.totalLineas, hright); :}
-    |         condCase condElse {: parser.jerarquia++; :} ENTER CONTENIDO:a {: parser.operacion.eliminarVariables(parser.jerarquia, parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size()-1); parser.jerarquia--;  RESULT=a; :}         
+    CASES ::= CASE_ERROR VAL_SELECT:h                     {:  parser.jerarquia++; 
+                                                            parser.manejoVB.agregarCaseSwitch(parser.tabla.getObVb(), parser.jerarquia, parser.idSwitch, h, "=="); :} 
+              ENTER CONTENIDO:a                         {:  parser.manejoVB.agregarFinCase(parser.tabla.getObVb(), parser.arrayFinales, parser.jerarquia);    
+                                                            parser.operacion.eliminarVariables(parser.jerarquia, parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size()-1);  
+                                                            parser.jerarquia--; :} 
+              CASES:b                                   {:  RESULT=parser.operacion.retornoCaseSelect(a, b, hleft+PanelPrincipal.totalLineas, hright); :}
+    |         CASE_ERROR condElse                         {:  parser.jerarquia++; :} 
+              ENTER CONTENIDO:a                         {:  parser.operacion.eliminarVariables(parser.jerarquia, parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size()-1); 
+                                                            parser.jerarquia--;  
+                                                            RESULT=a; :}         
     |         {: RESULT=false; :}                                                           
 ;                                   
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    DO_WHILE ::= condDo {: parser.usoPila.add(false); parser.jerarquia++; parser.pilaFalsas.add(new ArrayList<>()); parser.manejoVB.agregarDoWhile(parser.tabla.getObVb(), parser.jerarquia); :} ENTER CONTENIDO:a condLoop WHILE2 EXT:h ENTER {: parser.manejoVB.agregarCondicionWhile(parser.tabla.getObVb(), parser.usoPila, h, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);  parser.jerarquia--;  if(a!=null){ RESULT=false; } else { RESULT=null; } :}
+    DO_WHILE ::= condDo                                             {:  parser.usoPila.add(false); 
+                                                                        parser.jerarquia++; 
+                                                                        parser.pilaFalsas.add(new ArrayList<>()); 
+                                                                        parser.manejoVB.agregarDoWhile(parser.tabla.getObVb(), parser.jerarquia); :} 
+                 ENTER CONTENIDO:a condLoop WHILE2 EXT:h ENTER      {:  parser.manejoVB.agregarCondicionWhile(parser.tabla.getObVb(), parser.usoPila, h, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);  
+                                                                        parser.jerarquia--;  
+                                                                        if(a!=null){ 
+                                                                            RESULT=false; 
+                                                                        } else { 
+                                                                            RESULT=null; 
+                                                                        } :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -504,13 +595,26 @@ parser code {:
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    WHILE ::= condWhile  {: parser.usoPila.add(false); parser.jerarquia++;  parser.pilaFalsas.add(new ArrayList<>());  :} EXT:h {: parser.manejoVB.agregarWhile(parser.tabla.getObVb(), h, parser.jerarquia); :} ENTER CONTENIDO:a fin condWhile {: parser.manejoVB.retornoWhile(parser.tabla.getObVb(), parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);        parser.operacion.eliminarVariables(parser.jerarquia, parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size() - 1);  parser.jerarquia--; :} ENTER {: if(a!=null){ RESULT=false; } else { RESULT=null; }  :}
+    WHILE ::= condWhile                                             {:  parser.usoPila.add(false); 
+                                                                        parser.jerarquia++;  
+                                                                        parser.pilaFalsas.add(new ArrayList<>());
+                                                                        parser.manejoVB.agregarPreludioWhile(parser.tabla.getObVb(), parser.jerarquia);  :} 
+              EXT:h                                                 {:  parser.manejoVB.agregarWhile(parser.tabla.getObVb(), h, parser.jerarquia); :} 
+              ENTER CONTENIDO:a fin condWhile                       {:  parser.manejoVB.retornoWhile(parser.tabla.getObVb(), parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);          
+                                                                        parser.operacion.eliminarVariables(parser.jerarquia, parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size() - 1);  
+                                                                        parser.jerarquia--; :} 
+              ENTER                                                 {:  if(a!=null){ 
+                                                                            RESULT=false; 
+                                                                        } else { 
+                                                                            RESULT=null; 
+                                                                        }  :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
     WHILE2 ::= condWhile 
     |          condUntil
+    |          error:a {: PanelPrincipal.errores += "Fila: " + aleft + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en sentencia de operador, se esperaba token: While - Until\n"; :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -527,7 +631,7 @@ parser code {:
             igual OPERACION:c                                               {:  parser.manejoVB.agregarPreludioFor(parser.tabla, a.toString(), c, parser.jerarquia, parser.metodoExe);  :} 
             condTo OPERACION:d STEP:e                                       {:  parser.manejoVB.agregarFor(parser.tabla, parser.pilaFalsas, a.toString(), c, d, parser.jerarquia, b, parser.metodoExe); 
                                                                                 parser.verif.verificarVarFor(a.toString(), b, parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size()-1, parser.tabla.getObVb().getTablaTipos(), parser.jerarquia, e, aleft+PanelPrincipal.totalLineas, aright, parser.jerarquia); :} 
-            ENTER  CONTENIDO:h condNext ID  ENTER                           {:  parser.manejoVB.retornoFor(parser.tabla.getObVb(), parser.usoPila, parser.pilaFor, a.toString(), parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);  
+            ENTER  CONTENIDO:h NEXT ID  ENTER                           {:  parser.manejoVB.retornoFor(parser.tabla.getObVb(), parser.usoPila, parser.pilaFor, a.toString(), parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);  
                                                                                 parser.operacion.eliminarVariables(parser.jerarquia, parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size() - 1); 
                                                                                 parser.jerarquia--; 
                                                                                 RESULT=parser.operacion.retornoFor(h); :}
@@ -535,11 +639,21 @@ parser code {:
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    STEP ::= condStep numero:a                  {: parser.manejoVB.agregarAuxPilaFor(parser.tabla, parser.pilaFor, a.toString(), parser.idFor, parser.metodoExe, true, false); RESULT=true; :}
-    |        condStep menos:a numero:b          {: parser.manejoVB.agregarAuxPilaFor(parser.tabla, parser.pilaFor, a.toString()+b.toString(), parser.idFor, parser.metodoExe, true, true); RESULT = true; :}
+    NEXT ::= condNext
+    |        error:a        {: PanelPrincipal.errores += "Fila: " + aleft + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en sentencia de operador, se esperaba token: Next\n"; :}
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    STEP ::= condStep numero:a                  {:  parser.manejoVB.agregarAuxPilaFor(parser.tabla, parser.pilaFor, a.toString(), parser.idFor, parser.metodoExe, true, false); RESULT=true; :}
+    |        condStep menos:a numero:b          {:  parser.manejoVB.agregarAuxPilaFor(parser.tabla, parser.pilaFor, a.toString()+b.toString(), parser.idFor, parser.metodoExe, true, true); RESULT = true; :}
     |        condStep id:a                      {:  parser.manejoVB.agregarAuxPilaFor(parser.tabla, parser.pilaFor, a.toString(), parser.idFor, parser.metodoExe, false, false);  RESULT = parser.verif.verifVarOp(parser.tabla.getObVb(),  parser.tabla.getObVb().getMisMetodos().size()-1, a.toString(), "Float", parser.tabla.getObVb().getTablaTipos(), aleft+PanelPrincipal.totalLineas, aright);  :}
-    |        condStep menos:a id:b              {: parser.manejoVB.agregarAuxPilaFor(parser.tabla, parser.pilaFor, a.toString()+b.toString(), parser.idFor, parser.metodoExe, false, true); RESULT = parser.verif.verifVarOp(parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size()-1, b.toString(), "Float", parser.tabla.getObVb().getTablaTipos(), aleft+PanelPrincipal.totalLineas, aright);  :}
-    |                                           {: parser.manejoVB.agregarAuxPilaFor(parser.tabla, parser.pilaFor, "1", parser.idFor, parser.metodoExe, true, false); RESULT = true; :}
+    |        condStep menos:a id:b              {:  parser.manejoVB.agregarAuxPilaFor(parser.tabla, parser.pilaFor, a.toString()+b.toString(), parser.idFor, parser.metodoExe, false, true); RESULT = parser.verif.verifVarOp(parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size()-1, b.toString(), "Float", parser.tabla.getObVb().getTablaTipos(), aleft+PanelPrincipal.totalLineas, aright);  :}
+    |                                           {:  parser.manejoVB.agregarAuxPilaFor(parser.tabla, parser.pilaFor, "1", parser.idFor, parser.metodoExe, true, false); 
+                                                    RESULT = true; :}
+    |        error:a                            {:  PanelPrincipal.errores += "Fila: " + aleft + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en sentencia STEP dentro de for, se esperaba salto de operacion.\n";
+                                                    parser.manejoVB.agregarAuxPilaFor(parser.tabla, parser.pilaFor, "1", parser.idFor, parser.metodoExe, true, false); 
+                                                    RESULT = true;  :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -550,9 +664,9 @@ parser code {:
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
     MENSAJE ::=  mensaje parentesis_a TEXTO3:a parentesis_b ENTER {: parser.manejoVB.mostrarQuiebre(parser.tabla); :}
-    |           mensaje2 parentesis_a TEXTO3:a parentesis_b ENTER
-    |           mensaje parentesis_a parentesis_b ENTER {: parser.manejoVB.mostrarQuiebre(parser.tabla); :}
-    |           mensaje2 parentesis_a parentesis_b ENTER
+    |            mensaje2 parentesis_a TEXTO3:a parentesis_b ENTER
+    |            mensaje parentesis_a parentesis_b ENTER {: parser.manejoVB.mostrarQuiebre(parser.tabla); :}
+    |            mensaje2 parentesis_a parentesis_b ENTER
 ;   
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -562,6 +676,7 @@ parser code {:
     |           comilla:a TEXTO:b comilla:c         {:  String et = a.toString()+b+c.toString();
                                                         parser.manejoVB.mostrarMensaje(parser.tabla.getObVb(), et, null);  :}
                 TEXTO_CONT:d    
+    |           error:a                             {: PanelPrincipal.errores += "Fila: " + aleft + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en operacion Console.write\n"; :}            
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -598,7 +713,7 @@ parser code {:
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    LECTURA_DATOS ::= id:a igual TIPO_INPUT:b parentesis_a TEXTO3:c parentesis_b    {:  parser.manejoVB.mostrarMensaje(parser.tabla.getObVb(), c, null);  
+    LECTURA_DATOS ::= id:a igual TIPO_INPUT:b parentesis_a TEXTO3:c parentesis_b    {:  parser.manejoVB.mostrarQuiebre(parser.tabla);
                                                                                         parser.manejoVB.crearScanf(parser.tabla, a.toString(), b, parser.metodoExe);     
                                                                                         if(parser.verif.verificarVarInput(parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size()-1, a.toString(), b, parser.tabla.getObVb().getTablaTipos(), parser.jerarquia)){
                                                                                         } else {
@@ -609,7 +724,7 @@ parser code {:
                                                                                         } else {  
                                                                                         }  
                                                                                     :} ENTER
-    |                 TIPO_INPUT:b parentesis_a TEXTO3:c parentesis_b               {:  parser.manejoVB.mostrarMensaje(parser.tabla.getObVb(), c, null);  
+    |                 TIPO_INPUT:b parentesis_a TEXTO3:c parentesis_b               {:  parser.manejoVB.mostrarQuiebre(parser.tabla);
                                                                                         parser.manejoVB.crearScanf(parser.tabla, null, b, parser.metodoExe); 
                                                                                     :} ENTER
     |                 TIPO_INPUT:b parentesis_a parentesis_b                        {: parser.manejoVB.crearScanf(parser.tabla, null, b.toString(), parser.metodoExe); :} ENTER

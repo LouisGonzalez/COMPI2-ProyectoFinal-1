@@ -71,7 +71,7 @@ parser code {:
 
     non terminal INICIO, METODOS, RETURN, METODO_VOID,  
                  CUERPO_METODO, VARIABLES, OP_FOR, ENTER2,
-                 VARIABLES2, VARS, VARS3, FOR, WHILE, 
+                 VARIABLES2, VARS, VARS3, FOR, WHILE, DEF,
                  IF, NOT, ELSE, BORRAR, MENSAJES, CONC, ID, ADM, END, LECTURA_DATOS,
                  ENTER, VARIABLES3, COMENTARIO_A, COMENTARIO_B, INICIO1;
 
@@ -127,6 +127,12 @@ parser code {:
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
+    DEF ::= condDef
+    |       error:a                     {: int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en inicio de metodo, se esperaba token: Def\n"; :}
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
     METODO_COND ::= id:a parentesis_a PARAM_METODOS:b parentesis_b      {:  boolean existe = parser.verif.verificarMetodo(parser.tabla, a.toString(), aleft+PanelPrincipal.totalLineas, aright);
                                                                             String et = parser.manejoPY.devolverEtiquetaMetodo(parser.tabla, a.toString(), b, aleft+PanelPrincipal.totalLineas);
                                                                             String tip = "";
@@ -159,6 +165,8 @@ parser code {:
                                                                                 RESULT = null;
                                                                             }
                                                                         } :}
+    |         error:a                                               {: int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en definicion de parametros, se esperaba token id\n";
+                                                                       RESULT = new ArrayList<>();  :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -172,6 +180,8 @@ parser code {:
                                                                             }
                                                                         } :}
     |                                                               {: RESULT = new ArrayList<>(); :}
+    |         error:a                                               {: int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en definicion de parametros, se esperaba token id\n";
+                                                                       RESULT = new ArrayList<>();  :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -184,7 +194,7 @@ parser code {:
                                                                     RESULT = new ArrayList<>(); 
                                                                 } :}
     |                                                       {:  RESULT = new ArrayList<>(); :}
-    | error                                                 {:  PanelPrincipal.errores += " Error tipo: SINTACTICO, Posible error debido a una mal definicion dentro de los parametros.\n";  
+    | error:a                                                 {: int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en definicion de parametros del metodo: "+parser.metodo+", se esperaba token id\n";
                                                                 RESULT=new ArrayList<>(); :}
 ;
 
@@ -193,7 +203,7 @@ parser code {:
     PARAMETROS2 ::= coma id:a                               {:  parser.exe.agregarParametro(parser.tabla, a.toString(), parser.metodo); :}
                     PARAMETROS2:b                           {:  b.add(a.toString()); RESULT=b; :}
     |                                                       {:  RESULT = new ArrayList<>(); :}
-    | error                                                 {:  PanelPrincipal.errores += " Error tipo: SINTACTICO, Posible error debido a una mal definicion dentro de los parametros.\n";  
+    | error:a                                               {: int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en definicion de parametros del metodo: "+parser.metodo+", se esperaba token id\n";
                                                                 RESULT=new ArrayList<>(); :}
 ;
 
@@ -202,12 +212,13 @@ parser code {:
     RETURN ::= TAB:h                        {:  parser.op.verificarTabs(hright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, h, true, parser.tipoInstruccion); :} 
                condReturn RETORNO:a ENTER   {:  parser.exe.agregarReturn(parser.tabla, parser.metodo, a.getTipo());
                                                 parser.manejoPY.agregarReturn(parser.tabla, a.getId(), parser.metodo); 
-                                                parser.op.agregarRetornoMetodo(parser.tabla.getObPython(), a.getId()); :}
+                                                parser.op.agregarRetornoMetodo(parser.tabla.getObPython(), a.getTipo()); :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    RETORNO ::= OPERACION:a {: RESULT=a; :}
+    RETORNO ::= OPERACION:a                         {: RESULT=a; :}
+    |           error:a                             {: int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en definicion de return\n"; :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -269,7 +280,6 @@ parser code {:
     |                 RETURN CUERPO_METODO
     |                 METODO_VOID CUERPO_METODO
     |                
-    |                 error CUERPO_METODO
 ;    
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -283,6 +293,8 @@ parser code {:
                                                         parser.manejoPY.asignacionesMultiples(parser.tabla.getObPython(), b, c, bleft+PanelPrincipal.totalLineas, bright);    
                                                         parser.op.asignacionesMultiples(parser.tabla.getObPython(), b, c, parser.jerarquia, bleft+PanelPrincipal.totalLineas, bright); 
                                                         parser.exe.agregacionesMultiples(parser.tabla, b, c, parser.metodo); :}
+    |              TAB:a id:b igual error:c         {:   int linea = cleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: " + linea + " Columna: " + cright + " Tipo de error: SINTACTICO - Causa: Error en asignacion en variable: "+b.toString()+", se esperaba operacion aritmetica\n"; :}
+                   VARIABLES2                       {:  parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion); :}                                                  
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -294,19 +306,24 @@ parser code {:
                    VARIABLES2
     |              igual OPERACION VARIABLES2
     |              ENTER
+    |              coma id:a igual error:b          {:  int linea = bleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Fila: " + linea + " Columna: " + bright + " Tipo de error: SINTACTICO - Causa: Error en asignacion en variable: "+a.toString()+", se esperaba operacion aritmetica\n"; :} 
+                   VARIABLES2                   
+    |              igual error:a                    {:  int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en asignacion de valores, se esperaba operacion aritmetica\n"; :} 
+                   VARIABLES2
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    LADO1 ::= id:a                          {: :} 
-              coma id:b                     {: :} 
-              VARS2:c                       {: c.add(a.toString()); c.add(b.toString()); RESULT=c; :}
+    LADO1 ::= id:a                                      {: :} 
+              coma id:b                                 {: :} 
+              VARS2:c                                   {:  c.add(a.toString()); 
+                                                            c.add(b.toString()); RESULT=c; :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    VARS2 ::= coma id:a VARS2:b {: b.add(a.toString()); RESULT=b; :}
-    |   {: RESULT=new ArrayList<>(); :}
+    VARS2 ::= coma id:a VARS2:b                         {: b.add(a.toString()); RESULT=b; :}
+    |                                                   {: RESULT=new ArrayList<>(); :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -324,8 +341,17 @@ parser code {:
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    VARS4 ::= coma OPERACION:a VARS4:b {: if(b!=null){ if(!a.getTipo().equals("")){ b.add(a); RESULT=b; } else { RESULT=null; } } :}
-    |  ENTER {: RESULT=new ArrayList<>(); :}
+    VARS4 ::= coma OPERACION:a VARS4:b                  {:  if(b!=null){ 
+                                                                if(!a.getTipo().equals("")){ 
+                                                                    b.add(a); 
+                                                                    RESULT=b; 
+                                                                } else { 
+                                                                    RESULT=null; 
+                                                                } 
+                                                            } :}
+    |         ENTER                                     {:  RESULT=new ArrayList<>(); :}
+    |         coma error:a VARS4                        {:  int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en asignacion de valores, se esperaba operacion aritmetica\n";
+                                                            RESULT = new ArrayList<>(); :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -358,6 +384,10 @@ parser code {:
                                                                 } else { 
                                                                     RESULT=new NodoFor(a.getId(), b.getId(), false); 
                                                                 } :}
+    |         OPERACION:a coma error:b                      {:  int linea = bleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: " + linea + " Columna: " + bright + " Tipo de error: SINTACTICO - Causa: Error en asignacion de rango en for, se esperaba un token numero\n"; 
+                                                               RESULT = new NodoFor(null, a.getId(), true); :}                                                            
+    |         error:a                                       {: int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en asignacion de rango en for, se esperaba un token numero\n";
+                                                               RESULT = new NodoFor(null, null, false);  :} 
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -367,52 +397,88 @@ parser code {:
     |          menos:a id:b                 {:  parser.op.buscarVariable(parser.tabla.getObPython(), b.toString(), parser.jerarquia); 
                                                 parser.manejoPY.agregarAuxPilaFor(parser.tabla, parser.pilaFor, a.toString(), parser.idFor, false, parser.metodo); :}
     |          numero:a                     {:  parser.manejoPY.agregarAuxPilaFor(parser.tabla, parser.pilaFor, a.toString(), parser.idFor, true, parser.metodo); :}
-    |          menos:a numero:b             {: parser.manejoPY.agregarAuxPilaFor(parser.tabla, parser.pilaFor, b.toString(), parser.idFor, true, parser.metodo); :}    
+    |          menos:a numero:b             {:  parser.manejoPY.agregarAuxPilaFor(parser.tabla, parser.pilaFor, b.toString(), parser.idFor, true, parser.metodo); :}    
+    |          error:a                      {:  int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en asignacion de salto en for, se esperaba un token numero\n"; :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
     WHILE ::= TAB:a condWhile                                   {:  parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas,  parser.instrucciones, parser.lineasGuias, a, true, parser.tipoInstruccion); 
                                                                     parser.tipoInstruccion.add("WHILE"); 
-                                                                    parser.pilaFalsas.add(new ArrayList<>()); :}  
+                                                                    parser.pilaFalsas.add(new ArrayList<>());
+                                                                    parser.manejoPY.agregarPreludioWhile(parser.tabla.getObPython()); :}  
               EXT:h dosPuntos ENTER                             {:  parser.manejoPY.agregarWhile(parser.tabla.getObPython(), h);  
                                                                     parser.usoPila.add(false); :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    EXT ::= EXT:a and EXT:b {: RESULT = parser.manejoPY.manejoAnd(a, b);   :}                                                     
-    |       EXT:a or {: parser.aux3 = parser.aux2; :} EXT:b {: parser.manejoPY.manejoOr(parser.tabla.getObPython(), parser.usoPila, parser.pilaCuarpeta, a, b); :}                                                  
-    |       CONDICION:a {: RESULT = a; :} 
-    |       not parentesis_a CONDICION:a parentesis_b {: RESULT = parser.manejoPY.cambiarGotos(a); :}
-    |       not CONDICION:a {: RESULT = parser.manejoPY.cambiarGotos(a); :}
+    EXT ::= EXT:a and EXT:b                             {: RESULT = parser.manejoPY.manejoAnd(a, b);   :}                                                     
+    |       EXT:a or                                    {: parser.aux3 = parser.aux2; :} 
+            EXT:b                                       {: parser.manejoPY.manejoOr(parser.tabla.getObPython(), parser.usoPila, parser.pilaCuarpeta, a, b); :}                                                  
+    |       CONDICION:a                                 {: RESULT = a; :} 
+    |       not parentesis_a CONDICION:a parentesis_b   {: RESULT = parser.manejoPY.cambiarGotos(a); :}
+    |       not CONDICION:a                             {: RESULT = parser.manejoPY.cambiarGotos(a); :}
+    |       error:a                                     {: int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en declaracion de booleano\n";
+                                                           RESULT = new ArrayList<>(); :}
 ;                                                                                                   
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
     CONDICION ::= OPERACION:a OP:c OPERACION:b {: RESULT = parser.manejoPY.agregarBooleans(parser.tabla.getObPython(), parser.pilaFalsas, a, b, c, aleft+PanelPrincipal.totalLineas, aright);  :}
 ;
-    OP ::= igual igual {: RESULT = "=="; :}                                                                                    
-    |      mayor {: RESULT=">"; :}                                                                                   
-    |      menor  {: RESULT = "<"; :}                                                                                  
-    |      mayorIgual {: RESULT = ">="; :}                                                               
-    |      menorIgual {: RESULT = "<="; :}          
-    |      admiracion igual {: RESULT = "!="; :}                                                         
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    OP ::= igual igual                                  {: RESULT = "=="; :}                                                                                    
+    |      mayor                                        {: RESULT=">"; :}                                                                                   
+    |      menor                                        {: RESULT = "<"; :}                                                                                  
+    |      mayorIgual                                   {: RESULT = ">="; :}                                                               
+    |      menorIgual                                   {: RESULT = "<="; :}          
+    |      admiracion igual                             {: RESULT = "!="; :}                                      
+    |      error:a                                      {: int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en declaracion de valor, se esperaba un operador logico\n";
+                                                           RESULT = "==";  :}
 ;                                                                   
-    IF ::= TAB:a  condIf {:  parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, true, parser.tipoInstruccion); parser.usoPila.add(false); parser.tipoInstruccion.add("IF");   parser.pilaFalsas.add(new ArrayList<>()); :} EXT:h {: parser.manejoPY.primerChequeoIf(parser.tabla.getObPython(), h); :} dosPuntos ENTER   
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    IF ::= TAB:a  condIf                                {:  parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, true, parser.tipoInstruccion); 
+                                                            parser.usoPila.add(false); 
+                                                            parser.tipoInstruccion.add("IF");   
+                                                            parser.pilaFalsas.add(new ArrayList<>()); :}
+           EXT:h                                        {:  parser.manejoPY.primerChequeoIf(parser.tabla.getObPython(), h); :} 
+           dosPuntos ENTER   
 ;                                                                                                                                                                         
-    ELSE ::= TAB:a condElse  {: parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, true, parser.tipoInstruccion);    parser.tipoInstruccion.add("ELSE");   :} dosPuntos ENTER                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
-    |        TAB:a condElif {:  parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, true, parser.tipoInstruccion); parser.usoPila.add(false); parser.tipoInstruccion.add("ELSEIF");    parser.pilaFalsas.add(new ArrayList<>());  :} EXT:h {: parser.manejoPY.primerChequeoIf(parser.tabla.getObPython(), h); :} dosPuntos ENTER 
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    ELSE ::= TAB:a condElse                             {:  parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, true, parser.tipoInstruccion);    
+                                                            parser.tipoInstruccion.add("ELSE");   :} 
+             dosPuntos ENTER                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+    |        TAB:a condElif                             {:  parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, true, parser.tipoInstruccion); 
+                                                            parser.usoPila.add(false); 
+                                                            parser.tipoInstruccion.add("ELSEIF");    
+                                                            parser.pilaFalsas.add(new ArrayList<>());  :} 
+             EXT:h                                      {:  parser.manejoPY.primerChequeoIf(parser.tabla.getObPython(), h); :} 
+             dosPuntos ENTER 
 ;                                                                            
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
     BORRAR ::= TAB:a condDel id:b ENTER  {: parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion);  parser.op.borrarVariable(parser.tabla.getObPython(), b.toString(), parser.jerarquia, bleft+PanelPrincipal.totalLineas, bright); :}                                                                                           
 ;                       
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    LECTURA_DATOS ::= TAB:a id:b igual TIPO_INPUT:c parentesis_a comilla TEXTO2 comilla parentesis_b ENTER {:   parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion);
+    LECTURA_DATOS ::= TAB:a id:b igual TIPO_INPUT:c parentesis_a TEXTO parentesis_b ENTER                   {:  parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion);
+                                                                                                                parser.manejoPY.mostrarQuiebre(parser.tabla);
                                                                                                                 parser.manejoPY.crearScanf(parser.tabla, b.toString(), c, parser.metodo);     
                                                                                                                 parser.op.valorVariableInput(parser.tabla.getObPython(), b.toString(), parser.jerarquia, c);  :}
     |                 TAB:a id:b igual TIPO_INPUT:c parentesis_a parentesis_b ENTER                         {:  parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion);    
                                                                                                                 parser.manejoPY.crearScanf(parser.tabla, b.toString(), c, parser.metodo);     
                                                                                                                 parser.op.valorVariableInput(parser.tabla.getObPython(), b.toString(), parser.jerarquia, c); :}
-    |                 TAB:a TIPO_INPUT:c parentesis_a comilla TEXTO2 comilla parentesis_b ENTER             {:  parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion);  
+    |                 TAB:a TIPO_INPUT:c parentesis_a TEXTO parentesis_b ENTER                              {:  parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion);  
+                                                                                                                parser.manejoPY.mostrarQuiebre(parser.tabla);
                                                                                                                 parser.manejoPY.crearScanf(parser.tabla, "", c, parser.metodo);   :}
     |                 TAB:a TIPO_INPUT:c parentesis_a parentesis_b ENTER                                    {:  parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion);  
                                                                                                                 parser.manejoPY.crearScanf(parser.tabla, "", c, parser.metodo);  :}
@@ -434,6 +500,7 @@ parser code {:
 ; 
     CONC ::= coma
     |        mas
+    |        error:a                    {:  int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en concatenacion de mensaje, se esperaba token tipo ',' o '+'\n";  :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -443,6 +510,7 @@ parser code {:
     |         comilla:a TEXTO2:b comilla:c      {:  String et = a.toString() + b + c.toString();
                                                     parser.manejoPY.mostrarMensaje(parser.tabla.getObPython(), et, null); :}
               RESTO_MENSAJE:d 
+    |         error:a                           {: int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en instruccion print\n"; :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -476,99 +544,99 @@ parser code {:
 ;
     COMENTARIO_B ::= comentario_b TEXTO2 comentario_c
 ;
-    TEXTO2 ::= TEXTO2:a coma:b {: RESULT=a + b.toString(); :}
-    |          TEXTO2:a punto:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a mas:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a menos:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a por:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a div:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a porcentaje:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a parentesis_a:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a parentesis_b:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a llave_a:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a llave_b:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a agrupacion_a:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a agrupacion_b:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a dosPuntos:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a comillaSimple:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a admiracion:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a igual:b {: RESULT = a + b.toString(); :} 
-    |          TEXTO2:a menor:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a mayor:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a menorIgual:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a mayorIgual:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a and:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a or:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a not:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a mensaje:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a f:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a condElse:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a condReturn:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a condFor:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a condIn:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a condRange:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a condWhile:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a condIf:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a condElif:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a intInput:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a charInput:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a floatInput:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a condDef:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a condDel:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a condPass:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a condEnd:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a tab {: RESULT = a + "\t"; :}
-    |          TEXTO2:a enter {: RESULT = a + "\n"; :}
-    |          TEXTO2:a numero:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a id:b {: RESULT = a + b.toString(); :}
-    |          TEXTO2:a resto:b {: RESULT = a + b.toString(); :}
+    TEXTO2 ::= TEXTO2:a coma:b {: RESULT=a + " " + b.toString(); :}
+    |          TEXTO2:a punto:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a mas:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a menos:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a por:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a div:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a porcentaje:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a parentesis_a:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a parentesis_b:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a llave_a:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a llave_b:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a agrupacion_a:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a agrupacion_b:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a dosPuntos:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a comillaSimple:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a admiracion:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a igual:b {: RESULT = a + " " + b.toString(); :} 
+    |          TEXTO2:a menor:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a mayor:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a menorIgual:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a mayorIgual:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a and:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a or:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a not:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a mensaje:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a f:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a condElse:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a condReturn:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a condFor:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a condIn:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a condRange:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a condWhile:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a condIf:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a condElif:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a intInput:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a charInput:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a floatInput:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a condDef:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a condDel:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a condPass:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a condEnd:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a tab {: RESULT = a + " " + "\t"; :}
+    |          TEXTO2:a enter {: RESULT = a + " " + "\n"; :}
+    |          TEXTO2:a numero:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a id:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO2:a resto:b {: RESULT = a + " " + b.toString(); :}
     |          {: RESULT=""; :}
 ;
-    TEXTO3 ::= TEXTO3:a coma:b {: RESULT=a + b.toString(); :}
-    |          TEXTO3:a punto:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a mas:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a menos:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a por:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a div:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a porcentaje:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a parentesis_a:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a parentesis_b:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a llave_a:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a llave_b:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a agrupacion_a:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a agrupacion_b:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a dosPuntos:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a comillaSimple:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a admiracion:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a igual:b {: RESULT = a + b.toString(); :} 
-    |          TEXTO3:a menor:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a mayor:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a menorIgual:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a mayorIgual:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a and:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a or:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a not:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a mensaje:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a f:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a condElse:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a condReturn:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a condFor:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a condIn:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a condRange:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a condWhile:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a condIf:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a condElif:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a intInput:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a charInput:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a floatInput:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a condDef:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a condDel:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a condPass:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a condEnd:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a tab {: RESULT = a + "\t"; :}
-    |          TEXTO3:a numero:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a id:b {: RESULT = a + b.toString(); :}
-    |          TEXTO3:a resto:b {: RESULT = a + b.toString(); :}
+    TEXTO3 ::= TEXTO3:a coma:b {: RESULT=a + " " + b.toString(); :}
+    |          TEXTO3:a punto:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a mas:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a menos:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a por:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a div:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a porcentaje:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a parentesis_a:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a parentesis_b:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a llave_a:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a llave_b:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a agrupacion_a:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a agrupacion_b:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a dosPuntos:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a comillaSimple:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a admiracion:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a igual:b {: RESULT = a + " " + b.toString(); :} 
+    |          TEXTO3:a menor:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a mayor:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a menorIgual:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a mayorIgual:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a and:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a or:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a not:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a mensaje:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a f:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a condElse:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a condReturn:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a condFor:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a condIn:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a condRange:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a condWhile:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a condIf:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a condElif:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a intInput:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a charInput:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a floatInput:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a condDef:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a condDel:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a condPass:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a condEnd:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a tab {: RESULT = a + " " + "\t"; :}
+    |          TEXTO3:a numero:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a id:b {: RESULT = a + " " + b.toString(); :}
+    |          TEXTO3:a resto:b {: RESULT = a + " " + b.toString(); :}
     |          {: RESULT=""; :}
 ;
 

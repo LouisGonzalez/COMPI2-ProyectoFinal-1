@@ -82,7 +82,7 @@ parser code {:
 
     non terminal String METODOS, TEXTO, TEXTO2, JAVA_CLASES, TIPO_VAR, MODULOS, TIPO_VAR_FOR, OP, VAR_SCANF, VAR_TEXTO;
     
-    non terminal Boolean  METODOS_MAIN;
+    non terminal Boolean  METODOS_MAIN, AMPER;
 
     non terminal Integer DIM_ASIG, DIM_ASIG2;
 
@@ -108,7 +108,8 @@ parser code {:
 
     start with INICIO;
 
-    INICIO ::= ENTER2 LIBRERIAS                             {: parser.manejoc.inicializaciones(parser.tabla); 
+    INICIO ::= ENTER2 LIBRERIAS                             {: parser.manejoc.crearMain(parser.tabla.getObC()); 
+                                                               parser.manejoc.inicializaciones(parser.tabla); 
                                                                parser.manejoc.modificarConstructores(parser.tabla);     :} 
                VARIABLES MAIN
 ;
@@ -121,6 +122,7 @@ parser code {:
 ;
     JAVA_CLASES ::= por:a {: RESULT=a.toString(); :}
     |               id:a {: RESULT=a.toString(); :}
+    |               error:a {: int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error al momento de llamar una clase de JAVA\n"; :}
 ;
     VARIABLES ::= VARIABLES CONSTANTES 
     |             VARIABLES ASIGNACIONES
@@ -129,13 +131,12 @@ parser code {:
     |             VARIABLES COMENTARIO_A
     |             VARIABLES COMENTARIO_B
     |               
-    |             VARIABLES error
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
     CONSTANTES ::= tipoConst TIPO_VAR:a                 {:  parser.tipoActual = a; :} 
-                   id:b igual OPERACION:c puntoComa     {:  parser.exe.agregarVariable(parser.tabla, b.toString(), 1, false, a);
+                   id:b VALOR:c puntoComa               {:  parser.exe.agregarVariable(parser.tabla, b.toString(), 1, false, a);
                                                             parser.manejoc.crearConstante(parser.tabla, b.toString(), c.getId());
                                                             parser.op.agregarNuevaVar(parser.tabla.getObC(), b.toString(), a, "Constante", parser.jerarquia, true, "", null, bleft+PanelPrincipal.totalLineas, bright, parser.dimensiones); :} 
                    ENTER2
@@ -145,6 +146,8 @@ parser code {:
 
     VALOR ::= igual OPERACION:a                         {: RESULT=a; :}
     |                                                   {: RESULT=null; :}
+    |         igual error:a                             {: int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en asignacion de dato a variable, se esperaba operacion aritmetica\n"; 
+                                                           RESULT = null; :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -152,14 +155,16 @@ parser code {:
     ASIGNACIONES ::= id:a igual                             {:  parser.tipoActual = parser.verif.devolverTipoVar(parser.tabla.getObC(), parser.jerarquia, a.toString(), aleft+PanelPrincipal.totalLineas, aright); :} 
                      OPERACION:b puntoComa                  {:  parser.manejoc.asignarValor(parser.tabla, a.toString(), b.getId());   
                                                                 parser.tabla.getObC().getListVariables().get(VerifObjetos.iterador).getListAsignaciones().add(parser.jerarquia); 
-                                                                parser.tabla.getObC().getListVariables().get(VerifObjetos.iterador).setValor(true);       :} 
+                                                                parser.tabla.getObC().getListVariables().get(VerifObjetos.iterador).setValor(true);    :} 
                      ENTER2
     |                VECTOR:a igual OPERACION:b puntoComa   {:  if(a.getValor() && b.getValor()){ 
                                                                     parser.manejoc.asignarValorNodo(parser.tabla, a.getId(), b.getId()); 
-                                                                } else { 
-                                                                    System.out.println("no es posible asignar en el arreglo"); 
                                                                 }     :} 
                      ENTER2
+    |                id:a igual error:b puntoComa           {: int linea = bleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: " + linea + " Columna: " + bright + " Tipo de error: SINTACTICO - Causa: Error en asignacion de dato a variable: "+a.toString()+", se esperaba operacion aritmetica\n"; :} 
+                     ENTER2                 
+    |                VECTOR igual error:a puntoComa         {:  int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en declaracion de dato a arreglo, se esperaba operacion aritmetica.\n"; :} 
+                     ENTER2                 
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -211,6 +216,7 @@ parser code {:
     TIPO_VAR ::= tipoInteger            {: RESULT="Integer"; :}
     |            tipoChar               {: RESULT="Char"; :}
     |            tipoFloat              {: RESULT="Float"; :}
+    |            id:a                     {: PanelPrincipal.errores += "Fila: " + aleft + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en declaracion de tipos, el tipo: "+a.toString()+" no existe dentro de la gramatica C\n"; :}
 ;
 
     OPERACION ::= parentesis_a OPERACION:a parentesis_b         {:  RESULT = a; :}
@@ -305,6 +311,7 @@ parser code {:
                                                                     } else {
                                                                         RESULT = null; 
                                                                     } :}
+    |       DIM2 agrupacion_a error:a agrupacion_b              {:  int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en sentencia de valor para un arreglo, se esperaba un valor numerico\n"; :}                                                                    
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -321,13 +328,15 @@ parser code {:
                                                                         RESULT=null; 
                                                                     } :}
     |                                                           {: RESULT = new NodoArreglo(0, ""); :}
+    |        DIM2 agrupacion_a error:a agrupacion_b           {: int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en sentencia de valor para un arreglo, se esperaba un valor numerico\n"; :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    DIM_ASIG ::= DIM_ASIG2:a agrupacion_a OPERACION:b agrupacion_b         {: Integer suma = a + 1; 
-                                                                           parser.dimensiones.add(b.getId());     
-                                                                           RESULT=suma; :}
+    DIM_ASIG ::= DIM_ASIG2:a agrupacion_a OPERACION:b agrupacion_b         {:   Integer suma = a + 1; 
+                                                                                parser.dimensiones.add(b.getId());     
+                                                                                RESULT=suma; :}
+    |           DIM_ASIG2 agrupacion_a error:a agrupacion_b                  {: int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en sentencia de valor para un arreglo, se esperaba un valor numerico\n"; :}                                                                         
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -335,13 +344,13 @@ parser code {:
     DIM_ASIG2 ::= DIM_ASIG2:a agrupacion_a  OPERACION:b agrupacion_b       {:   Integer suma = a + 1; 
                                                                                 parser.dimensiones.add(b.getId());
                                                                                 RESULT=suma; :}
-    |                                                                       {:  RESULT = 0; :}
+    |                                                                      {:  RESULT = 0; :}
+    |             DIM_ASIG2 agrupacion_a error:a agrupacion_b                {: int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en sentencia de valor para un arreglo, se esperaba un valor numerico\n"; :} 
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    MAIN ::= tipoVoid main parentesis_a parentesis_b ENTER2         {:  parser.manejoc.crearMain(parser.tabla.getObC());  
-                                                                        parser.jerarquia++; :} 
+    MAIN ::= tipoVoid main parentesis_a parentesis_b ENTER2         {:  parser.jerarquia++; :} 
              llave_a ENTER2 CUERPO_MAIN llave_b                     {:  parser.manejoc.finMain(parser.tabla.getObC()); 
                                                                         parser.jerarquia--; :} 
              ENTER2
@@ -421,36 +430,6 @@ parser code {:
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    PARAMETROS ::=                                              {:  parser.tipoActual = parser.verif.verifParametrosMetodo(parser.tabla, parser.it, parser.len, parser.claseUsar); 
-                                                                    parser.it++; :} 
-                    OPERACION:a                                 {:  parser.contParam++; 
-                                                                   // parser.manejoc.invocacionParametros(parser.tabla.getObC(), a.getId());  :}  
-                    PARAMETROS2:b                               {:  if(!a.getValor()){ 
-                                                                        System.out.println("dddd");  
-                                                                    }  :}
-    |                                                           {:  parser.verif.verUltimoParametro(parser.tabla, parser.it, parser.len, parser.claseUsar); 
-                                                                    parser.it = 0;   
-                                                                    parser.len = ""; 
-                                                                    parser.claseUsar = null; :}
-;
-
-/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-
-    PARAMETROS2 ::= coma                                        {:  parser.tipoActual = parser.verif.verifParametrosMetodo(parser.tabla, parser.it, parser.len, parser.claseUsar); 
-                                                                    parser.it++; :} 
-                    OPERACION:a                                 {:  parser.contParam++; 
-                                                                    //parser.manejoc.invocacionParametros(parser.tabla.getObC(), a.getId()); :}  
-                    PARAMETROS2:b                               {:  if(!a.getValor()){ 
-                                                                        System.out.println("ss"); 
-                                                                    }    :}
-    |                                                           {:  parser.verif.verUltimoParametro(parser.tabla, parser.it, parser.len, parser.claseUsar); 
-                                                                    parser.it = 0;   
-                                                                    parser.len=""; 
-                                                                    parser.claseUsar=null; :}
-;
-
-/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-
     CLASES ::= java:a punto id:b id:c                                   {:  parser.idClase = b.toString(); 
                                                                             parser.exe.agregarVariable(parser.tabla, c.toString(), 1, false, b.toString()); :} 
                CONSTRUCTOR:d                                            {:  parser.op.crearClase(parser.tabla, d, b.toString(), c.toString(), parser.jerarquia, cleft+PanelPrincipal.totalLineas, cright);
@@ -493,6 +472,8 @@ parser code {:
                                                                     RESULT=null; 
                                                                 } 
                                                             } :}
+    |         error:a                                   {: int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en sentencia de parametros, se esperaba una variable\n";
+                                                           RESULT = new ArrayList<>(); :}                                                            
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -507,6 +488,8 @@ parser code {:
                                                                 } 
                                                             } :}
     |                                                   {: RESULT=new ArrayList<>(); :}
+    |          error:a                                  {: int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en sentencia de parametros, se esperaba una variable\n";
+                                                           RESULT = new ArrayList<>(); :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -550,6 +533,8 @@ parser code {:
     |      menor igual                                  {: RESULT="<="; :}
     |      igual igual                                  {: RESULT="=="; :}
     |      admiracion igual                             {: RESULT="!="; :}
+    |      error:a                                      {: int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en definicion de operador logico\n";
+                                                           RESULT = "=="; :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -560,6 +545,7 @@ parser code {:
     |       BOOLEAN:a                                       {:  RESULT = a; :}
     |       admiracion parentesis_a BOOLEAN:a parentesis_b  {:  RESULT = parser.manejoc.cambiarGotos(a); :}
     |       admiracion BOOLEAN:a                            {:  RESULT = parser.manejoc.cambiarGotos(a); :}
+    |       error:a                                         {:  int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en declaracion de booleano\n"; :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -666,6 +652,7 @@ parser code {:
     |                tipoFloat                  {: RESULT = "Float"; :}
     |                tipoChar                   {: RESULT = "Char"; :}  
     |                                           {: RESULT = ""; :}
+    |               error:a                     {: int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en declaracion de tipo dentro de un for, se esperaba un tipo de dato\n"; :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -687,7 +674,8 @@ parser code {:
 
     WHILE ::= condWhile  parentesis_a                                   {:  parser.usoPila.add(false);    
                                                                             parser.jerarquia++; 
-                                                                            parser.pilaFalsas.add(new ArrayList<>()); :} 
+                                                                            parser.pilaFalsas.add(new ArrayList<>()); 
+                                                                            parser.manejoc.agregarPreludioWhile(parser.tabla, parser.jerarquia); :} 
               EXT:h                                                     {:  parser.manejoc.agregarWhile(parser.tabla.getObC(), h, parser.jerarquia); :} 
               parentesis_b ENTER2 llave_a ENTER2 CUERPO_MAIN llave_b    {:  parser.manejoc.retornoWhile(parser.tabla.getObC(), parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.jerarquia);   
                                                                             parser.op.eliminarVarAmbitos(parser.tabla.getObC(), parser.jerarquia); 
@@ -749,14 +737,23 @@ parser code {:
     |            menos:a id:b                                       {:  String et = parser.manejoc.etiquetaId(parser.tabla, b.toString());
                                                                         RESULT = a.toString()+et; :} 
     |            menos:a numero:b                                   {:  RESULT = a.toString()+b.toString(); :}
+    |            error:a                                            {:  int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en declaracion de variable para switch\n"; 
+                                                                        RESULT = ""; :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
     LECTURA_DATOS ::= scanf parentesis_a comilla TEXTO MODULOS:a                    {:  parser.tipoActual=a; :} 
-                      comilla coma ampersand VAR_SCANF:b parentesis_b puntoComa   {:  parser.manejoc.crearScanf(parser.tabla, b, a, parser.esArreglo); 
-                                                                                      parser.esArreglo = false;   :} 
+                      comilla coma AMPER:z VAR_SCANF:b parentesis_b puntoComa       {:  if(!z){
+                                                                                            int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Falta de '&' dentro de scanf\n";
+                                                                                        }
+                                                                                        parser.manejoc.crearScanf(parser.tabla, b, a, parser.esArreglo); 
+                                                                                        parser.esArreglo = false;   :} 
                       ENTER2
+;
+
+    AMPER ::= ampersand             {:  RESULT = true; :}
+    |                               {:  RESULT = false; :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -764,6 +761,7 @@ parser code {:
     MODULOS ::= scanfInt:a                  {: RESULT="Integer"; :}
     |           scanfFloat:a                {: RESULT="Float"; :}
     |           scanfChar:a                 {: RESULT="Char"; :}
+    |           error:a                     {: int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en mascaras para lectura de datos.\n"; :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -806,8 +804,9 @@ parser code {:
 
     TEXTO3 ::= VAR_TEXTO:a                                          {: parser.manejoc.mostrarMensaje(parser.tabla, a, "%f"); :} 
                RESTO_MENSAJE
-    |          comilla:a TEXTO2:b comilla:c                         {: parser.manejoc.mostrarMensaje(parser.tabla, a.toString()+b.toString()+c.toString(), null); :} 
+    |          comilla:a TEXTO2:b comilla:c                         {: parser.manejoc.mostrarMensaje(parser.tabla, a.toString()+b+c.toString(), null); :} 
                RESTO_MENSAJE
+    |          error:a                                              {: int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en uso de instruccion print\n"; :}           
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -862,7 +861,7 @@ parser code {:
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    COMENTARIO_B ::= comentario_b TEXTO_COM comentario_c ENTER2
+    COMENTARIO_B ::= comentario_b TEXTO2 comentario_c ENTER2
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -880,162 +879,110 @@ parser code {:
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    TEXTO ::= TEXTO:a coma:b {: RESULT=a + b.toString(); :}
-    |         TEXTO:a punto:b {: RESULT=a + b.toString(); :} 
-    |         TEXTO:a puntoComa:b {: RESULT= a + b.toString(); :}
-    |         TEXTO:a dosPuntos:b {: RESULT= a + b.toString(); :}
-    |         TEXTO:a llave_a:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a llave_b:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a parentesis_a:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a parentesis_b:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a agrupacion_a:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a agrupacion_b:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a comillaSimple:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a condBreak:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a condInclude:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a visual:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a python:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a java:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a principal:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a mas:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a menos:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a por:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a div:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a numeral:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a tipoVoid:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a tipoInteger:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a tipoChar:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a tipoConst:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a verdadero:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a falso:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a main:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a mayor:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a menor:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a igual:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a admiracion:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a ampersand:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a pleca:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a condIf:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a condElse:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a condSwitch:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a condCase:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a condDef:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a condFor:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a condWhile:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a condDo:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a printf:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a scanf:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a clscr:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a getch:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a numero:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a id:b {: RESULT = a + b.toString(); :}
-    |         TEXTO:a resto:b {: RESULT = a + b.toString(); :}
+    TEXTO ::= TEXTO:a coma:b {: RESULT=a + " " + b.toString(); :}
+    |         TEXTO:a punto:b {: RESULT=a + " " + b.toString(); :} 
+    |         TEXTO:a puntoComa:b {: RESULT= a + " " + b.toString(); :}
+    |         TEXTO:a dosPuntos:b {: RESULT= a + " " + b.toString(); :}
+    |         TEXTO:a llave_a:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a llave_b:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a parentesis_a:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a parentesis_b:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a agrupacion_a:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a agrupacion_b:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a comillaSimple:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a condBreak:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a condInclude:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a visual:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a python:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a java:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a principal:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a mas:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a menos:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a por:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a div:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a numeral:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a tipoVoid:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a tipoInteger:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a tipoChar:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a tipoConst:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a verdadero:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a falso:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a main:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a mayor:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a menor:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a igual:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a admiracion:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a ampersand:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a pleca:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a condIf:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a condElse:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a condSwitch:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a condCase:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a condDef:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a condFor:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a condWhile:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a condDo:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a printf:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a scanf:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a clscr:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a getch:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a numero:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a id:b {: RESULT = a + " " + b.toString(); :}
+    |         TEXTO:a resto:b {: RESULT = a + " " + b.toString(); :}
     |
 ;
-    TEXTO2 ::= TEXTO2:a coma:b {: RESULT=a + b.toString(); :}
-    |         TEXTO2:a punto:b {: RESULT=a + b.toString(); :} 
-    |         TEXTO2:a puntoComa:b {: RESULT= a + b.toString(); :}
-    |         TEXTO2:a dosPuntos:b {: RESULT= a + b.toString(); :}
-    |         TEXTO2:a llave_a:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a llave_b:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a parentesis_a:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a parentesis_b:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a agrupacion_a:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a agrupacion_b:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a comillaSimple:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a condBreak:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a condInclude:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a visual:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a python:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a java:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a principal:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a mas:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a menos:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a por:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a div:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a numeral:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a tipoVoid:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a tipoInteger:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a tipoChar:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a tipoConst:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a verdadero:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a falso:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a main:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a mayor:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a menor:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a igual:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a admiracion:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a ampersand:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a pleca:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a condIf:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a condElse:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a condSwitch:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a condCase:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a condDef:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a condFor:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a condWhile:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a condDo:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a printf:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a scanf:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a clscr:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a getch:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a numero:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a id:b {: RESULT = a + b.toString(); :}
-    |         TEXTO2:a MODULOS {:  :}
-    |         TEXTO2:a resto:b {: RESULT = a + b.toString(); :}
-    |
+    TEXTO2 ::= TEXTO2:a coma:b {: RESULT=a + " "+ b.toString(); :}
+    |         TEXTO2:a punto:b {: RESULT=a + " "+ b.toString(); :} 
+    |         TEXTO2:a puntoComa:b {: RESULT= a + " "+ b.toString(); :}
+    |         TEXTO2:a dosPuntos:b {: RESULT= a + " "+ b.toString(); :}
+    |         TEXTO2:a llave_a:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a llave_b:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a parentesis_a:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a parentesis_b:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a agrupacion_a:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a agrupacion_b:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a comillaSimple:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a condBreak:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a condInclude:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a visual:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a python:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a java:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a principal:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a mas:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a menos:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a por:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a div:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a numeral:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a tipoVoid:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a tipoInteger:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a tipoChar:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a tipoConst:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a verdadero:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a falso:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a main:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a mayor:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a menor:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a igual:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a admiracion:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a ampersand:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a pleca:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a condIf:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a condElse:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a condSwitch:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a condCase:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a condDef:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a condFor:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a condWhile:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a condDo:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a printf:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a scanf:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a clscr:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a getch:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a numero:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a id:b {: RESULT = a + " "+ b.toString(); :}
+    |         TEXTO2:a MODULOS:b {: RESULT = a + " "+ b; :}
+    |         TEXTO2:a enter {: RESULT = a + "\n";   :}
+    |         TEXTO2:a resto:b {: RESULT = a + " "+ b.toString(); :}
+    |         {:  RESULT = ""; :}
 ;
-    TEXTO_COM ::= TEXTO_COM:a coma:b {: RESULT=a + b.toString(); :}
-    |         TEXTO_COM:a punto:b {: RESULT=a + b.toString(); :} 
-    |         TEXTO_COM:a puntoComa:b {: RESULT= a + b.toString(); :}
-    |         TEXTO_COM:a dosPuntos:b {: RESULT= a + b.toString(); :}
-    |         TEXTO_COM:a llave_a:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a llave_b:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a parentesis_a:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a parentesis_b:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a agrupacion_a:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a agrupacion_b:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a comillaSimple:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a condBreak:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a condInclude:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a visual:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a python:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a java:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a principal:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a mas:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a menos:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a por:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a div:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a numeral:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a tipoVoid:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a tipoInteger:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a tipoChar:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a tipoConst:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a verdadero:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a falso:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a main:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a mayor:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a menor:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a igual:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a admiracion:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a ampersand:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a pleca:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a condIf:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a condElse:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a condSwitch:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a condCase:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a condDef:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a condFor:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a condWhile:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a condDo:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a printf:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a scanf:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a clscr:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a getch:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a numero:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a id:b {: RESULT = a + b.toString(); :}
-    |         TEXTO_COM:a MODULOS {:  :}
-    |         TEXTO_COM:a enter {: RESULT = a + "\n";  :}
-    |         TEXTO_COM:a resto:b {: RESULT = a + b.toString(); :}
-    |
-;
+

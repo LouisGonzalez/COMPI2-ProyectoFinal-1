@@ -1,7 +1,7 @@
 %%VB
 
 
-Public Function Factorial(N As Integer) as integer
+public Function Factorial(N As Integer) as integer
     Dim Fact as integer
     Dim Num As Integer	
     Dim C As Chart
@@ -14,6 +14,13 @@ Public Function Factorial(N As Integer) as integer
 
 	return 2
 End Function
+
+public Sub xxx()
+    Dim Fact as integer
+    for a as Integer = 0 to 10 step 1
+	Console.writeLine(a)
+    next a
+End Sub
 
 
 
@@ -54,15 +61,17 @@ def edadmeses(edad, meses):
 #include "JAVA.*"
 
 
-int arreglo[10];
 int i = 0;
 
 void main()
 {
-	if(arreglo[i] > 1){
-
-	}
-
+	printf("hola mundo");
+	printf("hola mundo");
+	printf("hola mundo");
+	printf("hola mundo");
+	printf("hola mundo");
+	printf("hola mundo");
+	scanf("%f",&i);
 }
 
 

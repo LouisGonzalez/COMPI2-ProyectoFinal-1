@@ -88,7 +88,7 @@ public class ManejoVb {
             pasoParametros(tabla, varTotal, etiquetas, exe);
             int posVar = determinarSizeAmbito(tabla, varTotal);
             tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", posVar, "p", null));
-            tabla.getObVb().getCuarpeta().add(new Nodo("CALL", varTotal+"();", null, null, null));
+            tabla.getObVb().getCuarpeta().add(new Nodo("CALL", "VB_"+varTotal+"();", null, null, null));
             tabla.getObVb().getCuarpeta().add(new Nodo("resta", "p", posVar, "p", null));
             
         }
@@ -439,10 +439,14 @@ public class ManejoVb {
     }
 
     /*------------------------------------------- WHILE ------------------------------------------------------*/
-    public void agregarWhile(ObjetosVB vb, ArrayList<Nodo> booleano, int jerarquia) {
+    
+    public void agregarPreludioWhile(ObjetosVB vb, int jerarquia){
         String etWhile = "etWhile_" + vb.getContEtWhile();
         vb.setContEtWhile(vb.getContEtWhile() + 1);
-        vb.getCuarpeta().add(new Nodo("ETIQUETA", etWhile, null, null, jerarquia));
+        vb.getCuarpeta().add(new Nodo("ETIQUETA", etWhile, null, null, jerarquia));        
+    }
+    
+    public void agregarWhile(ObjetosVB vb, ArrayList<Nodo> booleano, int jerarquia) {
         primerChequeoIf(vb, booleano);
     }
 
@@ -615,11 +619,11 @@ public class ManejoVb {
     public void crearScanf(TablaSimbolos tabla, String id, String tipo, String idMetodo) {
         String t = definirTemporal(tabla);
         if (tipo.equals("Integer")) {
-            tabla.getObVb().getCuarpeta().add(new Nodo("SCANF", "%d", null, t, null));
+            tabla.getObVb().getCuarpeta().add(new Nodo("SCANF", "\"%f\"", null, t, null));
         } else if (tipo.equals("Float")) {
-            tabla.getObVb().getCuarpeta().add(new Nodo("SCANF", "%f", null, t, null));
+            tabla.getObVb().getCuarpeta().add(new Nodo("SCANF", "\"%f\"", null, t, null));
         } else if (tipo.equals("Char")) {
-            tabla.getObVb().getCuarpeta().add(new Nodo("SCANF", "%c", null, t, null));
+            tabla.getObVb().getCuarpeta().add(new Nodo("SCANF", "\"%f\"", null, t, null));
         }
         String posMemoria = buscarPosicionMemoria(tabla, id, idMetodo);
         String t2 = definirTemporal(tabla);

@@ -19,6 +19,7 @@ public class ObjetosJAVA {
     private ArrayList<Clase> misClases = new ArrayList<>();
     private Tipado tablaTipos = new Tipado();
     private ArrayList<Nodo> cuarpeta = new ArrayList<>();
+    private ArrayList<Nodo> auxiliar = new ArrayList<>();
     int a1 = 2;
     
     /*Contadores para la cuarpeta*/
@@ -32,6 +33,14 @@ public class ObjetosJAVA {
         tablaTipos.getTipos().add(new DatosVar("Float", 3, null));
         tablaTipos.getTipos().add(new DatosVar("Integer", 2, "Float"));
         tablaTipos.getTipos().add(new DatosVar("Char", 1, "Integer"));
+    }
+
+    public ArrayList<Nodo> getAuxiliar() {
+        return auxiliar;
+    }
+
+    public void setAuxiliar(ArrayList<Nodo> auxiliar) {
+        this.auxiliar = auxiliar;
     }
     
     public int getContFor() {

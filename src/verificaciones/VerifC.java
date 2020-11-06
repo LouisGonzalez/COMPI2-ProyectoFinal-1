@@ -430,11 +430,14 @@ public class VerifC {
                     if (verif.verifIdVar(c, jerarquia, id)) {
                         correcto = verif.verifTipadoVar(c, id, tipoActual, c.getListVariables().get(VerifObjetos.iterador), this);
                         existe = true;
+                        
+                        
                     }
                     if (!correcto) {
                         if (verif.verifIdVarGlobal(c, jerarquia, id)) {
                             correcto = verif.verifTipadoVar(c, id, tipoActual, c.getListVariables().get(VerifObjetos.iterador), this);
                             existe = true;
+                       
                         }
                         if (!correcto) {
                             if (verif.verifVector(c, jerarquia, id)) {

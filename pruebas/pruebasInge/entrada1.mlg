@@ -1,7 +1,8 @@
 %%VB
-Public Sub Incremento(ByVal Valor as Integer)
+Public Function Incremento(ByVal Valor as Integer) as Integer
   Valor = Valor + 1
-End Sub
+  return Valor
+End Function
 
 
 
@@ -50,7 +51,6 @@ def Mostrar(indice, valor):
 		arreglo[7]=24;
 		arreglo[8]=29;
 		arreglo[9]=47;
-	 
 		PY.Mensaje(1);
 		for(i = 0; i < tamano; i = i + 1)
 	    {
@@ -61,14 +61,15 @@ def Mostrar(indice, valor):
 		
 		// Ordenar el arreglo
 		// Inicio while 1
-		while(i < 10){
+		while(i < 9){
 			// Inicio while 2
-			while(j < 10){
+			while(j < 9){
 				// Inicio if
 				if(arreglo[j] < arreglo[j+1]){
-                    tmp = arreglo[j];
-                    arreglo[j] = arreglo[j + 1];
-                    arreglo[j + 1] = tmp;
+                    			tmp = arreglo[j];
+					
+                    			arreglo[j] = arreglo[j + 1];
+                    			arreglo[j + 1] = tmp;
 				
 				} // fin if
 				
@@ -80,7 +81,7 @@ def Mostrar(indice, valor):
 			// contador 1
 			j = 0;
 			i = VB.Incremento(i);
-			
+
 		} // fin while
 		
 	   
@@ -92,10 +93,9 @@ def Mostrar(indice, valor):
 	   {
 			PY.Mostrar(i,arreglo[i]);
 	   }
-	   
-	   
-	   
-	   getch();
+	int vvv;
+	printf("fin");
+	scanf("%d",&vvv);
    }
 	
 	

@@ -39,10 +39,12 @@ public class VerifVB {
     public boolean verificarIdVar(String id, ObjetosVB vb, int jerarquia, String metodo, OperacionesVB operacion) {
         boolean existe = false;
         Integer it = operacion.buscarMetodo(vb.getMisMetodos(), metodo);
-        for (int i = 0; i < vb.getMisMetodos().get(it).getMisVariables().size(); i++) {
-            if (vb.getMisMetodos().get(it).getMisVariables().get(i).getId().equals(id)) {
-                existe = true;
-                break;
+        if(!vb.getMisMetodos().isEmpty()){
+            for (int i = 0; i < vb.getMisMetodos().get(it).getMisVariables().size(); i++) {
+                if (vb.getMisMetodos().get(it).getMisVariables().get(i).getId().equals(id)) {
+                    existe = true;
+                    break;
+                }
             }
         }
         return existe;

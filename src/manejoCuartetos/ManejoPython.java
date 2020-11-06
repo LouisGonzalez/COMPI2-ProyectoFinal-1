@@ -101,7 +101,7 @@ public class ManejoPython {
         pasoParametros(tabla, idMetodo, etiquetas);
         int posVar = determinarSizeAmbito(tabla, idMetodo);
         tabla.getObPython().getCuarpeta().add(new Nodo("suma", "p", posVar, "p", null));
-        tabla.getObPython().getCuarpeta().add(new Nodo("CALL", idMetodo+"();", null, null, null));
+        tabla.getObPython().getCuarpeta().add(new Nodo("CALL", "PY_"+idMetodo+"();", null, null, null));
         tabla.getObPython().getCuarpeta().add(new Nodo("resta", "p", posVar, "p", null));
     }
     
@@ -351,10 +351,14 @@ public class ManejoPython {
     }
 
     /*------------------------------------------ WHILE ----------------------------------------------------*/
-    public void agregarWhile(ObjetosPYTHON py, ArrayList<Nodo> booleano) {
+    
+    public void agregarPreludioWhile(ObjetosPYTHON py){
         String etWhile = "etWhile_" + py.getContWhile();
         py.setContWhile(py.getContWhile() + 1);
         py.getCuarpeta().add(new Nodo("ETIQUETA", etWhile, null, null, SintaxPYTHON.jerarquia));
+    }
+    
+    public void agregarWhile(ObjetosPYTHON py, ArrayList<Nodo> booleano) {
         primerChequeoIf(py, booleano);
     }
     
@@ -464,11 +468,11 @@ public class ManejoPython {
     public void crearScanf(TablaSimbolos tabla, String id, String tipo, String idMetodo) {
         String t = definirTemporal(tabla);
         if (tipo.equals("Integer")) {
-            tabla.getObPython().getCuarpeta().add(new Nodo("SCANF", "%d", null, t, null));
+            tabla.getObPython().getCuarpeta().add(new Nodo("SCANF", "\"%f\"", null, t, null));
         } else if (tipo.equals("Float")) {
-            tabla.getObPython().getCuarpeta().add(new Nodo("SCANF", "%f", null, t, null));
+            tabla.getObPython().getCuarpeta().add(new Nodo("SCANF", "\"%f\"", null, t, null));
         } else if (tipo.equals("Char")) {
-            tabla.getObPython().getCuarpeta().add(new Nodo("SCANF", "%c", null, t, null));
+            tabla.getObPython().getCuarpeta().add(new Nodo("SCANF", "\"%f\"", null, t, null));
         }
         String posMemoria = buscarPosicionMemoria(tabla, id, idMetodo);
         String t2 = definirTemporal(tabla);

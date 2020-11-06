@@ -102,11 +102,12 @@ public class ManejoC {
 
     /*------------------------------------------- METODO MAIN --------------------------------------------------*/
     public void crearMain(ObjetosC c) {
-        c.getCuarpeta().add(new Nodo("CREACION_METODO", "void", null, "main", null));
+        c.getCuarpeta().add(new Nodo("CREACION_METODO", "int", null, "main", null));
     }
 
     public void finMain(ObjetosC c) {
-        c.getCuarpeta().add(new Nodo("FIN_METODO", null, null, null, null));
+        c.getCuarpeta().add(new Nodo("RETURN", null, null, null, null));
+        c.getCuarpeta().add(new Nodo("FIN_METODO", null, null, "main", null));
     }
 
     /*---------------------------------------- MANEJO CLASES ------------------------------------------------*/
@@ -164,7 +165,7 @@ public class ManejoC {
             //cambio de posicion al puntero del stack
             int posVar = exe.determinarPosVar(tabla);
             tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", Integer.toString(posVar), "p", null));
-            tabla.getObC().getCuarpeta().add(new Nodo("CALL", metodoLlamar, null, null, null));
+            tabla.getObC().getCuarpeta().add(new Nodo("CALL", "JV_"+metodoLlamar, null, null, null));
             tabla.getObC().getCuarpeta().add(new Nodo("resta", "p", Integer.toString(posVar), "p", null));
             //asignacion heap 
             Integer nodoReturn = buscarReturnMetodos(tabla, "this", constructor);
@@ -300,7 +301,7 @@ public class ManejoC {
             if (verificarParametrosCorrectos(tabla, varTotal, lenguaje, arregloParam, verif, linea)) {
                 pasoDeParametros(tabla, varTotal, etiquetas, exe, lenguaje);
                 tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", posMemoria, "p", null));
-                tabla.getObC().getCuarpeta().add(new Nodo("CALL", varTotal + "();", null, null, null));
+                tabla.getObC().getCuarpeta().add(new Nodo("CALL", "VB_"+varTotal + "();", null, null, null));
                 tabla.getObC().getCuarpeta().add(new Nodo("resta", "p", posMemoria, "p", null));
             }
         } else if (lenguaje.equals("JV")) {
@@ -317,14 +318,14 @@ public class ManejoC {
                     pasoDeParametros(tabla, varTotal, etiquetas, exe, lenguaje);
                     asignacionValThis(tabla, varTotal, objetoClase, exe);
                     tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", posMemoria, "p", null));
-                    tabla.getObC().getCuarpeta().add(new Nodo("CALL", varTotal + "();", null, null, null));
+                    tabla.getObC().getCuarpeta().add(new Nodo("CALL", "JV_"+varTotal + "();", null, null, null));
                     tabla.getObC().getCuarpeta().add(new Nodo("resta", "p", posMemoria, "p", null));
                 }
             } 
         } else if (lenguaje.equals("PY")) {
             pasoDeParametros(tabla, idMetodo, etiquetas, exe, lenguaje);
             tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", posMemoria, "p", null));
-            tabla.getObC().getCuarpeta().add(new Nodo("CALL", idMetodo + "();", null, null, null));
+            tabla.getObC().getCuarpeta().add(new Nodo("CALL", "PY_"+idMetodo + "();", null, null, null));
             tabla.getObC().getCuarpeta().add(new Nodo("resta", "p", posMemoria, "p", null));
         }
     }
@@ -641,10 +642,14 @@ public class ManejoC {
     }
 
     /*-------------------------------------------- WHILE -----------------------------------------------------*/
+   
+    public void agregarPreludioWhile(TablaSimbolos tabla, int jerarquia){
+        String etWhile = "etWhile_"+tabla.getObC().getContWhile();
+        tabla.getObC().setContWhile(tabla.getObC().getContWhile()+1);
+        tabla.getObC().getCuarpeta().add(new Nodo("ETIQUETA", etWhile, null, null, jerarquia));
+    }
+    
     public void agregarWhile(ObjetosC c, ArrayList<Nodo> booleano, int jerarquia) {
-        String etWhile = "etWhile_" + c.getContWhile();
-        c.setContWhile(c.getContWhile() + 1);
-        c.getCuarpeta().add(new Nodo("ETIQUETA", etWhile, null, null, jerarquia));
         primerChequeoIf(c, booleano);
     }
 
@@ -790,11 +795,11 @@ public class ManejoC {
     public void crearScanf(TablaSimbolos tabla, String id, String tipo, boolean arreglo) {
         String t = definirTemporal(tabla.getObC());
         if (tipo.equals("Integer")) {
-            tabla.getObC().getCuarpeta().add(new Nodo("SCANF", "%d", null, t, null));
+            tabla.getObC().getCuarpeta().add(new Nodo("SCANF", "\"%f\"", null, t, null));
         } else if (tipo.equals("Float")) {
-            tabla.getObC().getCuarpeta().add(new Nodo("SCANF", "%f", null, t, null));
+            tabla.getObC().getCuarpeta().add(new Nodo("SCANF", "\"%f\"", null, t, null));
         } else if (tipo.equals("Char")) {
-            tabla.getObC().getCuarpeta().add(new Nodo("SCANF", "%c", null, t, null));
+            tabla.getObC().getCuarpeta().add(new Nodo("SCANF", "\"%f\"", null, t, null));
         }
         if(arreglo){
             tabla.getObC().getCuarpeta().add(new Nodo("asig", t, null, id, null));
@@ -858,13 +863,19 @@ public class ManejoC {
             return aDevolver;
         } else if (dimensiones.size() == iterador) {
             String aDevolver = "";
-            String t = definirTemporal(tabla.getObC());
-            tabla.getObC().getCuarpeta().add(new Nodo("suma", valCasilla, 1, t, null));
-            aDevolver = t;
-            if (!etCarril.equals("")) {
-                String t2 = definirTemporal(tabla.getObC());
-                tabla.getObC().getCuarpeta().add(new Nodo("suma", etCarril, t, t2, null));
-                aDevolver = t2;
+            if(dimensiones.size() > 1){
+                String t = definirTemporal(tabla.getObC());
+                tabla.getObC().getCuarpeta().add(new Nodo("suma", valCasilla, 1, t, null));
+                aDevolver = t;
+                if (!etCarril.equals("")) {
+                    String t2 = definirTemporal(tabla.getObC());
+                    tabla.getObC().getCuarpeta().add(new Nodo("suma", etCarril, t, t2, null));
+                    aDevolver = t2;
+                }
+            } else {
+                    String t2 = definirTemporal(tabla.getObC());
+                    tabla.getObC().getCuarpeta().add(new Nodo("asig", valCasilla, null, t2, null));
+                    aDevolver = t2;
             }
             return aDevolver;
         } else {
@@ -889,7 +900,7 @@ public class ManejoC {
         tabla.getObC().getCuarpeta().add(new Nodo("suma", posMemoria, et, t, null));
         String t2 = definirTemporal(tabla.getObC());
         tabla.getObC().getCuarpeta().add(new Nodo("suma", "p", t, t2, null));
-        return "stack[(int)" + t2 + "]";
+        return "stack[(int) " + t2 + "]";
     }
 
     public void asignarValorNodo(TablaSimbolos tabla, String posStack, String et) {

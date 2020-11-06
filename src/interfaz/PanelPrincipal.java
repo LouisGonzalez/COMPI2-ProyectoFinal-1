@@ -6,6 +6,8 @@
 package interfaz;
 
 import Tablas.TablaSimbolos;
+import assembler.Generacion;
+import assembler.Objetos;
 import cuartetos.CreacionCodigo;
 import cuartetos.CreacionEjecutable;
 import cuartetos.Nodo;
@@ -18,13 +20,17 @@ import gramaticaPYTHON.AnalizadorLexico2;
 import gramaticaPYTHON.SintaxPYTHON;
 import gramaticaVB.AnalizadorLexico3;
 import gramaticaVB.SintaxVB;
+import guardado.Guardado;
 import hojas.NumeracionLineas;
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.JTabbedPane;
 import objetosApoyo.DatosGuardado;
+import operacionesInterfaz.NuevaHoja;
 
 /**
  *
@@ -32,6 +38,8 @@ import objetosApoyo.DatosGuardado;
  */
 public class PanelPrincipal extends javax.swing.JPanel {
 
+    private NuevaHoja nueva = new NuevaHoja();
+    
     private NumeracionLineas numeracion;
     private NumeracionLineas numeracion2;
     private TablaSimbolos tabla = new TablaSimbolos();
@@ -49,26 +57,32 @@ public class PanelPrincipal extends javax.swing.JPanel {
 
     private CreacionCodigo creacion = new CreacionCodigo();
     private CreacionEjecutable creacion2 = new CreacionEjecutable();
+    private Generacion assembler = new Generacion();
 
     public static String codigoPython = "";
     public static String codigoJava = "";
     public static String codigoVb = "";
     public static String codigoC = "";
+    
+    private Guardado guardar = new Guardado();
 
     public static String errores = "";
-    private String path;
+    private String path, path2;
     private ArrayList<DatosGuardado> datos = new ArrayList<>();
     private int itTab;
-
+    private JTabbedPane tab;
+    
     /**
      * Creates new form PanelPrincipal
      */
-    public PanelPrincipal(String texto, String path, ArrayList<DatosGuardado> datos, int itTab) {
+    public PanelPrincipal(String texto, String path, ArrayList<DatosGuardado> datos, int itTab, JTabbedPane tab, String path2) {
         initComponents();
         txtTexto.setText(texto);
         this.datos = datos;
+        this.tab = tab;
         this.itTab = itTab;
         this.path = path;
+        this.path2 = path2;
         if (datos.size() <= itTab) {
             datos.add(new DatosGuardado(texto, path));
         } else {
@@ -95,6 +109,7 @@ public class PanelPrincipal extends javax.swing.JPanel {
         jScrollPane2 = new javax.swing.JScrollPane();
         txt3d = new javax.swing.JTextArea();
         btnErrores = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
 
         txtTexto.setColumns(20);
         txtTexto.setRows(5);
@@ -118,6 +133,13 @@ public class PanelPrincipal extends javax.swing.JPanel {
             }
         });
 
+        jButton2.setText("jButton2");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -132,6 +154,8 @@ public class PanelPrincipal extends javax.swing.JPanel {
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 546, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 269, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(107, 107, 107)
+                        .addComponent(jButton2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnErrores, javax.swing.GroupLayout.PREFERRED_SIZE, 251, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -146,7 +170,8 @@ public class PanelPrincipal extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
-                    .addComponent(btnErrores))
+                    .addComponent(btnErrores)
+                    .addComponent(jButton2))
                 .addGap(23, 23, 23))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -155,6 +180,7 @@ public class PanelPrincipal extends javax.swing.JPanel {
         reiniciarDatos();
         tabla = new TablaSimbolos();
         cuarpeta = new ArrayList<>();
+        ejecutable = new ArrayList<>();
         datos.set(itTab, new DatosGuardado(txtTexto.getText(), path));
         divTexto.manejarTexto(tabla, txtTexto.getText());
         AnalizadorLexico lexer = new AnalizadorLexico(new StringReader(codigoJava));
@@ -176,40 +202,45 @@ public class PanelPrincipal extends javax.swing.JPanel {
             totalLineas = totalLineas + lineasPython;
             divTexto.sumarVariablesC(tabla);
             new SintaxC(lexer4, tabla).parse();
-            //CUARPETA VB
-            /*  for (int i = 0; i < tabla.getObVb().getCuarpeta().size(); i++) {
-                System.out.println(tabla.getObVb().getCuarpeta().get(i).getOperacion()+" - "+tabla.getObVb().getCuarpeta().get(i).getDato1()+ " - "+tabla.getObVb().getCuarpeta().get(i).getDato2()+" - "+tabla.getObVb().getCuarpeta().get(i).getVar()+" - "+tabla.getObVb().getCuarpeta().get(i).getNivel());
-            }
-            //CUARPETA PYTHON
-            for (int i = 0; i < tabla.getObPython().getCuarpeta().size(); i++) {
-                System.out.println(tabla.getObPython().getCuarpeta().get(i).getOperacion()+" - "+tabla.getObPython().getCuarpeta().get(i).getDato1()+ " - "+tabla.getObPython().getCuarpeta().get(i).getDato2()+" - "+tabla.getObPython().getCuarpeta().get(i).getVar()+" - "+tabla.getObPython().getCuarpeta().get(i).getNivel());
-            }
-            //CUARPETA JAVA    
-            for (int i = 0; i < tabla.getObJava().getCuarpeta().size(); i++) {
-                System.out.println(tabla.getObJava().getCuarpeta().get(i).getOperacion()+" - "+tabla.getObJava().getCuarpeta().get(i).getDato1()+" - "+tabla.getObJava().getCuarpeta().get(i).getDato2()+" - "+tabla.getObJava().getCuarpeta().get(i).getVar()+" - "+tabla.getObJava().getCuarpeta().get(i).getNivel());
-            }
-            
-            //CUARPETA C
-            for (int i = 0; i < tabla.getObC().getCuarpeta().size(); i++) {
-                System.out.println(tabla.getObC().getCuarpeta().get(i).getOperacion()+" - "+tabla.getObC().getCuarpeta().get(i).getDato1()+ " - "+tabla.getObC().getCuarpeta().get(i).getDato2()+" - "+tabla.getObC().getCuarpeta().get(i).getVar()+" - "+tabla.getObC().getCuarpeta().get(i).getNivel());
-            }*/
-
-         //----------------------------------------------------------------------------------------------------
-            
-           for (int i = 0; i < tabla.getTablaExe().size(); i++) {
-                Tabla exe = tabla.getTablaExe().get(i);
-                System.out.println(exe.getId() + " - " + exe.getTipo() + " - " + exe.getPosMemoria() + " - " + exe.getAmbito() + " - " + exe.getSize() + " - " + exe.getRol() + " - " + exe.getLenguaje() + " - "+exe.getListParametros());
-            }
+         
             creacion.unificarCuarpetas(cuarpeta, tabla);
             codigo = creacion.crearCodigo(cuarpeta);
             codExe = creacion2.crearEjecutable(ejecutable, cuarpeta, tabla.getObC().getContVars());
-            //  if(errores.equals("")){
-            txt3d.setText(codExe);
+            if(errores.equals("")){
+                
+                
+                //creacion codigo 3D
+                Panel3D panel1 = new Panel3D(codigo);
+                tab.addTab("3D", panel1);
+                tab.setTabComponentAt(tab.getTabCount()-1, nueva.crearCabecera("3D", tab));
+                
+                //creacion codigo ejecutable
+                String[] arreglo = path.split("/");
+                String[] arreglo2 = arreglo[arreglo.length-1].split("\\.");
+                String nombre = arreglo2[0]+".cpp";
+                String direccion = path2+"/"+nombre;
+                guardar.crearEjecutable(direccion, codExe);
+                PanelEjecutable panel2 = new PanelEjecutable(direccion, arreglo2[0]);
+                tab.addTab("exe", panel2);
+                tab.setTabComponentAt(tab.getTabCount()-1, nueva.crearCabecera("exe", tab));
+               
+                //creacion codigo Asembler
+                ArrayList<Objetos> obAssembler = new ArrayList<>();
+                String nombreAs = arreglo2[0]+".asm";
+                String direccionAs = path2+"/"+nombreAs;
+                String codAssembler = assembler.codigoFormal(ejecutable, obAssembler);
+                guardar.crearAssembler(direccionAs, codAssembler);
+                PanelAssembler panel3 = new PanelAssembler(direccionAs, arreglo2[0]);
+                tab.addTab("assembler", panel3);
+                tab.setTabComponentAt(tab.getTabCount()-1, nueva.crearCabecera("asembler", tab));
+                
+                txt3d.setText(codExe);
+            } else {
+                JOptionPane.showMessageDialog(null, "Error en la gramatica, por favor verifica la ventana de errores");
+            }
             codigo = "";
             codExe = "";
-            /*} else {
-                JOptionPane.showMessageDialog(null, "Error en la gramatica, por favor verifica la ventana de errores");
-           // }*/
+
         } catch (Exception ex) {
             Logger.getLogger(PanelPrincipal.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -219,6 +250,10 @@ public class PanelPrincipal extends javax.swing.JPanel {
         Errores error = new Errores(null, true, errores);
         error.setVisible(true);
     }//GEN-LAST:event_btnErroresActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+   
+    }//GEN-LAST:event_jButton2ActionPerformed
 
     public void reiniciarDatos() {
         totalLineas = 0;
@@ -235,11 +270,13 @@ public class PanelPrincipal extends javax.swing.JPanel {
         errores = "";
         txt3d.setText("");
     }
-
+    
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnErrores;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea txt3d;
