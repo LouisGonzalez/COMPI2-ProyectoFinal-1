@@ -118,7 +118,6 @@ public class OperacionesVB {
             if (a && b) {
                 return true;
             } else if ((a && !b) || (!a && b)) {
-                System.out.println("Error en if (posible confusion en mmanejo returns)");
                 PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: Error en if (posible confusion en mmanejo returns)\n";
                 
                 return null;

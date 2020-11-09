@@ -103,121 +103,115 @@ float t95;
 float t96;
 float t97;
 float t98;
-float t99;
-float t100;
-float t101;
-float t102;
 void JV_operaciones_vereficar_Integer_Integer() {
 printf( " valor de global1 :");
-t4 = p + 0;
-t5 = stack[(int) t4];
-t6 = t5 + 0;
-t7 = heap[(int) t6];
-printf("%f", t7);
+t7 = p + 0;
+t8 = stack[(int) t7];
+t9 = t8 + 0;
+t10 = heap[(int) t9];
+printf("%f", t10);
 printf( "\n");
-t8 = p + 2;
-t9 = stack[(int) t8];
-t10 = p + 3;
-t11 = stack[(int) t10];
-if(t9 < t11) { goto et_2; }
-goto et_3;
-et_2:
-etWhile_1:
-t12 = p + 3;
+t11 = h + 1;
+heap[(int) t11] = 0;
+etFor_1:
+t12 = p + 0;
 t13 = stack[(int) t12];
-t14 = p + 2;
-t15 = stack[(int) t14];
-if(t13 > t15) { goto et_4; }
-goto et_5;
-et_4:
-t16 = p + 2;
+t14 = t13 + 1;
+t15 = heap[(int) t14];
+t16 = p + 0;
 t17 = stack[(int) t16];
 t18 = t17 + 1;
-t19 = p + 2;
-stack[(int) t19] = t18;
-printf( " estoy alcanzando a");
-t20 = p + 3;
-t21 = stack[(int) t20];
-printf("%f", t21);
-printf( "");
-t22 = p + 2;
-t23 = stack[(int) t22];
-printf("%f", t23);
+t19 = heap[(int) t18];
+if(t15 < 10) { goto et_2; }
+goto et_3;
+et_2:
+t21 = p + 0;
+t22 = stack[(int) t21];
+t23 = t22 + 1;
+t24 = heap[(int) t23];
+printf("%f", t24);
 printf( "\n");
-goto etWhile_1;
-et_5:
-etFin_1:
-printf( " ya lo alcanze");
-printf( "\n");
-goto etFin_2;
+t20 = t19 + 1;
+t25 = p + 0;
+t26 = stack[(int) t25];
+t27 = t26 + 1;
+heap[(int) t27] = t20;
+goto etFor_1;
 et_3:
-etWhile_2:
-t24 = p + 2;
-t25 = stack[(int) t24];
-t26 = p + 3;
-t27 = stack[(int) t26];
-if(t25 > t27) { goto et_6; }
-goto et_7;
-et_6:
-t28 = p + 3;
-t29 = stack[(int) t28];
-t30 = t29 + 1;
-t31 = p + 3;
-stack[(int) t31] = t30;
-printf( " estoy alcanzando a");
-t32 = p + 2;
-t33 = stack[(int) t32];
-printf("%f", t33);
-printf( "");
-t34 = p + 3;
-t35 = stack[(int) t34];
-printf("%f", t35);
-printf( "\n");
-goto etWhile_2;
-et_7:
-etFin_2:
-goto etFin_3;
-etFin_3:
+etFin_1:
 printf("");
 }
 void JV_operaciones_suma_Integer_Integer() {
-t36 = p + 2;
-t37 = stack[(int) t36];
-t38 = p + 3;
-t39 = stack[(int) t38];
-t40 = t37 + t39;
-t41 = p + 4;
-stack[(int) t41] = t40;
-printf( " El resultado de la suma :");
-t42 = p + 4;
-t43 = stack[(int) t42];
-printf("%f", t43);
+printf( " Escriba una opcion");
 printf( "\n");
+scanf("%f", &t28);
+t29 = p + 4;
+stack[(int) t29] = t28;
+t30 = p + 4;
+t31 = stack[(int) t30];
+if(t31 == 1) { goto et_4; }
+goto et_5;
+et_4:
+printf( " Hola mundo");
+printf( "\n");
+goto etFinal_0;
+et_5:
+if(t31 == 2) { goto et_6; }
+goto et_7;
+et_6:
+printf( " segunda opcion");
+printf( "\n");
+goto etFinal_0;
+et_7:
+if(t31 == 3) { goto et_8; }
+goto et_9;
+et_8:
+t32 = p + 2;
+t33 = stack[(int) t32];
+t34 = p + 3;
+t35 = stack[(int) t34];
+t36 = t33 + t35;
+t37 = p + 5;
+stack[(int) t37] = t36;
+printf( " El resultado de la suma es :");
+t38 = p + 5;
+t39 = stack[(int) t38];
+printf("%f", t39);
+printf( "\n");
+goto etFinal_0;
+et_9:
+printf( " opcion incorrecta");
+printf( "\n");
+etFinal_0:
 printf("");
 }
 void JV_operaciones_resta_Integer_Integer() {
-t44 = p + 2;
-t45 = stack[(int) t44];
-t46 = p + 3;
-t47 = stack[(int) t46];
-t48 = t45 - t47;
-t49 = p + 4;
-stack[(int) t49] = t48;
+t40 = p + 2;
+t41 = stack[(int) t40];
+t42 = p + 3;
+t43 = stack[(int) t42];
+t44 = t41 - t43;
+t45 = p + 4;
+stack[(int) t45] = t44;
 printf( " El resultado de la resta es :");
-t50 = p + 4;
-t51 = stack[(int) t50];
-printf("%f", t51);
+t46 = p + 4;
+t47 = stack[(int) t46];
+printf("%f", t47);
 printf( "\n");
 printf("");
 }
 void JV_operaciones_operaciones() {
-t52 = p + 0;
-stack[(int) t52] = h;
-h = h + 1;
+t48 = p + 0;
+stack[(int) t48] = h;
+h = h + 2;
 t1 = p + 0;
 t2 = stack[(int) t1];
 t3 = t2 + 0;
 heap[(int) t3] = 12;
+t4 = p + 0;
+t5 = stack[(int) t4];
+t6 = t5 + 1;
+heap[(int) t6] = 0;
 printf("");
 }
 int main() {
@@ -233,98 +227,98 @@ printf( " 3 . Alcanzar :");
 printf( "\n");
 printf( " Ingrese primer numero :");
 printf( "\n");
-scanf("%f", &t55);
-t56 = p + 0;
-stack[(int)t56] = t55;
+scanf("%f", &t51);
+t52 = p + 0;
+stack[(int)t52] = t51;
 printf( " Ingrese segundo numero :");
 printf( "\n");
-scanf("%f", &t57);
-t58 = p + 1;
-stack[(int)t58] = t57;
+scanf("%f", &t53);
+t54 = p + 1;
+stack[(int)t54] = t53;
 p = p + 4;
 JV_operaciones_operaciones();
 p = p - 4;
-t59 = p + 4;
-t60 = t59 + 0;
-t61 = stack[(int)t60];
-t62 = p + 3;
-stack[(int)t62] = t61;
+t55 = p + 4;
+t56 = t55 + 0;
+t57 = stack[(int)t56];
+t58 = p + 3;
+stack[(int)t58] = t57;
 printf( " Ingrese numero menu :");
 printf( "\n");
-scanf("%f", &t63);
-t64 = p + 2;
-stack[(int)t64] = t63;
-t65 = p + 2;
+scanf("%f", &t59);
+t60 = p + 2;
+stack[(int)t60] = t59;
+t61 = p + 2;
+t62 = stack[(int)t61];
+if(t62 == 1) { goto et_12; }
+goto et_13;
+et_12:
+t63 = p + 0;
+t64 = stack[(int)t63];
+t65 = p + 1;
 t66 = stack[(int)t65];
-if(t66 == 1) { goto et_10; }
-goto et_11;
-et_10:
-t67 = p + 0;
-t68 = stack[(int)t67];
-t69 = p + 1;
-t70 = stack[(int)t69];
-t71 = p + 4;
-t72 = t71 + 2;
-stack[(int)t72] = t68;
+t67 = p + 4;
+t68 = t67 + 2;
+stack[(int)t68] = t64;
+t69 = p + 4;
+t70 = t69 + 3;
+stack[(int)t70] = t66;
+t71 = p + 3;
+t72 = stack[(int)t71];
 t73 = p + 4;
-t74 = t73 + 3;
-stack[(int)t74] = t70;
-t75 = p + 3;
-t76 = stack[(int)t75];
-t77 = p + 4;
-t78 = t77 + 0;
-stack[(int)t78] = t76;
+t74 = t73 + 0;
+stack[(int)t74] = t72;
 p = p + 4;
 JV_operaciones_suma_Integer_Integer();
 p = p - 4;
 goto etFinal_0;
-et_11:
-if(t66 == 2) { goto et_12; }
-goto et_13;
-et_12:
-t79 = p + 0;
-t80 = stack[(int)t79];
-t81 = p + 1;
-t82 = stack[(int)t81];
-t83 = p + 4;
-t84 = t83 + 2;
-stack[(int)t84] = t80;
+et_13:
+if(t62 == 2) { goto et_14; }
+goto et_15;
+et_14:
+t75 = p + 0;
+t76 = stack[(int)t75];
+t77 = p + 1;
+t78 = stack[(int)t77];
+t79 = p + 4;
+t80 = t79 + 2;
+stack[(int)t80] = t76;
+t81 = p + 4;
+t82 = t81 + 3;
+stack[(int)t82] = t78;
+t83 = p + 3;
+t84 = stack[(int)t83];
 t85 = p + 4;
-t86 = t85 + 3;
-stack[(int)t86] = t82;
-t87 = p + 3;
-t88 = stack[(int)t87];
-t89 = p + 4;
-t90 = t89 + 0;
-stack[(int)t90] = t88;
+t86 = t85 + 0;
+stack[(int)t86] = t84;
 p = p + 4;
 JV_operaciones_resta_Integer_Integer();
 p = p - 4;
 goto etFinal_0;
-et_13:
-if(t66 == 3) { goto et_14; }
-goto et_15;
-et_14:
-t91 = p + 0;
-t92 = stack[(int)t91];
-t93 = p + 1;
-t94 = stack[(int)t93];
-t95 = p + 4;
-t96 = t95 + 2;
-stack[(int)t96] = t92;
+et_15:
+if(t62 == 3) { goto et_16; }
+goto et_17;
+et_16:
+t87 = p + 0;
+t88 = stack[(int)t87];
+t89 = p + 1;
+t90 = stack[(int)t89];
+t91 = p + 4;
+t92 = t91 + 2;
+stack[(int)t92] = t88;
+t93 = p + 4;
+t94 = t93 + 3;
+stack[(int)t94] = t90;
+t95 = p + 3;
+t96 = stack[(int)t95];
 t97 = p + 4;
-t98 = t97 + 3;
-stack[(int)t98] = t94;
-t99 = p + 3;
-t100 = stack[(int)t99];
-t101 = p + 4;
-t102 = t101 + 0;
-stack[(int)t102] = t100;
+t98 = t97 + 0;
+stack[(int)t98] = t96;
 p = p + 4;
 JV_operaciones_vereficar_Integer_Integer();
 p = p - 4;
 goto etFinal_0;
-et_15:
+et_17:
 etFinal_0:
 return 0;
 }

@@ -234,11 +234,13 @@ public class VerifJAVA {
             //hace alusion a que ya existe por lo que hay que hacer la comprobacion
             if (verifVarLocal(jv, id)) {
                 if (jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getTipo().equals("Integer")) {
-
+                    jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getListAsignaciones().add(jerarquia);
+                    jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).setValor(true);
                 } else {
                     //verificacion padre
                     if (verificarPadreVar(jv, jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getTipo(), "Integer")) {
-
+                        jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getListAsignaciones().add(jerarquia);
+                        jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).setValor(true);
                     } else {
                         PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no es compatible como iterador de un for\n";
                     }
@@ -246,10 +248,12 @@ public class VerifJAVA {
             } else {
                 if (verifVarGlobal(jv, id)) {
                     if (jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getTipo().equals("Integer")) {
-
+                        jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getListAsignaciones().add(jerarquia);
+                        jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).setValor(true);
                     } else {
                         if (verificarPadreVar(jv, jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getTipo(), "Integer")) {
-
+                            jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getListAsignaciones().add(jerarquia);
+                            jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).setValor(true);
                         } else {
                             PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no es compatible como iterador de un for\n";
                         }
@@ -269,6 +273,8 @@ public class VerifJAVA {
                 } else {
                     //agregar variable al metodo
                     jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().add(new Variable(id, dec, true, jerarquia));
+                    jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().size()-1).getListAsignaciones().add(jerarquia);
+                    jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().size()-1).setValor(true);
                 }
             }
 

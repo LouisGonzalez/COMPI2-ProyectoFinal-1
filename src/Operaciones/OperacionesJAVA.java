@@ -238,7 +238,7 @@ public class OperacionesJAVA {
                     PanelPrincipal.errores += "Tipo de error: SEMANTICO - Causa: Falta de parametro return en metodo " + idMetodo + ", archivo JAVA\n";
             }
         } else {
-            PanelPrincipal.errores += "Tipo de error: SEMANTICO - Causa: Error en manejo de returns, metodo " + idMetodo + "\n";
+            PanelPrincipal.errores += "Tipo de error: SEMANTICO - Causa: Error en manejo de reddddturns, metodo " + idMetodo + "\n";
         }
 
     }

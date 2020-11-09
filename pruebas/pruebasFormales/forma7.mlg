@@ -1,0 +1,69 @@
+%%VB
+
+public Function pruebaForVb() as Integer
+	Dim a as Integer, b as Integer
+	a = intinput("Ingrese primer numero: ")
+	b = intinput("Ingrese segundo numero: ")
+	if a > b then
+		pruebaForVb = a
+	else 
+		pruebaForVb = b
+	end if
+end Function
+
+%%JAVA
+
+public class clase {
+
+	public void mostrar(int a, int b){
+		int mayor = 0;
+		int menor = 0;
+		if(a > b){
+			mayor = a;
+			menor = b;
+		} else {
+			mayor = b;
+			menor = a;
+		}
+
+		for(int i = menor; i <= mayor; i = i+1){
+			System.out.println(i+" ");
+			System.out.println("");
+		}
+
+	}
+
+}
+
+
+
+%%PY
+
+def pruebaFor():
+	inicio = 5
+	fin = 20
+	paso = 2
+	for a in range (inicio, fin, paso):
+		print("hola mundo",a)
+	print("fin metodo")
+
+%%PROGRAMA
+
+#include "JAVA.*"
+#include "PY"
+#include "VB"
+
+int a, b;
+
+void main()
+{
+	//sSADF
+	//scaASDF
+	//JAVA.clase id();
+
+	//JAVA.id.mostrar(a,b);
+	//PY.pruebaFor();
+	a = 12 + VB.pruebaForVb();
+	printf("El valor de a es: ",a);
+
+}

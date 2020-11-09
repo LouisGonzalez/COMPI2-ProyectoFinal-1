@@ -14,11 +14,21 @@ public class Constantes {
     private String id;
     private String tipo;
     private Integer nivel;
+    private String valor;
 
-    public Constantes(String id, String tipo, Integer nivel) {
+    public Constantes(String id, String tipo, Integer nivel, String valor) {
         this.id = id;
         this.tipo = tipo;
         this.nivel = nivel;
+        this.valor = valor;
+    }
+
+    public String getValor() {
+        return valor;
+    }
+
+    public void setValor(String valor) {
+        this.valor = valor;
     }
 
     public String getId() {

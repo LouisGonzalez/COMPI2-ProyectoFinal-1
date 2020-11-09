@@ -301,11 +301,14 @@ public class ManejoVb {
 
     public void agregarValorVar(TablaSimbolos tabla, String id, String val, String idMetodo) {
         if (val != null) {
-            String t = "t" + tabla.getObVb().getContVars();
-            tabla.getObVb().setContVars(tabla.getObVb().getContVars() + 1);
-            String valMemoria = buscarPosicionMemoria(tabla, id, idMetodo);
-            tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
-            tabla.getObVb().getCuarpeta().add(new Nodo("asig", val, null, "stack[(int) " + t + "]", null));
+            String[] arreglo = idMetodo.split("_");
+            if(!id.equals(arreglo[0])){
+                String t = "t" + tabla.getObVb().getContVars();
+                tabla.getObVb().setContVars(tabla.getObVb().getContVars() + 1);
+                String valMemoria = buscarPosicionMemoria(tabla, id, idMetodo);
+                tabla.getObVb().getCuarpeta().add(new Nodo("suma", "p", valMemoria, t, null));
+                tabla.getObVb().getCuarpeta().add(new Nodo("asig", val, null, "stack[(int) " + t + "]", null));
+            }
         }
     }
 
@@ -639,6 +642,15 @@ public class ManejoVb {
             tabla.getObVb().getCuarpeta().add(new Nodo("asig", id, null, "stack[(int) "+var+"]", null));
     }
 
+    public void verificarIdMetodo(TablaSimbolos tabla, String idPosible, String idMetodo, String etiqueta){
+        if(etiqueta != null){
+            String[] arreglo = idMetodo.split("_");
+            if(idPosible.equals(arreglo[0])){
+                crearReturn(tabla, etiqueta, idMetodo);
+            }
+        }
+    }
+    
     /*------------------------------------------- MENSAJES ---------------------------------------------------*/
     public String concatenarMensajes(ObjetosVB vb, String ladoA, String ladoB) {
         String et = "t" + vb.getContVars();

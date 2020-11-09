@@ -812,30 +812,79 @@ public class ManejoC {
     }
 
     /*------------------------------------------ ARREGLOS ----------------------------------------------------*/
-    public int definirSize(TablaSimbolos tabla, ArrayList<String> casillas, String id) {
+    public int definirSize(TablaSimbolos tabla, ArrayList<String> casillas, String id, int linea, int columna) {
         int size = 0;
         if (casillas.size() > 1) {
             String et = "";
             for (int i = 0; i < casillas.size() - 1; i++) {
                 if (i == 0) {
+                    
+                    String casilla1, casilla2;
+                    if(esNumero(casillas.get(i))){
+                        casilla1 = casillas.get(i);
+                    } else {
+                        casilla1 = buscarConstante(tabla, casillas.get(i), linea, columna);
+                    }
+                    if(esNumero(casillas.get(i+1))){
+                        casilla2 = casillas.get(i+1);
+                    } else {
+                        casilla2 = buscarConstante(tabla, casillas.get(i+1), linea, columna);
+                    }
                     String t = definirTemporal(tabla.getObC());
-                    System.out.println(t + " = " + casillas.get(i) + " * " + casillas.get(i + 1));
-                    size = Integer.parseInt(casillas.get(i)) * Integer.parseInt(casillas.get(i + 1));
+                    System.out.println(t + " = " + casilla1 + " * " + casilla2);
+                    System.out.println(casilla1+"           "+casilla2);
+                    size = Integer.parseInt(casilla1) * Integer.parseInt(casilla2);
                     et = t;
                 } else {
                     String t = definirTemporal(tabla.getObC());
-                    System.out.println(t + " = " + et + " * " + casillas.get(i + 1));
-                    size = size * Integer.parseInt(casillas.get(i + 1));
+                    String casilla;
+                    if(esNumero(casillas.get(i+1))){
+                        casilla = casillas.get(i+1);
+                    } else {
+                        casilla = buscarConstante(tabla, casillas.get(i+1), linea, columna);
+                    }
+                    System.out.println(t + " = " + et + " * " + casillas);
+                    size = size * Integer.parseInt(casilla);
                     et = t;
                 }
             }
-            System.out.println("Tamano del arreglo: " + size);
-            //   System.out.println(et);
         } else {
-            size = Integer.parseInt(casillas.get(0));
+            String casilla;
+            if(esNumero(casillas.get(0))){
+                casilla = casillas.get(0);
+            } else {
+                casilla = buscarConstante(tabla, casillas.get(0), linea, columna);
+            }
+            size = Integer.parseInt(casilla);
             System.out.println("Tamano del arreglo: " + size);
         }
         return size;
+    }
+    
+    public boolean esNumero(String numero){
+        try{
+            Integer.parseInt(numero);
+            return true;
+        } catch(NumberFormatException e){
+            return false;
+            
+        }
+    }
+    
+    public String buscarConstante(TablaSimbolos tabla, String id, int linea, int columna){
+        String numero = "";
+        boolean existe = false;
+        for (int i = 0; i < tabla.getObC().getListConstantes().size(); i++) {
+            if(tabla.getObC().getListConstantes().get(i).getId().equals(id)){
+                numero = tabla.getObC().getListConstantes().get(i).getValor();
+                existe = true;
+                break;
+            }
+        }
+        if(!existe){
+            PanelPrincipal.errores += "Fila: " + linea + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe ninguna constante "+id+" dentro del archivo\n";            
+        }
+        return numero;
     }
 
     public String acumularSuma(TablaSimbolos tabla, String idArreglo, int iterador, String valCasilla, String etCarril) {

@@ -36,7 +36,7 @@ public class NuevaHoja {
             while(buffer.ready()){
                 texto += buffer.readLine()+ "\n";
             }
-            abrirPanel(texto, archivo.getPath(), archivo.getName(), principal, textos, principal.getTabCount(), path2);
+            abrirPanel(texto, archivo.getPath(), archivo.getName(), principal, textos, principal.getTabCount(), path2, archivo);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(NuevaHoja.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -45,8 +45,8 @@ public class NuevaHoja {
         
     }
     
-    public void abrirPanel(String texto, String path, String titulo, JTabbedPane principal, ArrayList<DatosGuardado> textos, int itTab, String path2){
-        PanelPrincipal panel = new PanelPrincipal(texto, path, textos, itTab, principal, path2);
+    public void abrirPanel(String texto, String path, String titulo, JTabbedPane principal, ArrayList<DatosGuardado> textos, int itTab, String path2, File archivo){
+        PanelPrincipal panel = new PanelPrincipal(texto, path, textos, itTab, principal, path2, archivo);
         principal.addTab(titulo, panel);
         principal.setTabComponentAt(principal.getTabCount()-1, crearCabecera(titulo, principal));
     }

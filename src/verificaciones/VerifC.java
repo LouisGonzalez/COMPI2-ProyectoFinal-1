@@ -562,7 +562,7 @@ public class VerifC {
                 
             }
         } else {
-            op.agregarNuevaVar(c, id, "Integer", "Variable", jerarquia, true, id, null, fila, columna, dimensiones);
+            op.agregarNuevaVar(c, id, "Integer", "Variable", jerarquia, true, id, null, fila, columna, dimensiones, null);
         }
 
         return todoCorrecto;

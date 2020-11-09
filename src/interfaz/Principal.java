@@ -132,7 +132,7 @@ public class Principal extends javax.swing.JFrame {
     }//GEN-LAST:event_menuSalirActionPerformed
 
     private void opNuevoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_opNuevoActionPerformed
-        PanelPrincipal nuevo = new PanelPrincipal("", "", datos, tabbed.getTabCount(), tabbed, "");
+        PanelPrincipal nuevo = new PanelPrincipal("", "", datos, tabbed.getTabCount(), tabbed, "", null);
         tabbed.addTab("Sin nombre", nuevo);
         tabbed.setTabComponentAt(tabbed.getTabCount()-1, nueva.crearCabecera("Sin nombre", tabbed));
     }//GEN-LAST:event_opNuevoActionPerformed
@@ -149,6 +149,9 @@ public class Principal extends javax.swing.JFrame {
             System.out.println("getCurrentDirectory(): "+chooser.getCurrentDirectory());
             System.out.println("getSelectedFile(): "+chooser.getSelectedFile());
             archivoNuevo = new File(chooser.getSelectedFile().getAbsolutePath());
+            System.out.println(archivoNuevo.getParentFile()+"  path");
+            System.out.println(archivoNuevo.getAbsolutePath());
+            System.out.println(archivoNuevo.getName()+"         NOMBRE");
             FileReader reader = null;
             BufferedReader buffer = null;
             String texto = "";

@@ -99,7 +99,7 @@ public class OperacionesC {
     }
 
     //agrega una nueva variable a la tabla de C
-    public void agregarNuevaVar(ObjetosC c, String id, String tipoDato, String tipoVar, int nivel, boolean valor, String idClase, Integer dimension, int fila, int columna, ArrayList<String> dimensiones) {
+    public void agregarNuevaVar(ObjetosC c, String id, String tipoDato, String tipoVar, int nivel, boolean valor, String idClase, Integer dimension, int fila, int columna, ArrayList<String> dimensiones, String valConstante) {
         VerifC verif = new VerifC();
         boolean existe = false;
         if (nivel > 0) {
@@ -113,7 +113,7 @@ public class OperacionesC {
                 } else if (tipoVar.equals("Arreglo")) {
                     c.getListArreglos().add(new Arreglo(id, tipoDato, nivel, dimension));
                 } else if (tipoVar.equals("Constante")) {
-                    c.getListConstantes().add(new Constantes(id, tipoDato, nivel));
+                    c.getListConstantes().add(new Constantes(id, tipoDato, nivel, valConstante));
                 } else {
                     c.getListVariables().add(new Variable(id, tipoDato, valor, nivel));
                     if(valor){
@@ -135,7 +135,7 @@ public class OperacionesC {
                     }
                     dimensiones.clear();
                 } else if (tipoVar.equals("Constante")) {
-                    c.getListConstantes().add(new Constantes(id, tipoDato, nivel));
+                    c.getListConstantes().add(new Constantes(id, tipoDato, nivel, valConstante));
                 } else {
                     c.getListVariables().add(new Variable(id, tipoDato, valor, nivel));
                     if(valor){

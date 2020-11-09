@@ -1,0 +1,52 @@
+%%VB
+
+%%JAVA
+
+public class clase {
+
+	public void programa(){
+		int nota;
+		nota = intinput("Introduzca una nota: ");
+		if(nota >=0 && nota < 5){
+			System.out.println("INSUFICIENTE");
+		} else {
+			if(nota == 5){
+				System.out.println("SUFICIENTE");
+			} else {
+				if(nota == 6){
+					System.out.println("BIEN");
+				} else {
+					if(nota == 7 || nota == 8){
+						System.out.println("NOTABLE");
+					} else {
+						if(nota == 9 || nota == 10){
+							System.out.println("SOBRESALIENTE");
+						} else {
+							System.out.println("VALOR INVALIDO");
+						}
+					}
+				}
+			}
+		}
+	}
+
+}
+
+
+%%PY
+
+%%PROGRAMA
+
+#include "VB"
+#include "JAVA.*"
+#include "PY"
+
+
+void main()
+{
+	JAVA.clase id();
+	JAVA.id.programa();
+	
+}
+
+

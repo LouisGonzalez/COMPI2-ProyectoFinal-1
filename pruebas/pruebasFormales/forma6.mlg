@@ -1,0 +1,57 @@
+%%VB
+
+%%JAVA
+
+%%PY
+
+%%PROGRAMA
+
+#include "VB"
+#include "JAVA.*"
+#include "PY"
+
+int a[3][3];
+int b[3][3];
+int suma[3][3];
+
+void main()
+{
+	
+	int i, j;
+	for (i=0;i<3;i=i+1)
+ 	{
+ 		for (j=0;j<3;j=j+1)
+ 		{
+ 			printf("A[",i,"][",j,"]: ");
+			scanf("%f", &a[i][j]); 
+		}
+ 	}
+ 	printf("Matriz B:");
+ 	for (i=0;i<3;i=i+1)
+ 	{
+ 		for (j=0;j<3;j=j+1)
+ 		{
+ 			printf("B[",i,"][",j,"]: ");
+ 			scanf("%f",&b[i][j]);
+ 		}
+ 	}
+	// hacemos la suma
+ 	for (i=0;i<3;i=i+1)
+ 	{
+ 		for (j=0;j<3;j=j+1)
+ 		{
+ 			suma[i][j] = a[i][j] + b[i][j];
+ 		}
+ 	}
+ 	// mostramos los resultado
+ 	printf("Matriz Suma:");
+ 	for (i=0;i<3;i=i+1)
+ 	{
+ 		for (j=0;j<3;j=j+1)
+ 		{
+ 			printf(suma[i][j] , " ");
+ 		}	
+		printf(""); 	
+	}
+
+}

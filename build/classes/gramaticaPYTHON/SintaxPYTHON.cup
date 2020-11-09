@@ -471,10 +471,12 @@ parser code {:
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
     LECTURA_DATOS ::= TAB:a id:b igual TIPO_INPUT:c parentesis_a TEXTO parentesis_b ENTER                   {:  parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion);
+                                                                                                                parser.exe.agregarVariable(parser.tabla, b.toString(), parser.metodo, c);
                                                                                                                 parser.manejoPY.mostrarQuiebre(parser.tabla);
                                                                                                                 parser.manejoPY.crearScanf(parser.tabla, b.toString(), c, parser.metodo);     
                                                                                                                 parser.op.valorVariableInput(parser.tabla.getObPython(), b.toString(), parser.jerarquia, c);  :}
     |                 TAB:a id:b igual TIPO_INPUT:c parentesis_a parentesis_b ENTER                         {:  parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion);    
+                                                                                                                parser.exe.agregarVariable(parser.tabla, b.toString(), parser.metodo, c);
                                                                                                                 parser.manejoPY.crearScanf(parser.tabla, b.toString(), c, parser.metodo);     
                                                                                                                 parser.op.valorVariableInput(parser.tabla.getObPython(), b.toString(), parser.jerarquia, c); :}
     |                 TAB:a TIPO_INPUT:c parentesis_a TEXTO parentesis_b ENTER                              {:  parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, false, parser.tipoInstruccion);  

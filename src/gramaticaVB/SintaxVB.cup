@@ -177,17 +177,20 @@ parser code {:
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    ASIGNACIONES ::= id:a igual                 {:  parser.tipoActual=parser.verif.verificarVarAsignar(a.toString(), parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size()-1, aleft+PanelPrincipal.totalLineas, aright); :}  
+    ASIGNACIONES ::= id:a igual                 {:  parser.tipoActual=parser.verif.verificarVarAsignar(a.toString(), parser.tabla, parser.tabla.getObVb().getMisMetodos().size()-1, aleft+PanelPrincipal.totalLineas, aright, parser.metodoExe); :}  
                     VALOR_VAR:b 
-                                                {:  parser.manejoVB.agregarValorVar(parser.tabla, a.toString(), b, parser.metodoExe);  parser.operacion.agregarValorVar(a.toString(), parser.tabla.getObVb(), parser.jerarquia, aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas, aright+PanelPrincipal.totalLineas); :} 
+                                                {: parser.manejoVB.verificarIdMetodo(parser.tabla, a.toString(), parser.metodoExe, b);
+                                                   parser.manejoVB.agregarValorVar(parser.tabla, a.toString(), b, parser.metodoExe);  
+                                                   parser.operacion.agregarValorVar(a.toString(), parser.tabla.getObVb(), parser.jerarquia, aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas, aright+PanelPrincipal.totalLineas); :} 
                     ASIGNACIONES2
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    ASIGNACIONES2 ::= coma id:a igual           {:  parser.tipoActual=parser.verif.verificarVarAsignar(a.toString(), parser.tabla.getObVb(), parser.tabla.getObVb().getMisMetodos().size()-1, aleft+PanelPrincipal.totalLineas, aright); :} 
+    ASIGNACIONES2 ::= coma id:a igual           {:  parser.tipoActual=parser.verif.verificarVarAsignar(a.toString(), parser.tabla, parser.tabla.getObVb().getMisMetodos().size()-1, aleft+PanelPrincipal.totalLineas, aright, parser.metodoExe); :} 
                       VALOR_VAR:b 
-                                                {:  parser.manejoVB.agregarValorVar(parser.tabla, a.toString(), b, parser.metodoExe);   
+                                                {:  parser.manejoVB.verificarIdMetodo(parser.tabla, a.toString(), parser.metodoExe, b);
+                                                    parser.manejoVB.agregarValorVar(parser.tabla, a.toString(), b, parser.metodoExe);   
                                                     if(!parser.isReturn){ 
                                                         parser.operacion.agregarValorVar(a.toString(), parser.tabla.getObVb(), parser.jerarquia, aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas, aright+PanelPrincipal.totalLineas); 
                                                     } else { 
@@ -622,7 +625,8 @@ parser code {:
     FOR ::= condFor                                                         {:  parser.usoPila.add(false); 
                                                                                 parser.jerarquia++; 
                                                                                 parser.pilaFalsas.add(new ArrayList<>()); 
-                                                                                parser.pilaFor.add(new ArrayList<>()); :} 
+                                                                                parser.pilaFor.add(new ArrayList<>());
+                                                                                parser.tipoActual = "Integer"; :} 
             id:a                                                            {:  parser.idFor = a.toString(); :} 
             TIPO_VARIABLE:b                                                 {:  if(!b.equals("")){ 
                                                                                     parser.exe.agregarVariable(parser.tabla, a.toString(), parser.metodoExe, b);

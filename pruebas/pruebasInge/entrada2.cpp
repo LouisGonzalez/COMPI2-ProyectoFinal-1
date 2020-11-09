@@ -105,190 +105,259 @@ float t97;
 float t98;
 float t99;
 float t100;
-void JV_OperacionAlgebraica_OperacionAlgebraica() {
-t1 = p + 0;
-stack[(int) t1] = h;
-h = h + 6;
-t2 = p + 0;
-t3 = stack[(int) t2];
-t4 = t3 + 0;
-heap[(int) t4] = 0.0;
-t5 = p + 0;
-t6 = stack[(int) t5];
-t7 = t6 + 1;
-heap[(int) t7] = 0.0;
-t8 = p + 0;
+float t101;
+float t102;
+float t103;
+float t104;
+float t105;
+float t106;
+void JV_operaciones_vereficar_Integer_Integer() {
+printf( " valor de global1 :");
+t4 = p + 0;
+t5 = stack[(int) t4];
+t6 = t5 + 0;
+t7 = heap[(int) t6];
+printf("%f", t7);
+printf( "\n");
+t8 = p + 2;
 t9 = stack[(int) t8];
-t10 = t9 + 2;
-heap[(int) t10] = 0.0;
-t11 = p + 0;
-t12 = stack[(int) t11];
-t13 = t12 + 4;
-heap[(int) t13] = 4;
-t14 = p + 0;
-t15 = stack[(int) t14];
-t16 = t15 + 5;
-heap[(int) t16] = 0;
-printf("");
-}
-void JV_OperacionAlgebraica_Suma() {
-printf( " \ n Ingrese el primer numero :");
-printf( "\n");
-printf( " aaa");
-printf( "\n");
-scanf("%f", &t17);
-t18 = p + 0;
-t19 = stack[(int) t18];
-t20 = t19 + 0;
-heap[(int) t20] = t17;
-printf( " \ n Ingrese el segundo numero :");
-printf( "\n");
-printf( " bbb");
-printf( "\n");
-scanf("%f", &t21);
-t22 = p + 0;
-t23 = stack[(int) t22];
-t24 = t23 + 1;
-heap[(int) t24] = t21;
-t25 = p + 0;
-t26 = stack[(int) t25];
-t27 = t26 + 0;
-t28 = heap[(int) t27];
-t29 = p + 0;
-t30 = stack[(int) t29];
-t31 = t30 + 1;
-t32 = heap[(int) t31];
-t33 = t28 + t32;
-t34 = p + 0;
-t35 = stack[(int) t34];
-t36 = t35 + 2;
-heap[(int) t36] = t33;
-printf("");
-}
-void JV_OperacionAlgebraica_Contador() {
-printf( " \ n Ingrese el numero hasta donde quiera contar");
-printf( "\n");
-printf( " cccc");
-printf( "\n");
-scanf("%f", &t37);
-t38 = p + 0;
-t39 = stack[(int) t38];
-t40 = t39 + 3;
-heap[(int) t40] = t37;
-etWhile_1:
-printf( "");
-printf( "\n");
-t41 = p + 0;
-t42 = stack[(int) t41];
-t43 = t42 + 4;
-t44 = heap[(int) t43];
-t45 = t44 + 1;
-t46 = p + 0;
-t47 = stack[(int) t46];
-t48 = t47 + 4;
-heap[(int) t48] = t45;
-t49 = p + 0;
-t50 = stack[(int) t49];
-t51 = t50 + 4;
-t52 = heap[(int) t51];
-printf("%f", t52);
-printf( "\n");
-t53 = p + 0;
-t54 = stack[(int) t53];
-t55 = t54 + 4;
-t56 = heap[(int) t55];
-t57 = p + 0;
-t58 = stack[(int) t57];
-t59 = t58 + 3;
-t60 = heap[(int) t59];
-if(t56 <= t60) { goto et_2; }
+t10 = p + 3;
+t11 = stack[(int) t10];
+if(t9 < t11) { goto et_2; }
 goto et_3;
 et_2:
+etWhile_1:
+t12 = p + 3;
+t13 = stack[(int) t12];
+t14 = p + 2;
+t15 = stack[(int) t14];
+if(t13 > t15) { goto et_4; }
+goto et_5;
+et_4:
+t16 = p + 2;
+t17 = stack[(int) t16];
+t18 = t17 + 1;
+t19 = p + 2;
+stack[(int) t19] = t18;
+printf( " estoy alcanzando a");
+t20 = p + 3;
+t21 = stack[(int) t20];
+printf("%f", t21);
+printf( "");
+t22 = p + 2;
+t23 = stack[(int) t22];
+printf("%f", t23);
+printf( "\n");
 goto etWhile_1;
-et_3:
+et_5:
 etFin_1:
+printf( " ya lo alcanze");
+printf( "\n");
+goto etFin_2;
+et_3:
+etWhile_2:
+t24 = p + 2;
+t25 = stack[(int) t24];
+t26 = p + 3;
+t27 = stack[(int) t26];
+if(t25 > t27) { goto et_6; }
+goto et_7;
+et_6:
+t28 = p + 3;
+t29 = stack[(int) t28];
+t30 = t29 + 1;
+t31 = p + 3;
+stack[(int) t31] = t30;
+printf( " estoy alcanzando a");
+t32 = p + 2;
+t33 = stack[(int) t32];
+printf("%f", t33);
+printf( "");
+t34 = p + 3;
+t35 = stack[(int) t34];
+printf("%f", t35);
+printf( "\n");
+goto etWhile_2;
+et_7:
+etFin_2:
+goto etFin_3;
+etFin_3:
 printf("");
 }
-void JV_OperacionAlgebraica_Cuadrado_Integer() {
-t61 = p + 2;
-t62 = stack[(int) t61];
-t63 = p + 2;
-t64 = stack[(int) t63];
-t65 = t62 * t64;
-t66 = p + 2;
-stack[(int) t66] = t65;
-t67 = p + 2;
-t68 = stack[(int) t67];
-t69 = p + 1;
-stack[(int) t69] = t68;
+void JV_operaciones_suma_Integer_Integer() {
+printf( " Escriba una opcion");
+printf( "\n");
+scanf("%f", &t36);
+t37 = p + 4;
+stack[(int) t37] = t36;
+t38 = p + 4;
+t39 = stack[(int) t38];
+if(t39 == 1) { goto et_8; }
+goto et_9;
+et_8:
+printf( " Hola mundo");
+printf( "\n");
+goto etFinal_0;
+et_9:
+if(t39 == 2) { goto et_10; }
+goto et_11;
+et_10:
+printf( " segunda opcion");
+printf( "\n");
+goto etFinal_0;
+et_11:
+if(t39 == 3) { goto et_12; }
+goto et_13;
+et_12:
+t40 = p + 2;
+t41 = stack[(int) t40];
+t42 = p + 3;
+t43 = stack[(int) t42];
+t44 = t41 + t43;
+t45 = p + 5;
+stack[(int) t45] = t44;
+printf( " El resultado de la suma es :");
+t46 = p + 5;
+t47 = stack[(int) t46];
+printf("%f", t47);
+printf( "\n");
+goto etFinal_0;
+et_13:
+printf( " opcion incorrecta");
+printf( "\n");
+etFinal_0:
 printf("");
 }
-void JV_OperacionAlgebraica_ElevarCuadrado() {
-printf( " \ n Ingrese x para elevarlo al cuadrado :");
-printf( "\n");
-printf( " dddd");
-printf( "\n");
-scanf("%f", &t70);
-t71 = p + 0;
-t72 = stack[(int) t71];
-t73 = t72 + 5;
-heap[(int) t73] = t70;
-printf( " \ n Antes de Elevarse es :");
-printf( "\n");
-printf( " \ n x despus de Elevarse es :");
+void JV_operaciones_resta_Integer_Integer() {
+t48 = p + 2;
+t49 = stack[(int) t48];
+t50 = p + 3;
+t51 = stack[(int) t50];
+t52 = t49 - t51;
+t53 = p + 4;
+stack[(int) t53] = t52;
+printf( " El resultado de la resta es :");
+t54 = p + 4;
+t55 = stack[(int) t54];
+printf("%f", t55);
 printf( "\n");
 printf("");
 }
-void PY_Continuar() {
-printf( " Desea Repetir el Proceso [ s ] i o [ n ] o");
-printf( "\n");
-printf( " eee");
-printf( "\n");
-scanf("%f", &t75);
-t76 = p + 1;
-stack[(int) t76] = t75;
-t77 = p + 1;
-t78 = stack[(int) t77];
-t79 = p + 0;
-stack[(int) t79] = t78;
+void JV_operaciones_operaciones() {
+t56 = p + 0;
+stack[(int) t56] = h;
+h = h + 1;
+t1 = p + 0;
+t2 = stack[(int) t1];
+t3 = t2 + 0;
+heap[(int) t3] = 12;
 printf("");
 }
 int main() {
 p = 0;
 h = 0;
-t81 = p + 0;
-stack[(int)t81] = 's';
-p = p + 2;
-JV_OperacionAlgebraica_OperacionAlgebraica();
-p = p - 2;
-t82 = p + 2;
-t83 = t82 + 0;
+printf( " Opciones :");
+printf( "\n");
+printf( " 1 . Sumar :");
+printf( "\n");
+printf( " 2 . Restar :");
+printf( "\n");
+printf( " 3 . Alcanzar :");
+printf( "\n");
+printf( " Ingrese primer numero :");
+printf( "\n");
+scanf("%f", &t59);
+t60 = p + 0;
+stack[(int)t60] = t59;
+printf( " Ingrese segundo numero :");
+printf( "\n");
+scanf("%f", &t61);
+t62 = p + 1;
+stack[(int)t62] = t61;
+p = p + 4;
+JV_operaciones_operaciones();
+p = p - 4;
+t63 = p + 4;
+t64 = t63 + 0;
+t65 = stack[(int)t64];
+t66 = p + 3;
+stack[(int)t66] = t65;
+printf( " Ingrese numero menu :");
+printf( "\n");
+scanf("%f", &t67);
+t68 = p + 2;
+stack[(int)t68] = t67;
+t69 = p + 2;
+t70 = stack[(int)t69];
+if(t70 == 1) { goto et_16; }
+goto et_17;
+et_16:
+t71 = p + 0;
+t72 = stack[(int)t71];
+t73 = p + 1;
+t74 = stack[(int)t73];
+t75 = p + 4;
+t76 = t75 + 2;
+stack[(int)t76] = t72;
+t77 = p + 4;
+t78 = t77 + 3;
+stack[(int)t78] = t74;
+t79 = p + 3;
+t80 = stack[(int)t79];
+t81 = p + 4;
+t82 = t81 + 0;
+stack[(int)t82] = t80;
+p = p + 4;
+JV_operaciones_suma_Integer_Integer();
+p = p - 4;
+goto etFinal_0;
+et_17:
+if(t70 == 2) { goto et_18; }
+goto et_19;
+et_18:
+t83 = p + 0;
 t84 = stack[(int)t83];
 t85 = p + 1;
-stack[(int)t85] = t84;
-t86 = p + 1;
-t87 = stack[(int)t86];
-t88 = p + 2;
-t89 = t88 + 0;
-stack[(int)t89] = t87;
-p = p + 2;
-JV_OperacionAlgebraica_Suma();
-p = p - 2;
-t91 = p + 1;
+t86 = stack[(int)t85];
+t87 = p + 4;
+t88 = t87 + 2;
+stack[(int)t88] = t84;
+t89 = p + 4;
+t90 = t89 + 3;
+stack[(int)t90] = t86;
+t91 = p + 3;
 t92 = stack[(int)t91];
-t93 = p + 2;
+t93 = p + 4;
 t94 = t93 + 0;
 stack[(int)t94] = t92;
-p = p + 2;
-JV_OperacionAlgebraica_Contador();
-p = p - 2;
-t96 = p + 1;
-t97 = stack[(int)t96];
-t98 = p + 2;
-t99 = t98 + 0;
-stack[(int)t99] = t97;
-p = p + 2;
-JV_OperacionAlgebraica_ElevarCuadrado();
-p = p - 2;
+p = p + 4;
+JV_operaciones_resta_Integer_Integer();
+p = p - 4;
+goto etFinal_0;
+et_19:
+if(t70 == 3) { goto et_20; }
+goto et_21;
+et_20:
+t95 = p + 0;
+t96 = stack[(int)t95];
+t97 = p + 1;
+t98 = stack[(int)t97];
+t99 = p + 4;
+t100 = t99 + 2;
+stack[(int)t100] = t96;
+t101 = p + 4;
+t102 = t101 + 3;
+stack[(int)t102] = t98;
+t103 = p + 3;
+t104 = stack[(int)t103];
+t105 = p + 4;
+t106 = t105 + 0;
+stack[(int)t106] = t104;
+p = p + 4;
+JV_operaciones_vereficar_Integer_Integer();
+p = p - 4;
+goto etFinal_0;
+et_21:
+etFinal_0:
 return 0;
 }

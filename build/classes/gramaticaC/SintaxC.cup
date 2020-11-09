@@ -96,7 +96,7 @@ parser code {:
 
     non terminal NodoBoolean OP_COND, VAL_COND, METODO_COND, VECTOR_COND;
 
-    non terminal String VAR_LECTURA, VAR_CASE;
+    non terminal String VAR_LECTURA, VAR_CASE, VAR_VECTOR;
 
     non terminal ArrayList<NodoBoolean> PARAM, PARAM2, PARAM_METODOS, CONSTRUCTOR;
 
@@ -136,9 +136,9 @@ parser code {:
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
     CONSTANTES ::= tipoConst TIPO_VAR:a                 {:  parser.tipoActual = a; :} 
-                   id:b VALOR:c puntoComa               {:  parser.exe.agregarVariable(parser.tabla, b.toString(), 1, false, a);
+                   id:b igual VAR:c puntoComa           {:  parser.exe.agregarVariable(parser.tabla, b.toString(), 1, false, a);
                                                             parser.manejoc.crearConstante(parser.tabla, b.toString(), c.getId());
-                                                            parser.op.agregarNuevaVar(parser.tabla.getObC(), b.toString(), a, "Constante", parser.jerarquia, true, "", null, bleft+PanelPrincipal.totalLineas, bright, parser.dimensiones); :} 
+                                                            parser.op.agregarNuevaVar(parser.tabla.getObC(), b.toString(), a, "Constante", parser.jerarquia, true, "", null, bleft+PanelPrincipal.totalLineas, bright, parser.dimensiones, c.getId()); :} 
                    ENTER2
 ;
 
@@ -174,19 +174,20 @@ parser code {:
              VALOR:c                                        {:  parser.manejoc.crearVariableConValor(parser.tabla, b.toString(), a, c);    
                                                                 if(c!=null){ 
                                                                     if(c.getValor()){
-                                                                        parser.op.agregarNuevaVar(parser.tabla.getObC(), b.toString(), a, "Variable", parser.jerarquia, c.getValor(), "", null, bleft+PanelPrincipal.totalLineas, bright, parser.dimensiones); 
+                                                                        parser.op.agregarNuevaVar(parser.tabla.getObC(), b.toString(), a, "Variable", parser.jerarquia, c.getValor(), "", null, bleft+PanelPrincipal.totalLineas, bright, parser.dimensiones, null); 
                                                                     } else { 
                                                                         System.out.println("soy falso"); 
                                                                     } 
                                                                 } else { 
-                                                                    parser.op.agregarNuevaVar(parser.tabla.getObC(), b.toString(), a, "Variable", parser.jerarquia, false, "", null, bleft+PanelPrincipal.totalLineas, bright, parser.dimensiones); 
+                                                                    parser.op.agregarNuevaVar(parser.tabla.getObC(), b.toString(), a, "Variable", parser.jerarquia, false, "", null, bleft+PanelPrincipal.totalLineas, bright, parser.dimensiones, null); 
                                                                 }  :} 
              VARS2 puntoComa ENTER2
-    |        TIPO_VAR:a id:b DIM_ASIG:c                     {:  parser.tipoActual=a; 
+    |        TIPO_VAR:a id:b                                {:  parser.tipoActual = "Integer"; :}   
+             DIM_ASIG:c                                     {:  parser.tipoActual=a; 
                                                                 if(c!=null){
-                                                                    int size = parser.manejoc.definirSize(parser.tabla, parser.dimensiones, b.toString());
+                                                                    int size = parser.manejoc.definirSize(parser.tabla, parser.dimensiones, b.toString(), cleft+PanelPrincipal.totalLineas, cright);
                                                                     parser.exe.agregarVariable(parser.tabla, b.toString(), size, true, a);
-                                                                    parser.op.agregarNuevaVar(parser.tabla.getObC(), b.toString(), a, "Arreglo", parser.jerarquia, true, "", c, bleft+PanelPrincipal.totalLineas, bright, parser.dimensiones); 
+                                                                    parser.op.agregarNuevaVar(parser.tabla.getObC(), b.toString(), a, "Arreglo", parser.jerarquia, true, "", c, bleft+PanelPrincipal.totalLineas, bright, parser.dimensiones, null); 
                                                                 } :} 
              VARS2 puntoComa ENTER2
 ;
@@ -197,16 +198,17 @@ parser code {:
                                                                 parser.exe.agregarVariable(parser.tabla, a.toString(), 1, false, parser.tipoActual);
                                                                 if(b != null){ 
                                                                     if(b.getValor()){ 
-                                                                        parser.op.agregarNuevaVar(parser.tabla.getObC(), a.toString(), parser.tipoActual, "Variable", parser.jerarquia, b.getValor(), "", null, aleft+PanelPrincipal.totalLineas, aright, parser.dimensiones); 
+                                                                        parser.op.agregarNuevaVar(parser.tabla.getObC(), a.toString(), parser.tipoActual, "Variable", parser.jerarquia, b.getValor(), "", null, aleft+PanelPrincipal.totalLineas, aright, parser.dimensiones, null); 
                                                                     } 
                                                                 } else { 
-                                                                    parser.op.agregarNuevaVar(parser.tabla.getObC(), a.toString(), parser.tipoActual, "Variable", parser.jerarquia, false, "", null, aleft+PanelPrincipal.totalLineas, aright, parser.dimensiones); 
+                                                                    parser.op.agregarNuevaVar(parser.tabla.getObC(), a.toString(), parser.tipoActual, "Variable", parser.jerarquia, false, "", null, aleft+PanelPrincipal.totalLineas, aright, parser.dimensiones, null); 
                                                                 }  :} 
               VARS2
-    |         coma id:a DIM_ASIG:b                          {:  if(b != null){ 
-                                                                    int size = parser.manejoc.definirSize(parser.tabla, parser.dimensiones, a.toString());
+    |         coma id:a                                         {:  parser.tipoActual = "Integer"; :}
+              DIM_ASIG:b                                        {:  if(b != null){ 
+                                                                    int size = parser.manejoc.definirSize(parser.tabla, parser.dimensiones, a.toString(), bleft+PanelPrincipal.totalLineas, bright);
                                                                     parser.exe.agregarVariable(parser.tabla, a.toString(), size, true, parser.tipoActual);
-                                                                    parser.op.agregarNuevaVar(parser.tabla.getObC(), a.toString(), parser.tipoActual, "Arreglo", parser.jerarquia, true, "", b, aleft+PanelPrincipal.totalLineas, aright, parser.dimensiones); 
+                                                                    parser.op.agregarNuevaVar(parser.tabla.getObC(), a.toString(), parser.tipoActual, "Arreglo", parser.jerarquia, true, "", b, aleft+PanelPrincipal.totalLineas, aright, parser.dimensiones, null); 
                                                                 } :}
     |
 ;
@@ -333,19 +335,25 @@ parser code {:
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    DIM_ASIG ::= DIM_ASIG2:a agrupacion_a OPERACION:b agrupacion_b         {:   Integer suma = a + 1; 
-                                                                                parser.dimensiones.add(b.getId());     
+    DIM_ASIG ::= DIM_ASIG2:a agrupacion_a VAR_VECTOR:b agrupacion_b        {:   Integer suma = a + 1; 
+                                                                                parser.dimensiones.add(b);     
                                                                                 RESULT=suma; :}
-    |           DIM_ASIG2 agrupacion_a error:a agrupacion_b                  {: int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en sentencia de valor para un arreglo, se esperaba un valor numerico\n"; :}                                                                         
+    |           DIM_ASIG2 agrupacion_a error:a agrupacion_b                {:   int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en sentencia de valor para un arreglo, se esperaba un valor numerico\n"; :}                                                                         
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    DIM_ASIG2 ::= DIM_ASIG2:a agrupacion_a  OPERACION:b agrupacion_b       {:   Integer suma = a + 1; 
-                                                                                parser.dimensiones.add(b.getId());
+    DIM_ASIG2 ::= DIM_ASIG2:a agrupacion_a  VAR_VECTOR:b agrupacion_b      {:   Integer suma = a + 1; 
+                                                                                parser.dimensiones.add(b);
                                                                                 RESULT=suma; :}
-    |                                                                      {:  RESULT = 0; :}
+    |                                                                       {:  RESULT = 0; :}
     |             DIM_ASIG2 agrupacion_a error:a agrupacion_b                {: int linea = aleft+PanelPrincipal.totalLineas;  PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en sentencia de valor para un arreglo, se esperaba un valor numerico\n"; :} 
+;
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+    VAR_VECTOR ::= id:a             {:  RESULT = a.toString();  :}
+    |              numero:a         {:  RESULT = a.toString();  :}
 ;
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -743,10 +751,13 @@ parser code {:
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    LECTURA_DATOS ::= scanf parentesis_a comilla TEXTO MODULOS:a                    {:  parser.tipoActual=a; :} 
+    LECTURA_DATOS ::= scanf parentesis_a comilla TEXTO:v MODULOS:a                  {:  parser.manejoc.mostrarMensaje(parser.tabla, "\""+v+"\"", null);
+                                                                                        parser.manejoc.mostrarQuiebre(parser.tabla);
+                                                                                        parser.tipoActual=a; :} 
                       comilla coma AMPER:z VAR_SCANF:b parentesis_b puntoComa       {:  if(!z){
                                                                                             int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Falta de '&' dentro de scanf\n";
                                                                                         }
+                                                                                        parser.manejoc.mostrarQuiebre(parser.tabla);
                                                                                         parser.manejoc.crearScanf(parser.tabla, b, a, parser.esArreglo); 
                                                                                         parser.esArreglo = false;   :} 
                       ENTER2

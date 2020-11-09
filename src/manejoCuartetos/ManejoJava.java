@@ -599,7 +599,7 @@ public class ManejoJava {
         jv.getCuarpeta().add(new Nodo("ETIQUETA", et, null, null, jerarquia));
     }
 
-    public String devolverVarSwitch(TablaSimbolos tabla, String idVar, String idMetodo, String idClase) {
+    public String devolverVarSwitch(TablaSimbolos tabla, String idVar, String idMetodo, String idClase, boolean enSwitch) {
         String aDevolver = "";
         NodoHeap posible = buscarPosicionMemoria(tabla, idVar, idMetodo, idClase);
         if (posible != null) {
@@ -608,6 +608,9 @@ public class ManejoJava {
                 tabla.getObJava().getCuarpeta().add(new Nodo("suma", "p", posible.getPosMemoria(), t, null));
                 aDevolver = definirTemporal(tabla);
                 tabla.getObJava().getCuarpeta().add(new Nodo("asig", "stack[(int) " + t + "]", null, aDevolver, null));
+                if (enSwitch) {
+                    aDevolver = "(int)" + aDevolver;
+                }
             } else {
                 String t = definirTemporal(tabla);
                 tabla.getObJava().getCuarpeta().add(new Nodo("suma", "p", "0", t, null));
@@ -617,6 +620,9 @@ public class ManejoJava {
                 tabla.getObJava().getCuarpeta().add(new Nodo("suma", t2, posible.getPosMemoria(), t3, null));
                 aDevolver = definirTemporal(tabla);
                 tabla.getObJava().getCuarpeta().add(new Nodo("asig", "heap[(int) " + t3 + "]", null, aDevolver, null));
+                if (enSwitch) {
+                    aDevolver = "(int)" + aDevolver;
+                }
             }
         }
         return aDevolver;

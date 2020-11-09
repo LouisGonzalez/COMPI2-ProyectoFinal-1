@@ -16,6 +16,18 @@ public class main {
     public static void main(String[] args) {
         Principal principal = new Principal();
         principal.setVisible(true);
+        esNumero("asd");
     }
        
+      public static boolean esNumero(String numero){
+        try{
+            Integer.parseInt(numero);
+            System.out.println("es numero");
+            return true;
+        } catch(NumberFormatException e){
+            System.out.println("no lo es ");
+            return false;
+            
+        }
+    }
 }

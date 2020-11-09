@@ -118,6 +118,7 @@ parser code {:
                                                     parser.exe.agregarClase(parser.tabla, a.toString());
                                                     parser.op.agregarNuevaClase(parser.tabla.getObJava(), a.toString(), aleft+PanelPrincipal.totalLineas+PanelPrincipal.totalLineas, aright); :} 
             llave_a ENTER B llave_b ENTER       {:  parser.manejoJV.constructorPorDefecto(parser.tabla, parser.clase);
+                                                    parser.tabla.getObJava().setAuxiliar(new ArrayList<>());
                                                     parser.clase = ""; :}
     |               
 ;                       
@@ -552,9 +553,9 @@ parser code {:
 /*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
     VAL_FOR ::= id:a                    {:  parser.verif.verificarTipadoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, "Integer", aleft+PanelPrincipal.totalLineas, aright); 
-                                            RESULT=a.toString(); :}
+                                            RESULT = parser.manejoJV.etiquetaId(parser.tabla, a.toString(), parser.metodo, parser.clase); :}
     |           menos:a id:b            {:  parser.verif.verificarTipadoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, "Integer", bleft+PanelPrincipal.totalLineas, bright); 
-                                            RESULT=a.toString()+b.toString(); :}
+                                            RESULT="-"+parser.manejoJV.etiquetaId(parser.tabla, b.toString(), parser.metodo, parser.clase); :}
     |           numero:a                {:  RESULT=a.toString();  :}
     |           menos:a numero:b        {:  RESULT=a.toString()+b.toString(); :}
 ;
@@ -599,9 +600,10 @@ parser code {:
                parentesis_a VAL_SWITCH:a                                {:  parser.arrayFinales.add("etFinal_"+parser.contFinales); 
                                                                             parser.contFinales++;  
                                                                             parser.idSwitch = a; :} 
-               parentesis_b llave_a ENTER CASOS_SWITCH llave_b ENTER    {:  parser.tabla.getObJava().getCuarpeta().add(new Nodo("ETIQUETA", parser.arrayFinales.get(parser.arrayFinales.size()-1), null, null, parser.jerarquia)); 
+               parentesis_b llave_a ENTER CASOS_SWITCH:c llave_b ENTER  {:  parser.tabla.getObJava().getCuarpeta().add(new Nodo("ETIQUETA", parser.arrayFinales.get(parser.arrayFinales.size()-1), null, null, parser.jerarquia)); 
                                                                             parser.arrayFinales.remove(parser.arrayFinales.size()-1); 
-                                                                            parser.op.eliminarAmbito(parser.tabla.getObJava(), parser.jerarquia); parser.jerarquia--; :}
+                                                                            parser.op.eliminarAmbito(parser.tabla.getObJava(), parser.jerarquia); parser.jerarquia--; 
+                                                                            RESULT = c; :}
 ;
 
 /*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -628,7 +630,7 @@ parser code {:
 /*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
     VAL_SWITCH ::= id:a                                 {: parser.verif.verifVarSwitch(parser.tabla.getObJava(), a.toString(), aleft+PanelPrincipal.totalLineas, aright); 
-                                                           RESULT = parser.manejoJV.devolverVarSwitch(parser.tabla, a.toString(), parser.metodo, parser.clase);  :}
+                                                           RESULT = parser.manejoJV.devolverVarSwitch(parser.tabla, a.toString(), parser.metodo, parser.clase, true);  :}
     |              comillaSimple:a id:b comillaSimple:c {: RESULT=a.toString()+b.toString()+c.toString();  :}
     |              numero:a                             {: RESULT=a.toString(); :}
 ;   
@@ -713,7 +715,7 @@ parser code {:
 
 /*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    MENSAJE ::= mensaje parentesis_a TEXTO:a parentesis_b puntoComa ENTER       {:  parser.manejoJV.mostrarQuiebre(parser.tabla);  :} 
+    MENSAJE ::= mensaje parentesis_a TEXTO:a parentesis_b puntoComa ENTER       
     |           mensaje2 parentesis_a TEXTO:a parentesis_b puntoComa ENTER      {:  parser.manejoJV.mostrarQuiebre(parser.tabla); :}
 ;
 
@@ -724,17 +726,17 @@ parser code {:
     |         comilla:a TEXTO_PLANO:b comilla:c         {: String et = a.toString()+b+c.toString(); 
                                                            parser.manejoJV.mostrarMensaje(parser.tabla.getObJava(), et, null);  :}
              TEXTO2:d          
-    |        error:a                                    {: int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en declaracion de instruccion System.out.print\n"; :}         
+    |        error:a                                    {: int linea = aleft+PanelPrincipal.totalLineas; PanelPrincipal.errores += "Fila: " + linea + " Columna: " + aright + " Tipo de error: SINTACTICO - Causa: Error en  declaracion de instruccion System.out.print\n"; :}         
 ;
 
 /*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
     VAL_TEXTO ::= id:a                                              {:  parser.verif.verificarTipadoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, "Float", aleft+PanelPrincipal.totalLineas, aright); 
-                                                                        RESULT = parser.manejoJV.devolverVarSwitch(parser.tabla, a.toString(), parser.metodo, parser.clase); :}
+                                                                        RESULT = parser.manejoJV.devolverVarSwitch(parser.tabla, a.toString(), parser.metodo, parser.clase, false); :}
     |           numero:a                                            {:  RESULT=a.toString();  :}
     |           numero:a punto:b numero:c                           {:  RESULT = a.toString()+b.toString()+c.toString(); :}
     |           menos:b id:a                                        {:  parser.verif.verificarTipadoVar(parser.tabla.getObJava(), a.toString(), parser.jerarquia, parser.tabla.getObJava().getMisClases().size()-1, "Float", aleft+PanelPrincipal.totalLineas, aright); 
-                                                                        String devolver = parser.manejoJV.devolverVarSwitch(parser.tabla, a.toString(), parser.metodo, parser.clase);
+                                                                        String devolver = parser.manejoJV.devolverVarSwitch(parser.tabla, a.toString(), parser.metodo, parser.clase, false);
                                                                         RESULT = b.toString()+devolver; :}
     |           menos:a numero:b                                    {:  RESULT = a.toString()+b.toString(); :}
     |           menos:a numero:b punto:c numero:d                   {:  RESULT = a.toString()+b.toString()+c.toString()+d.toString(); :}

@@ -12,6 +12,7 @@ import gramaticaVB.SintaxVB;
 import interfaz.PanelPrincipal;
 import java.util.ArrayList;
 import java.util.Objects;
+import manejoCuartetos.ManejoVb;
 import objetos.ObjetosVB;
 import objetos.Variable;
 
@@ -185,12 +186,12 @@ public class VerifVB {
     }
 
     //verifica el tipo de valor de una variable a la que se le asignara un valor, y luego lo devuelve
-    public String verificarVarAsignar(String id, ObjetosVB vb, int iterador, int fila, int columna) {
+    public String verificarVarAsignar(String id, TablaSimbolos tabla, int iterador, int fila, int columna, String idMetodo) {
         String tipo = "";
-        if (verifVarLocal(vb, id)) {
-            tipo = vb.getMisMetodos().get(vb.getMisMetodos().size() - 1).getMisVariables().get(iteradorVar).getTipo();
+        if (verifVarLocal(tabla.getObVb(), id)) {
+            tipo = tabla.getObVb().getMisMetodos().get(tabla.getObVb().getMisMetodos().size() - 1).getMisVariables().get(iteradorVar).getTipo();
         } else {
-            tipo = verificarReturn(vb, id, fila, columna);
+            tipo = verificarReturn(tabla, id, fila, columna, idMetodo);
             if (tipo.equals("")) {
                 PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe una variable con el id " + id + " dentro del metodo.\n";
     
@@ -200,14 +201,15 @@ public class VerifVB {
     }
 
     //verifica si una asignacion es del mismo nombre que el metodo, lo que significa que es un return
-    public String verificarReturn(ObjetosVB vb, String id, int fila, int columna) {
+    public String verificarReturn(TablaSimbolos tabla, String id, int fila, int columna, String idMetodo) {
         String tipo = "";
-        if (id.equals(vb.getMisMetodos().get(vb.getMisMetodos().size() - 1).getIdMetodo())) {
-            if (vb.getMisMetodos().get(vb.getMisMetodos().size() - 1).isTipo()) {
+        if (id.equals(tabla.getObVb().getMisMetodos().get(tabla.getObVb().getMisMetodos().size() - 1).getIdMetodo())) {
+            if (tabla.getObVb().getMisMetodos().get(tabla.getObVb().getMisMetodos().size() - 1).isTipo()) {
                 SintaxVB.isReturn = true;
-                tipo = vb.getMisMetodos().get(vb.getMisMetodos().size() - 1).getRetorno();
+                tipo = tabla.getObVb().getMisMetodos().get(tabla.getObVb().getMisMetodos().size() - 1).getRetorno();
+                
             } else {
-                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: El metodo: " + vb.getMisMetodos().get(vb.getMisMetodos().size() - 1).getIdMetodo() + " es de tipo Sub por lo que no puede retornar elementos.\n";
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: El metodo: " + tabla.getObVb().getMisMetodos().get(tabla.getObVb().getMisMetodos().size() - 1).getIdMetodo() + " es de tipo Sub por lo que no puede retornar elementos.\n";
             }
         }
         return tipo;

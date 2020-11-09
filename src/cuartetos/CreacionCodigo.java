@@ -18,9 +18,9 @@ public class CreacionCodigo {
         String codigo = "";
         for (int i = 0; i < cuarpeta.size(); i++) {
             if(cuarpeta.get(i).getOperacion().equals("CREACION_METODO")){
-                    codigo += "void "+cuarpeta.get(i).getVar()+" {\n";
+                if(!cuarpeta.get(i).getVar().equals("main")) codigo += "void "+cuarpeta.get(i).getVar()+" {\n";
             } else if(cuarpeta.get(i).getOperacion().equals("FIN_METODO")){
-                codigo += "}\n";
+                if(i != cuarpeta.size()-1) codigo += "}\n";
             } else if(cuarpeta.get(i).getOperacion().equals("ETIQUETA")){
                 codigo += cuarpeta.get(i).getDato1()+":\n";
             } else if(cuarpeta.get(i).getOperacion().equals("GOTO")){

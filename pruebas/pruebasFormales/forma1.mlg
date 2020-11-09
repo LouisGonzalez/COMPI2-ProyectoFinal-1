@@ -6,27 +6,33 @@
 public class operaciones {
 
 int global1 = 12;
+int x = 0;
 
 public void vereficar(int a, int b){
 	System.out.println("valor de global1: "+global1);
-	if(a < b){
-		while(b > a){
-			a = a + 1;
-			System.out.println("estoy alcanzando a "+b+" "+a);
-		}
-		System.out.println("ya lo alcanze");
-	} else {
-		while(a > b){
-			b = b + 1;
-			System.out.println("estoy alcanzando a "+a+" "+b); 
-		}
-
+	for(x = 0; x < 10; x=x+1){
+		System.out.println(x);
 	}
 }
 
 public void suma(int a, int b){
-	int suma = a + b;
-	System.out.println("El resultado de la suma: "+suma); 
+	int op;
+	op = intinput("Escriba una opcion");
+	switch(op){
+		case 1:
+			System.out.println("Hola mundo");
+			break;
+		case 2:
+			System.out.println("segunda opcion");
+			break;
+		case 3:
+			int sumaOp = a + b;
+			System.out.println("El resultado de la suma es: "+sumaOp);
+			break;
+		default:
+			System.out.println("opcion incorrecta");
+			break;
+	}
 }
 
 public void resta(int a, int b){

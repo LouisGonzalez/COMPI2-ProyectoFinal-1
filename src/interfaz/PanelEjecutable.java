@@ -113,7 +113,7 @@ public class PanelEjecutable extends javax.swing.JPanel {
 
     private void btnEjecutarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEjecutarActionPerformed
         try {
-            String[] cmd3 = {"xterm", "./" + nombre};
+            String[] cmd3 = {"xterm", "-hold", "./" + nombre};
             Runtime.getRuntime().exec(cmd3);
         } catch (IOException ex) {
             Logger.getLogger(PanelEjecutable.class.getName()).log(Level.SEVERE, null, ex);

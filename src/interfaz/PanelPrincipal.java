@@ -22,6 +22,7 @@ import gramaticaVB.AnalizadorLexico3;
 import gramaticaVB.SintaxVB;
 import guardado.Guardado;
 import hojas.NumeracionLineas;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -71,15 +72,18 @@ public class PanelPrincipal extends javax.swing.JPanel {
     private ArrayList<DatosGuardado> datos = new ArrayList<>();
     private int itTab;
     private JTabbedPane tab;
+   
+    private File archivo;
     
     /**
      * Creates new form PanelPrincipal
      */
-    public PanelPrincipal(String texto, String path, ArrayList<DatosGuardado> datos, int itTab, JTabbedPane tab, String path2) {
+    public PanelPrincipal(String texto, String path, ArrayList<DatosGuardado> datos, int itTab, JTabbedPane tab, String path2, File archivo) {
         initComponents();
         txtTexto.setText(texto);
         this.datos = datos;
         this.tab = tab;
+        this.archivo = archivo;
         this.itTab = itTab;
         this.path = path;
         this.path2 = path2;
@@ -90,8 +94,6 @@ public class PanelPrincipal extends javax.swing.JPanel {
         }
         numeracion = new NumeracionLineas(txtTexto);
         jScrollPane1.setRowHeaderView(numeracion);
-        numeracion2 = new NumeracionLineas(txt3d);
-        jScrollPane2.setRowHeaderView(numeracion2);
     }
 
     /**
@@ -106,10 +108,7 @@ public class PanelPrincipal extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         txtTexto = new javax.swing.JTextArea();
         jButton1 = new javax.swing.JButton();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        txt3d = new javax.swing.JTextArea();
         btnErrores = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
 
         txtTexto.setColumns(20);
         txtTexto.setRows(5);
@@ -122,21 +121,10 @@ public class PanelPrincipal extends javax.swing.JPanel {
             }
         });
 
-        txt3d.setColumns(20);
-        txt3d.setRows(5);
-        jScrollPane2.setViewportView(txt3d);
-
         btnErrores.setText("Errores");
         btnErrores.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnErroresActionPerformed(evt);
-            }
-        });
-
-        jButton2.setText("jButton2");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
             }
         });
 
@@ -147,31 +135,24 @@ public class PanelPrincipal extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 479, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 546, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 269, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(107, 107, 107)
-                        .addComponent(jButton2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnErrores, javax.swing.GroupLayout.PREFERRED_SIZE, 251, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(btnErrores, javax.swing.GroupLayout.PREFERRED_SIZE, 251, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 1, Short.MAX_VALUE)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 1030, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(24, 24, 24)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 411, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 411, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
-                    .addComponent(btnErrores)
-                    .addComponent(jButton2))
+                    .addComponent(btnErrores))
                 .addGap(23, 23, 23))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -207,18 +188,24 @@ public class PanelPrincipal extends javax.swing.JPanel {
             codigo = creacion.crearCodigo(cuarpeta);
             codExe = creacion2.crearEjecutable(ejecutable, cuarpeta, tabla.getObC().getContVars());
             if(errores.equals("")){
-                
-                
+                if(tab.getTabCount() >= 2){
+                    tab.remove(1);
+                    if(tab.getTabCount() >= 2){
+                        tab.remove(1);
+                    }
+                    if(tab.getTabCount() >= 2){
+                        tab.remove(1);
+                    }
+                }
                 //creacion codigo 3D
                 Panel3D panel1 = new Panel3D(codigo);
                 tab.addTab("3D", panel1);
                 tab.setTabComponentAt(tab.getTabCount()-1, nueva.crearCabecera("3D", tab));
                 
                 //creacion codigo ejecutable
-                String[] arreglo = path.split("/");
-                String[] arreglo2 = arreglo[arreglo.length-1].split("\\.");
+                String[] arreglo2 = archivo.getName().split("\\.");
                 String nombre = arreglo2[0]+".cpp";
-                String direccion = path2+"/"+nombre;
+                String direccion = archivo.getParentFile()+"/"+nombre;
                 guardar.crearEjecutable(direccion, codExe);
                 PanelEjecutable panel2 = new PanelEjecutable(direccion, arreglo2[0]);
                 tab.addTab("exe", panel2);
@@ -227,14 +214,13 @@ public class PanelPrincipal extends javax.swing.JPanel {
                 //creacion codigo Asembler
                 ArrayList<Objetos> obAssembler = new ArrayList<>();
                 String nombreAs = arreglo2[0]+".asm";
-                String direccionAs = path2+"/"+nombreAs;
+                String direccionAs = archivo.getParentFile()+"/"+nombreAs;
                 String codAssembler = assembler.codigoFormal(ejecutable, obAssembler);
                 guardar.crearAssembler(direccionAs, codAssembler);
                 PanelAssembler panel3 = new PanelAssembler(direccionAs, arreglo2[0]);
                 tab.addTab("assembler", panel3);
                 tab.setTabComponentAt(tab.getTabCount()-1, nueva.crearCabecera("asembler", tab));
                 
-                txt3d.setText(codExe);
             } else {
                 JOptionPane.showMessageDialog(null, "Error en la gramatica, por favor verifica la ventana de errores");
             }
@@ -251,10 +237,6 @@ public class PanelPrincipal extends javax.swing.JPanel {
         error.setVisible(true);
     }//GEN-LAST:event_btnErroresActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-   
-    }//GEN-LAST:event_jButton2ActionPerformed
-
     public void reiniciarDatos() {
         totalLineas = 0;
         lineasC = 0;
@@ -268,7 +250,6 @@ public class PanelPrincipal extends javax.swing.JPanel {
         codigoJava = "";
         codigo = "";
         errores = "";
-        txt3d.setText("");
     }
     
     
@@ -276,10 +257,7 @@ public class PanelPrincipal extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnErrores;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextArea txt3d;
     private javax.swing.JTextArea txtTexto;
     // End of variables declaration//GEN-END:variables
 }

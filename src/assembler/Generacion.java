@@ -61,7 +61,7 @@ public class Generacion {
         for (int i = iterador; i < ejecutable.size(); i++) {
             if (ejecutable.get(i).getOperacion().equals("PRINT")) {
                 codigo += "mov edx,offset mensaje" + i + "\n"
-                        + "call writestring";
+                        + "call writestring\n";
             } else if (ejecutable.get(i).getOperacion().equals("SCANF")) {
                 codigo += "call readdec\n"
                         + "mov " + ejecutable.get(i).getVar() + "," + "eax\n";
