@@ -5,6 +5,7 @@
  */
 package interfaz;
 
+import Tablas.TablaSimbolos;
 import hojas.NumeracionLineas;
 import java.io.BufferedReader;
 import java.io.File;
@@ -23,14 +24,16 @@ public class PanelEjecutable extends javax.swing.JPanel {
     private NumeracionLineas numeracion;
     private String direccion;
     private String nombre;
-
+    private TablaSimbolos tabla;
+    
     /**
      * Creates new form PanelEjecutable
      */
-    public PanelEjecutable(String direccion, String nombre) {
+    public PanelEjecutable(String direccion, String nombre, TablaSimbolos tabla) {
         initComponents();
         this.direccion = direccion;
         this.nombre = nombre;
+        this.tabla = tabla;
         mostrarContenido();
         numeracion = new NumeracionLineas(txtCodigo);
         jScrollPane1.setRowHeaderView(numeracion);
@@ -74,6 +77,7 @@ public class PanelEjecutable extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         txtCodigo = new javax.swing.JTextArea();
         btnEjecutar = new javax.swing.JButton();
+        btnTabla = new javax.swing.JButton();
 
         txtCodigo.setColumns(20);
         txtCodigo.setRows(5);
@@ -86,18 +90,25 @@ public class PanelEjecutable extends javax.swing.JPanel {
             }
         });
 
+        btnTabla.setText("Tabla de Simbolos");
+        btnTabla.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnTablaActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
+                .addGap(25, 25, 25)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(btnTabla, javax.swing.GroupLayout.PREFERRED_SIZE, 246, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnEjecutar, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addGap(25, 25, 25)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 1001, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 1001, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(28, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -106,7 +117,9 @@ public class PanelEjecutable extends javax.swing.JPanel {
                 .addGap(21, 21, 21)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 414, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnEjecutar)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnEjecutar)
+                    .addComponent(btnTabla))
                 .addContainerGap(15, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -121,9 +134,15 @@ public class PanelEjecutable extends javax.swing.JPanel {
 
     }//GEN-LAST:event_btnEjecutarActionPerformed
 
+    private void btnTablaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTablaActionPerformed
+        TablaDatos miTabla = new TablaDatos(null, true, tabla);
+        miTabla.setVisible(true);
+    }//GEN-LAST:event_btnTablaActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnEjecutar;
+    private javax.swing.JButton btnTabla;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea txtCodigo;
     // End of variables declaration//GEN-END:variables

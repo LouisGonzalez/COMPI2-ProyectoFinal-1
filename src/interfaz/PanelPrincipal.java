@@ -207,7 +207,7 @@ public class PanelPrincipal extends javax.swing.JPanel {
                 String nombre = arreglo2[0]+".c";
                 String direccion = archivo.getParentFile()+"/"+nombre;
                 guardar.crearEjecutable(direccion, codExe);
-                PanelEjecutable panel2 = new PanelEjecutable(direccion, arreglo2[0]);
+                PanelEjecutable panel2 = new PanelEjecutable(direccion, arreglo2[0], tabla);
                 tab.addTab("exe", panel2);
                 tab.setTabComponentAt(tab.getTabCount()-1, nueva.crearCabecera("exe", tab));
                
