@@ -421,14 +421,14 @@ parser code {:
     |                java:a punto id:b punto id:c parentesis_a  {:  parser.len=a.toString(); 
                                                                     parser.metodoCorrecto=parser.verif.verificarMetodo(parser.tabla, a.toString(), b.toString(), parser.jerarquia, c.toString(), cleft+PanelPrincipal.totalLineas, cright); 
                                                                     parser.claseUsar = parser.verif.devolverClaseJava2(parser.tabla, b.toString(), bleft+PanelPrincipal.totalLineas, bright); 
-                                                                    if(parser.claseUsar != null){ 
+                                                                    if(parser.claseUsar != null){
                                                                         parser.claseAux = parser.claseUsar.getId();
                                                                         parser.idClase2 = "JV_"+parser.claseUsar.getId(); 
                                                                     } :} 
                      PARAM_METODOS:d parentesis_b puntoComa     {:  parser.manejoc.crearMetodo(parser.tabla, c.toString(), parser.claseAux, "JV", d, bleft+PanelPrincipal.totalLineas, b.toString());
-                                                                    parser.claseAux = ""; :} 
-                     ENTER2
-;
+                                                                    parser.claseAux = ""; :}                    
+                     ENTER2                                                                                 
+;                                                                                                           
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 

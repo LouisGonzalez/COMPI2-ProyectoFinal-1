@@ -204,7 +204,7 @@ public class PanelPrincipal extends javax.swing.JPanel {
                 
                 //creacion codigo ejecutable
                 String[] arreglo2 = archivo.getName().split("\\.");
-                String nombre = arreglo2[0]+".cpp";
+                String nombre = arreglo2[0]+".c";
                 String direccion = archivo.getParentFile()+"/"+nombre;
                 guardar.crearEjecutable(direccion, codExe);
                 PanelEjecutable panel2 = new PanelEjecutable(direccion, arreglo2[0]);

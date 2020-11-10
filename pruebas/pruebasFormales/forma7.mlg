@@ -11,6 +11,21 @@ public Function pruebaForVb() as Integer
 	end if
 end Function
 
+
+public Function suma(num1 as Integer, num2 as Integer) as integer
+	Dim a as Integer
+	a = num1 + num2
+	return a
+end Function
+
+public Sub llamarSuma()
+	Dim a as Integer, num as Integer, num2 as Integer
+	num = intinput("Ingrese primer numero: ")
+	num2 = intinput("Ingrese segundo numero: ")
+	a = suma(num, num2)
+	Console.writeline("la suma es: "+a)
+end Sub
+
 %%JAVA
 
 public class clase {
@@ -31,6 +46,19 @@ public class clase {
 			System.out.println("");
 		}
 
+	}
+
+	public int suma(int num1, int num2){
+		int sumar = num1 + num2;
+		return sumar;
+	}
+
+	public void llamarSuma(){
+		int num1, num2;
+		num1 = intinput("Ingrese primer numero: ");
+		num2 = intinput("Ingrese segundo numero: ");
+		int a = suma(num1, num2);
+		System.out.println("El resultado de la suma es: "+a);
 	}
 
 }
@@ -57,13 +85,9 @@ int a, b;
 
 void main()
 {
-	//sSADF
-	//scaASDF
 	//JAVA.clase id();
 
-	//JAVA.id.mostrar(a,b);
-	//PY.pruebaFor();
-	a = 12 + VB.pruebaForVb();
-	printf("El valor de a es: ",a);
+	//JAVA.id.llamarSuma();
+	VB.llamarSuma();
 
 }

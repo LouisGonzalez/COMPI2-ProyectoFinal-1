@@ -80,14 +80,14 @@ public class VerifJAVA {
                     if (jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getValor()) {
                         todoCorrecto = true;
                     } else {
-                       // PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
+                        // PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
                     }
                 } else {
                     if (verificarPadreVar(jv, jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getTipo(), tipoBase)) {
                         if (jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getValor()) {
                             todoCorrecto = true;
                         } else {
-                          //  PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
+                            //  PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
                         }
                     } else {
                         PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no es compatible con el tipo de operacion.\n";
@@ -121,7 +121,7 @@ public class VerifJAVA {
                     if (jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getValor()) {
                         todoCorrecto = true;
                     } else {
-                       // PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
+                        // PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no tiene un valor asignado.\n";
                     }
                 } else {
                     if (verificarPadreVar(jv, jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getTipo(), tipoBase)) {
@@ -135,7 +135,7 @@ public class VerifJAVA {
                     }
                 }
             } else {
-                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe ninguna vsssssariable: " + id + " dentro del archivo JAVA.\n";
+                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe ninguna variable: " + id + " dentro del archivo JAVA.\n";
             }
         }
         return todoCorrecto;
@@ -175,18 +175,33 @@ public class VerifJAVA {
     }
 
     //revisa que el id que se ingrese en un input cumpla con las condiciones
-    public void verifInput(ObjetosJAVA jv, String id, String tipoBase, int fila, int columna, int jerarquia) {
+    public void verifInput(ObjetosJAVA jv, String id, String tipoBase, int fila, int columna, int jerarquia, boolean condThis) {
         boolean todoCorrecto = false;
         int itClase = jv.getMisClases().size() - 1;
         int itMetodo = jv.getMisClases().get(itClase).getMisMetodos().size() - 1;
-        if (verifVarLocal(jv, id)) {
-            if (jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getTipo().equals(tipoBase)) {
-                jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getListAsignaciones().add(jerarquia);
-                jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).setValor(true);
-                todoCorrecto = true;
-            } else {
-                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no es de tipo: " + tipoBase + "\n";
+        if (!condThis) {
+            if (verifVarLocal(jv, id)) {
+                if (jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getTipo().equals(tipoBase)) {
+                    jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getListAsignaciones().add(jerarquia);
+                    jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).setValor(true);
+                    todoCorrecto = true;
+                } else {
+                    PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no es de tipo: " + tipoBase + "\n";
 
+                }
+            } else {
+                if (verifVarGlobal(jv, id)) {
+                    if (jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getTipo().equals(tipoBase)) {
+                        jv.getMisClases().get(itClase).getGlobales().get(iterador).getListAsignaciones().add(jerarquia);
+                        jv.getMisClases().get(itClase).getGlobales().get(iterador).setValor(true);
+                        todoCorrecto = true;
+                    } else {
+                        PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no es de tipo: " + tipoBase + "\n";
+                    }
+                } else {
+                    PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no existe dentro del archivo JAVA\n";
+
+                }
             }
         } else {
             if (verifVarGlobal(jv, id)) {
@@ -201,17 +216,29 @@ public class VerifJAVA {
                 PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " no existe dentro del archivo JAVA\n";
 
             }
+
         }
     }
 
     //verifica que el id condicion de un switch cumpla con las condiciones
-    public void verifVarSwitch(ObjetosJAVA jv, String id, int fila, int columna) {
+    public void verifVarSwitch(ObjetosJAVA jv, String id, int fila, int columna, boolean condThis) {
         int itClase = jv.getMisClases().size() - 1;
         int itMetodo = jv.getMisClases().get(itClase).getMisMetodos().size() - 1;
-        if (verifVarLocal(jv, id)) {
-            if (jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getTipo().equals("Float")) {
-                PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " es de tipo Float por lo que no es posible usarla dentro de un switch\n";
+        if (!condThis) {
+            if (verifVarLocal(jv, id)) {
+                if (jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(iterador).getTipo().equals("Float")) {
+                    PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " es de tipo Float por lo que no es posible usarla dentro de un switch\n";
 
+                }
+            } else {
+                if (verifVarGlobal(jv, id)) {
+                    if (jv.getMisClases().get(jv.getMisClases().size() - 1).getGlobales().get(iterador).getTipo().equals("Float")) {
+                        PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: La variable " + id + " es de tipo Float por lo que no es posible usarla dentro de un switch\n";
+                    }
+                } else {
+                    PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe una variable " + id + " dentro del archivo JAVA\n";
+
+                }
             }
         } else {
             if (verifVarGlobal(jv, id)) {
@@ -223,7 +250,6 @@ public class VerifJAVA {
 
             }
         }
-
     }
 
     //agrega la variable del iterador dentro de un for
@@ -273,8 +299,8 @@ public class VerifJAVA {
                 } else {
                     //agregar variable al metodo
                     jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().add(new Variable(id, dec, true, jerarquia));
-                    jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().size()-1).getListAsignaciones().add(jerarquia);
-                    jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().size()-1).setValor(true);
+                    jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().size() - 1).getListAsignaciones().add(jerarquia);
+                    jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().get(jv.getMisClases().get(itClase).getMisMetodos().get(itMetodo).getMisVariables().size() - 1).setValor(true);
                 }
             }
 
@@ -327,9 +353,9 @@ public class VerifJAVA {
                 break;
             }
         }
-        if(!existe){
+        if (!existe) {
             PanelPrincipal.errores += "Fila: " + fila + " Columna: " + columna + " Tipo de error: SEMANTICO - Causa: No existe ningun metodo en la clase: " + jv.getMisClases().get(jv.getMisClases().size() - 1).getId() + " con el id: " + idMetodo + "\n";
-         }
+        }
         return existe;
     }
 

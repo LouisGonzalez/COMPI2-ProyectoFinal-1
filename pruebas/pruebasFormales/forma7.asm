@@ -75,23 +75,87 @@ t68 DWORD 0
 t69 DWORD 0
 t70 DWORD 0
 t71 DWORD 0
-mensaje73 BYTE " Ingrese primer numero :",0
-mensaje74 BYTE "\n",0
-mensaje78 BYTE " Ingrese segundo numero :",0
-mensaje79 BYTE "\n",0
-mensaje151 BYTE t45,0
-mensaje152 BYTE "",0
-mensaje153 BYTE "\n",0
-mensaje154 BYTE "",0
-mensaje155 BYTE "\n",0
-mensaje187 BYTE " hola mundo",0
-mensaje190 BYTE t63,0
-mensaje191 BYTE "\n",0
-mensaje199 BYTE " fin metodo",0
-mensaje200 BYTE "\n",0
-mensaje214 BYTE " El valor de a es :",0
-mensaje217 BYTE t71,0
-mensaje218 BYTE "\n",0
+t72 DWORD 0
+t73 DWORD 0
+t74 DWORD 0
+t75 DWORD 0
+t76 DWORD 0
+t77 DWORD 0
+t78 DWORD 0
+t79 DWORD 0
+t80 DWORD 0
+t81 DWORD 0
+t82 DWORD 0
+t83 DWORD 0
+t84 DWORD 0
+t85 DWORD 0
+t86 DWORD 0
+t87 DWORD 0
+t88 DWORD 0
+t89 DWORD 0
+t90 DWORD 0
+t91 DWORD 0
+t92 DWORD 0
+t93 DWORD 0
+t94 DWORD 0
+t95 DWORD 0
+t96 DWORD 0
+t97 DWORD 0
+t98 DWORD 0
+t99 DWORD 0
+t100 DWORD 0
+t101 DWORD 0
+t102 DWORD 0
+t103 DWORD 0
+t104 DWORD 0
+t105 DWORD 0
+t106 DWORD 0
+t107 DWORD 0
+t108 DWORD 0
+t109 DWORD 0
+t110 DWORD 0
+t111 DWORD 0
+t112 DWORD 0
+t113 DWORD 0
+t114 DWORD 0
+t115 DWORD 0
+t116 DWORD 0
+t117 DWORD 0
+t118 DWORD 0
+t119 DWORD 0
+t120 DWORD 0
+t121 DWORD 0
+t122 DWORD 0
+t123 DWORD 0
+t124 DWORD 0
+mensaje126 BYTE " Ingrese primer numero :",0
+mensaje127 BYTE "\n",0
+mensaje131 BYTE " Ingrese segundo numero :",0
+mensaje132 BYTE "\n",0
+mensaje170 BYTE " Ingrese primer numero :",0
+mensaje171 BYTE "\n",0
+mensaje175 BYTE " Ingrese segundo numero :",0
+mensaje176 BYTE "\n",0
+mensaje198 BYTE " la suma es :",0
+mensaje201 BYTE t43,0
+mensaje202 BYTE "\n",0
+mensaje252 BYTE t74,0
+mensaje253 BYTE "",0
+mensaje254 BYTE "\n",0
+mensaje255 BYTE "",0
+mensaje256 BYTE "\n",0
+mensaje278 BYTE " Ingrese primer numero :",0
+mensaje279 BYTE "\n",0
+mensaje283 BYTE " Ingrese segundo numero :",0
+mensaje284 BYTE "\n",0
+mensaje311 BYTE " El resultado de la suma es :",0
+mensaje314 BYTE t106,0
+mensaje315 BYTE "\n",0
+mensaje341 BYTE " hola mundo",0
+mensaje344 BYTE t123,0
+mensaje345 BYTE "\n",0
+mensaje353 BYTE " fin metodo",0
+mensaje354 BYTE "\n",0
 .code
 main proc
 mov p,0
@@ -101,52 +165,18 @@ add eax,p
 add eax,2
 mov p,eax
 mov eax,0
-call VB_pruebaForVb
+call VB_llamarSuma
 mov eax,0
 add eax,p
 sub eax,2
 mov p,eax
 mov eax,0
-mov eax,0
-add eax,p
-add eax,2
-mov t65,eax
-mov eax,0
-mov eax,0
-add eax,t65
-add eax,0
-mov t66,eax
-mov eax,0
-mov t67,stack[t66]
-mov eax,0
-add eax,12
-add eax,t67
-mov t68,eax
-mov eax,0
-mov eax,0
-add eax,p
-add eax,0
-mov t69,eax
-mov eax,0
-mov stack[t69],t68
-mov edx,offset mensaje214
-call writestring
-mov eax,0
-add eax,p
-add eax,0
-mov t70,eax
-mov eax,0
-mov t71,stack[t70]
-mov edx,offset mensaje217
-call writestring
-mov edx,offset mensaje218
-call writestring
 EXIT
 main ENDP
 VB_pruebaForVb proc
-mov edx,offset mensaje73
+mov edx,offset mensaje126
 call writestring
-mov edx,offset mensaje74
+mov edx,offset mensaje127
 call writestring
 call readdec
 mov t1,eax
@@ -156,9 +186,9 @@ add eax,1
 mov t2,eax
 mov eax,0
 mov stack[t2],t1
-mov edx,offset mensaje78
+mov edx,offset mensaje131
 call writestring
-mov edx,offset mensaje79
+mov edx,offset mensaje132
 call writestring
 call readdec
 mov t3,eax
@@ -215,19 +245,13 @@ jmp etFin_0
 etFin_0:
 ret
 VB_pruebaForVb endp
-JV_clase_mostrar_Integer_Integer proc
+VB_suma_Integer_Integer proc
 mov eax,0
 add eax,p
-add eax,4
+add eax,1
 mov t16,eax
 mov eax,0
-mov stack[t16],0
-mov eax,0
-add eax,p
-add eax,5
-mov t17,eax
-mov eax,0
-mov stack[t17],0
+mov t17,stack[t16]
 mov eax,0
 add eax,p
 add eax,2
@@ -235,12 +259,157 @@ mov t18,eax
 mov eax,0
 mov t19,stack[t18]
 mov eax,0
-add eax,p
-add eax,3
+add eax,t17
+add eax,t19
 mov t20,eax
 mov eax,0
-mov t21,stack[t20]
-.IF(t19 > t21)
+mov eax,0
+add eax,p
+add eax,3
+mov t21,eax
+mov eax,0
+mov stack[t21],t20
+mov eax,0
+add eax,p
+add eax,3
+mov t22,eax
+mov eax,0
+mov t23,stack[t22]
+mov eax,0
+add eax,p
+add eax,0
+mov t24,eax
+mov eax,0
+mov stack[t24],t23
+ret
+VB_suma_Integer_Integer endp
+VB_llamarSuma proc
+mov edx,offset mensaje170
+call writestring
+mov edx,offset mensaje171
+call writestring
+call readdec
+mov t26,eax
+mov eax,0
+add eax,p
+add eax,2
+mov t27,eax
+mov eax,0
+mov stack[t27],t26
+mov edx,offset mensaje175
+call writestring
+mov edx,offset mensaje176
+call writestring
+call readdec
+mov t28,eax
+mov eax,0
+add eax,p
+add eax,3
+mov t29,eax
+mov eax,0
+mov stack[t29],t28
+mov eax,0
+add eax,p
+add eax,2
+mov t30,eax
+mov eax,0
+mov t31,stack[t30]
+mov eax,0
+add eax,p
+add eax,3
+mov t32,eax
+mov eax,0
+mov t33,stack[t32]
+mov eax,0
+add eax,p
+add eax,4
+mov t34,eax
+mov eax,0
+mov eax,0
+add eax,t34
+add eax,1
+mov t35,eax
+mov eax,0
+mov stack[t35],t31
+mov eax,0
+add eax,p
+add eax,4
+mov t36,eax
+mov eax,0
+mov eax,0
+add eax,t36
+add eax,2
+mov t37,eax
+mov eax,0
+mov stack[t37],t33
+mov eax,0
+add eax,p
+add eax,4
+mov p,eax
+mov eax,0
+call VB_suma_Integer_Integer
+mov eax,0
+add eax,p
+sub eax,4
+mov p,eax
+mov eax,0
+mov eax,0
+add eax,p
+add eax,4
+mov t38,eax
+mov eax,0
+mov eax,0
+add eax,t38
+add eax,0
+mov t39,eax
+mov eax,0
+mov t40,stack[t39]
+mov eax,0
+add eax,p
+add eax,1
+mov t41,eax
+mov eax,0
+mov stack[t41],t40
+mov edx,offset mensaje198
+call writestring
+mov eax,0
+add eax,p
+add eax,1
+mov t42,eax
+mov eax,0
+mov t43,stack[t42]
+mov edx,offset mensaje201
+call writestring
+mov edx,offset mensaje202
+call writestring
+ret
+VB_llamarSuma endp
+JV_clase_mostrar_Integer_Integer proc
+mov eax,0
+add eax,p
+add eax,4
+mov t45,eax
+mov eax,0
+mov stack[t45],0
+mov eax,0
+add eax,p
+add eax,5
+mov t46,eax
+mov eax,0
+mov stack[t46],0
+mov eax,0
+add eax,p
+add eax,2
+mov t47,eax
+mov eax,0
+mov t48,stack[t47]
+mov eax,0
+add eax,p
+add eax,3
+mov t49,eax
+mov eax,0
+mov t50,stack[t49]
+.IF(t48 > t50)
 jmp et_4
 .ENDIF
 jmp et_5
@@ -248,87 +417,87 @@ et_4:
 mov eax,0
 add eax,p
 add eax,2
-mov t22,eax
+mov t51,eax
 mov eax,0
-mov t23,stack[t22]
+mov t52,stack[t51]
 mov eax,0
 add eax,p
 add eax,4
-mov t24,eax
+mov t53,eax
 mov eax,0
-mov stack[t24],t23
+mov stack[t53],t52
 mov eax,0
 add eax,p
 add eax,3
-mov t25,eax
+mov t54,eax
 mov eax,0
-mov t26,stack[t25]
+mov t55,stack[t54]
 mov eax,0
 add eax,p
 add eax,5
-mov t27,eax
+mov t56,eax
 mov eax,0
-mov stack[t27],t26
+mov stack[t56],t55
 jmp etFin_2
 et_5:
 mov eax,0
 add eax,p
 add eax,3
-mov t28,eax
+mov t57,eax
 mov eax,0
-mov t29,stack[t28]
+mov t58,stack[t57]
 mov eax,0
 add eax,p
 add eax,4
-mov t30,eax
+mov t59,eax
 mov eax,0
-mov stack[t30],t29
+mov stack[t59],t58
 mov eax,0
 add eax,p
 add eax,2
-mov t31,eax
+mov t60,eax
 mov eax,0
-mov t32,stack[t31]
+mov t61,stack[t60]
 mov eax,0
 add eax,p
 add eax,5
-mov t33,eax
+mov t62,eax
 mov eax,0
-mov stack[t33],t32
+mov stack[t62],t61
 jmp etFin_2
 etFin_2:
 mov eax,0
 add eax,p
 add eax,5
-mov t34,eax
+mov t63,eax
 mov eax,0
-mov t35,stack[t34]
+mov t64,stack[t63]
 mov eax,0
 add eax,p
 add eax,6
-mov t36,eax
+mov t65,eax
 mov eax,0
-mov stack[t36],t35
+mov stack[t65],t64
 etFor_1:
 mov eax,0
 add eax,p
 add eax,6
-mov t37,eax
+mov t66,eax
 mov eax,0
-mov t38,stack[t37]
+mov t67,stack[t66]
 mov eax,0
 add eax,p
 add eax,4
-mov t39,eax
+mov t68,eax
 mov eax,0
-mov t40,stack[t39]
+mov t69,stack[t68]
 mov eax,0
 add eax,p
 add eax,6
-mov t41,eax
+mov t70,eax
 mov eax,0
-mov t42,stack[t41]
-.IF(t38 <= t40)
+mov t71,stack[t70]
+.IF(t67 <= t69)
 jmp et_6
 .ENDIF
 jmp et_7
@@ -336,42 +505,198 @@ et_6:
 mov eax,0
 add eax,p
 add eax,6
-mov t44,eax
+mov t73,eax
 mov eax,0
-mov t45,stack[t44]
-mov edx,offset mensaje151
+mov t74,stack[t73]
+mov edx,offset mensaje252
 call writestring
-mov edx,offset mensaje152
+mov edx,offset mensaje253
 call writestring
-mov edx,offset mensaje153
+mov edx,offset mensaje254
 call writestring
-mov edx,offset mensaje154
+mov edx,offset mensaje255
 call writestring
-mov edx,offset mensaje155
+mov edx,offset mensaje256
 call writestring
 mov eax,0
-add eax,t42
+add eax,t71
 add eax,1
-mov t43,eax
+mov t72,eax
 mov eax,0
 mov eax,0
 add eax,p
 add eax,6
-mov t46,eax
+mov t75,eax
 mov eax,0
-mov stack[t46],t43
+mov stack[t75],t72
 jmp etFor_1
 et_7:
 etFin_3:
 ret
 JV_clase_mostrar_Integer_Integer endp
+JV_clase_suma_Integer_Integer proc
+mov eax,0
+add eax,p
+add eax,2
+mov t76,eax
+mov eax,0
+mov t77,stack[t76]
+mov eax,0
+add eax,p
+add eax,3
+mov t78,eax
+mov eax,0
+mov t79,stack[t78]
+mov eax,0
+add eax,t77
+add eax,t79
+mov t80,eax
+mov eax,0
+mov eax,0
+add eax,p
+add eax,4
+mov t81,eax
+mov eax,0
+mov stack[t81],t80
+mov eax,0
+add eax,p
+add eax,4
+mov t82,eax
+mov eax,0
+mov t83,stack[t82]
+mov eax,0
+add eax,p
+add eax,1
+mov t84,eax
+mov eax,0
+mov stack[t84],t83
+ret
+JV_clase_suma_Integer_Integer endp
+JV_clase_llamarSuma proc
+mov edx,offset mensaje278
+call writestring
+mov edx,offset mensaje279
+call writestring
+call readdec
+mov t85,eax
+mov eax,0
+add eax,p
+add eax,2
+mov t86,eax
+mov eax,0
+mov stack[t86],t85
+mov edx,offset mensaje283
+call writestring
+mov edx,offset mensaje284
+call writestring
+call readdec
+mov t87,eax
+mov eax,0
+add eax,p
+add eax,3
+mov t88,eax
+mov eax,0
+mov stack[t88],t87
+mov eax,0
+add eax,p
+add eax,2
+mov t89,eax
+mov eax,0
+mov t90,stack[t89]
+mov eax,0
+add eax,p
+add eax,3
+mov t91,eax
+mov eax,0
+mov t92,stack[t91]
+mov eax,0
+add eax,p
+add eax,3
+mov t93,eax
+mov eax,0
+mov eax,0
+add eax,t93
+add eax,2
+mov t94,eax
+mov eax,0
+mov stack[t94],t90
+mov eax,0
+add eax,p
+add eax,3
+mov t95,eax
+mov eax,0
+mov eax,0
+add eax,t95
+add eax,3
+mov t96,eax
+mov eax,0
+mov stack[t96],t92
+mov eax,0
+add eax,p
+add eax,0
+mov t97,eax
+mov eax,0
+mov t98,stack[t97]
+mov eax,0
+add eax,p
+add eax,3
+mov t99,eax
+mov eax,0
+mov eax,0
+add eax,t99
+add eax,0
+mov t100,eax
+mov eax,0
+mov stack[t100],t98
+mov eax,0
+add eax,p
+add eax,3
+mov p,eax
+mov eax,0
+call JV_clase_suma_Integer_Integer
+mov eax,0
+add eax,p
+sub eax,3
+mov p,eax
+mov eax,0
+mov eax,0
+add eax,p
+add eax,3
+mov t101,eax
+mov eax,0
+mov eax,0
+add eax,t101
+add eax,1
+mov t102,eax
+mov eax,0
+mov t103,stack[t102]
+mov eax,0
+add eax,p
+add eax,4
+mov t104,eax
+mov eax,0
+mov stack[t104],t103
+mov edx,offset mensaje311
+call writestring
+mov eax,0
+add eax,p
+add eax,4
+mov t105,eax
+mov eax,0
+mov t106,stack[t105]
+mov edx,offset mensaje314
+call writestring
+mov edx,offset mensaje315
+call writestring
+ret
+JV_clase_llamarSuma endp
 JV_clase_clase proc
 mov eax,0
 add eax,p
 add eax,0
-mov t47,eax
+mov t107,eax
 mov eax,0
-mov stack[t47],h
+mov stack[t107],h
 mov eax,0
 add eax,h
 add eax,0
@@ -383,85 +708,85 @@ PY_pruebaFor proc
 mov eax,0
 add eax,p
 add eax,1
-mov t49,eax
+mov t109,eax
 mov eax,0
-mov stack[t49],5
+mov stack[t109],5
 mov eax,0
 add eax,p
 add eax,2
-mov t50,eax
+mov t110,eax
 mov eax,0
-mov stack[t50],20
+mov stack[t110],20
 mov eax,0
 add eax,p
 add eax,3
-mov t51,eax
+mov t111,eax
 mov eax,0
-mov stack[t51],2
+mov stack[t111],2
 mov eax,0
 add eax,p
 add eax,1
-mov t52,eax
+mov t112,eax
 mov eax,0
-mov t53,stack[t52]
+mov t113,stack[t112]
 mov eax,0
 add eax,p
 add eax,2
-mov t54,eax
+mov t114,eax
 mov eax,0
-mov t55,stack[t54]
+mov t115,stack[t114]
 mov eax,0
 add eax,p
 add eax,4
-mov t59,eax
+mov t119,eax
 mov eax,0
-mov stack[t59],t53
+mov stack[t119],t113
 etFor_3:
 mov eax,0
 add eax,p
 add eax,4
-mov t60,eax
+mov t120,eax
 mov eax,0
-mov t61,stack[t60]
-.IF(t61 <= t55)
+mov t121,stack[t120]
+.IF(t121 <= t115)
 jmp et_9
 .ENDIF
 jmp et_10
 et_9:
-mov edx,offset mensaje187
+mov edx,offset mensaje341
 call writestring
 mov eax,0
 add eax,p
 add eax,4
-mov t62,eax
+mov t122,eax
 mov eax,0
-mov t63,stack[t62]
-mov edx,offset mensaje190
+mov t123,stack[t122]
+mov edx,offset mensaje344
 call writestring
-mov edx,offset mensaje191
+mov edx,offset mensaje345
 call writestring
 mov eax,0
 add eax,p
 add eax,3
-mov t56,eax
+mov t116,eax
 mov eax,0
 mov eax,0
 add eax,p
 add eax,4
-mov t57,eax
+mov t117,eax
 mov eax,0
 mov eax,0
-add eax,stack[(int) t57]
-add eax,stack[(int) t56]
-mov t58,eax
+add eax,stack[(int) t117]
+add eax,stack[(int) t116]
+mov t118,eax
 mov eax,0
-mov stack[t57],t58
+mov stack[t117],t118
 jmp etFor_3
 et_10:
 etFin_5:
-mov edx,offset mensaje199
+mov edx,offset mensaje353
 call writestring
-mov edx,offset mensaje200
+mov edx,offset mensaje354
 call writestring
 ret
 PY_pruebaFor endp

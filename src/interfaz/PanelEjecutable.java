@@ -34,7 +34,7 @@ public class PanelEjecutable extends javax.swing.JPanel {
         mostrarContenido();
         numeracion = new NumeracionLineas(txtCodigo);
         jScrollPane1.setRowHeaderView(numeracion);
-        String[] cmd2 = {"g++", "-o", nombre, direccion};
+        String[] cmd2 = {"gcc", "-o", nombre, direccion};
         try {
             Runtime.getRuntime().exec(cmd2);
         } catch (IOException ex) {

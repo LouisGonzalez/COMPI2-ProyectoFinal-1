@@ -1,0 +1,89 @@
+%%VB
+
+%%JAVA
+public class Calculadora
+{
+	int operador1;
+	int operador2;
+	int operacion;
+
+	public Calculadora()
+	{
+		operador1 = 1;
+		operador2 = 1;
+		operacion = 3;
+	}
+
+	public void pedirOperador(int operador){
+		if(operador == 1){
+			this.operador1 = intinput("Ingrese primer numero: ");
+		} else {
+			this.operador2 = intinput("Ingrese segundo numero: ");
+		}
+	}
+
+	public void pedirOperacion(){
+		this.operacion = intinput("Ingrese operacion");
+	}
+
+	public int sumar(){
+		int total = this.operador1 + this.operador2;
+		return total;	
+	}
+
+	public int restar(){
+		int total = this.operador1 - this.operador2;
+		return total;
+	}
+
+	public int potencia(){
+		int total = operador1 * operador2;
+		return total;
+	}
+
+	public int operar(int operacion){
+		switch(this.operacion){
+			case 1:
+				return sumar();
+			case 2:
+				return restar();
+			case 3:
+				return potencia();
+			default: 
+				System.out.println("operacion incorrecta! ");
+				return -1;
+		}
+	}
+
+
+}
+
+%%PY
+
+%%PROGRAMA
+
+#include "JAVA.*"
+
+void main()
+{
+	JAVA.Calculadora calc1();
+	JAVA.Calculadora calc2();
+	JAVA.Calculadora calc3();
+	
+	JAVA.calc1.pedirOperador(1);
+	JAVA.calc1.pedirOperador(2);
+	JAVA.calc1.pedirOperacion();
+	printf("el total es ");
+	printf(JAVA.calc1.operar(0));
+	
+	JAVA.calc2.pedirOperador(1);
+	JAVA.calc2.pedirOperador(2);
+	JAVA.calc2.pedirOperacion();
+	printf("el total es ");
+	printf(JAVA.calc2.operar(0));
+	
+	printf("el total es ");
+	printf(JAVA.calc3.operar(0));
+	
+}
+
