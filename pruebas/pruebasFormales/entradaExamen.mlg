@@ -44,11 +44,11 @@ public class Calculadora
 	public int operar(int operacion){
 		switch(this.operacion){
 			case 1:
-				return sumar();
+				return this.sumar();
 			case 2:
-				return restar();
+				return this.restar();
 			case 3:
-				return potencia();
+				return this.potencia();
 			default: 
 				System.out.println("operacion incorrecta! ");
 				return -1;

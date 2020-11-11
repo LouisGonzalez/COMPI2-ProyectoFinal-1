@@ -236,6 +236,18 @@ parser code {:
                                                                             }
                                                                         }
                                                                         RESULT = "-"+a.getId(); :}        
+    |           condThis punto METODO_COND:a                        {:  if(!a.getTipo().equals(parser.tipoActual)){
+                                                                            if(!parser.verif.verificarPadreVar(parser.tabla.getObJava(), a.getTipo(), parser.tipoActual)){
+                                                                                PanelPrincipal.errores += "Fila: " + aleft+PanelPrincipal.totalLineas + " Columna: " + aright + " Tipo de error: SEMANTICO - Causa: Conflicto en tipadoL: "+a.getTipo() +" - "+ parser.tipoActual +".\n";
+                                                                            }
+                                                                        }
+                                                                        RESULT = a.getId(); :}        
+    |            menos condThis punto METODO_COND:a                 {:  if(!a.getTipo().equals(parser.tipoActual)){
+                                                                            if(!parser.verif.verificarPadreVar(parser.tabla.getObJava(), a.getTipo(), parser.tipoActual)){
+                                                                                PanelPrincipal.errores += "Fila: " + aleft+PanelPrincipal.totalLineas + " Columna: " + aright + " Tipo de error: SEMANTICO - Causa: Conflicto en tipadoL: "+a.getTipo() +" - "+ parser.tipoActual +".\n";
+                                                                            }
+                                                                        }
+                                                                        RESULT = "-"+a.getId(); :}        
     |            numero:a punto:b numero:c                          {:  String tipo="Float"; parser.verif.verificarNumero(tipo, parser.tabla.getObJava(), parser.tipoActual, a.toString()+b.toString()+c.toString(), aleft+PanelPrincipal.totalLineas, aright); RESULT=a.toString()+b.toString()+c.toString(); :}  
     |            comillaSimple:a id:b comillaSimple:c               {:  RESULT=a.toString()+b.toString()+c.toString();  :}
     |            comillaSimple:a numero:b comillaSimple:c           {:  RESULT=a.toString()+b.toString()+c.toString();  :}
@@ -687,6 +699,9 @@ parser code {:
     |            numero:a punto:b numero:c                          {:  RESULT = new NodoBoolean("Float", a.toString()+b.toString()+c.toString()); :} 
     |            METODO_COND:a                                      {:  RESULT = a; :}
     |            menos METODO_COND:a                                {:  String et = "-"+a.getId();
+                                                                        RESULT = new NodoBoolean(a.getTipo(), et); :}
+    |            condThis punto METODO_COND:a                       {:  RESULT = a; :}
+    |            menos condThis punto METODO_COND:a                 {:  String et = "-"+a.getId();
                                                                         RESULT = new NodoBoolean(a.getTipo(), et); :}
     |            comillaSimple:a id:b comillaSimple:c               {:  RESULT = new NodoBoolean("Char", a.toString()+b.toString()+c.toString()); :}
     |            comillaSimple:a numero:b comillaSimple:c           {:  RESULT = new NodoBoolean("Char", a.toString()+b.toString()+c.toString());  :}

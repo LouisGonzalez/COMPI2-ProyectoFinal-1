@@ -191,7 +191,7 @@ add eax,t131
 add eax,1
 mov t132,eax
 mov eax,0
-mov stack[t132],156
+mov stack[t132],12
 mov eax,0
 add eax,p
 add eax,3

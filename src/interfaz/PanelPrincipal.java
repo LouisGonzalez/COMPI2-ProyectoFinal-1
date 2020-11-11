@@ -219,7 +219,7 @@ public class PanelPrincipal extends javax.swing.JPanel {
                 guardar.crearAssembler(direccionAs, codAssembler);
                 PanelAssembler panel3 = new PanelAssembler(direccionAs, arreglo2[0]);
                 tab.addTab("assembler", panel3);
-                tab.setTabComponentAt(tab.getTabCount()-1, nueva.crearCabecera("asembler", tab));
+                tab.setTabComponentAt(tab.getTabCount()-1, nueva.crearCabecera("assembler", tab));
                 
             } else {
                 JOptionPane.showMessageDialog(null, "Error en la gramatica, por favor verifica la ventana de errores");
