@@ -54,7 +54,7 @@ float Resultado_1 ;
   int Respuesta1;
   int Respuesta2;
   int Respuesta3;
-  int Respuesta4;
+  float Respuesta4;
   int Contador=0; 
 
 void main()

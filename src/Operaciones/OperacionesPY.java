@@ -34,7 +34,7 @@ public class OperacionesPY {
             SintaxPYTHON.primerLinea = true;
         } else {
             if (tabsLinea > lineasGuias.get(lineasGuias.size() - 1)) {
-                System.out.println("ERROR");
+                System.out.println("ERRORazo");
             } else if (tabsLinea < lineasGuias.get(lineasGuias.size() - 1)) {
                 lineasGuias.remove(lineasGuias.size() - 1);
                 Integer iterador = null;
@@ -61,6 +61,7 @@ public class OperacionesPY {
                             manejoPY.segundoChequeoIf(py, usoPila, pilaCuarpeta, pilaFalsas);
                             manejo.agregarEtiquetaFinPY2(py, SintaxPYTHON.jerarquia, et);
                         } else if (tipoInstruccion.get(tipoInstruccion.size() - 1).equals("ELSE")) {
+                            System.out.println("ENTRO DENTRO DEL ELSE");
                             if (manejoPY.ultimaEtiquetaFinal(py, SintaxPYTHON.jerarquia) != null) {
                                 int nodo = manejoPY.ultimaEtiquetaFinal(py, SintaxPYTHON.jerarquia);
                                 py.getCuarpeta().remove(nodo);
@@ -72,7 +73,6 @@ public class OperacionesPY {
                         } else if (tipoInstruccion.get(tipoInstruccion.size() - 1).equals("WHILE")) {
                             manejoPY.retornoWhile(py, usoPila, pilaCuarpeta, pilaFalsas);
                         } else if (tipoInstruccion.get(tipoInstruccion.size() - 1).equals("FOR")) {
-                            System.out.println("ENTRO AQUI DEBIDO AL FOR MIS PANAS");
                             manejoPY.retornoFor(py, usoPila, pilaCuarpeta, pilaFalsas, pilaFor);
                         }
                         System.out.println(tipoInstruccion.get(tipoInstruccion.size() - 1) + "      " + tipoInstruccion.size());

@@ -46,10 +46,6 @@ public class Generacion {
         codigoMain = "";
         metodoActual = "";
         codigoResto = generarCodigo(ejecutable, misObjetos, 0, false);
-        System.out.println("--------------------------------------------------------------------------------------------------------------------");
-        System.out.println(codigoResto);
-        System.out.println("--------------------------------------------------------------------------------------------------------------------");
-        System.out.println(codigoMain);
         codigo += codigoMain;
         codigo += codigoResto;
         codigo += "END main";

@@ -332,10 +332,14 @@ ret
 JV_OperacionAlgebraica_OperacionAlgebraica endp
 JV_OperacionAlgebraica_Suma proc
 mov edx,offset mensaje127
-call writestringmov edx,offset mensaje128
-call writestringmov edx,offset mensaje129
-call writestringmov edx,offset mensaje130
-call writestringcall readdec
+call writestring
+mov edx,offset mensaje128
+call writestring
+mov edx,offset mensaje129
+call writestring
+mov edx,offset mensaje130
+call writestring
+call readdec
 mov t17,eax
 mov eax,0
 add eax,p
@@ -350,10 +354,14 @@ mov t20,eax
 mov eax,0
 mov heap[t20],t17
 mov edx,offset mensaje136
-call writestringmov edx,offset mensaje137
-call writestringmov edx,offset mensaje138
-call writestringmov edx,offset mensaje139
-call writestringcall readdec
+call writestring
+mov edx,offset mensaje137
+call writestring
+mov edx,offset mensaje138
+call writestring
+mov edx,offset mensaje139
+call writestring
+call readdec
 mov t21,eax
 mov eax,0
 add eax,p
@@ -412,10 +420,14 @@ ret
 JV_OperacionAlgebraica_Suma endp
 JV_OperacionAlgebraica_Contador proc
 mov edx,offset mensaje160
-call writestringmov edx,offset mensaje161
-call writestringmov edx,offset mensaje162
-call writestringmov edx,offset mensaje163
-call writestringcall readdec
+call writestring
+mov edx,offset mensaje161
+call writestring
+mov edx,offset mensaje162
+call writestring
+mov edx,offset mensaje163
+call writestring
+call readdec
 mov t37,eax
 mov eax,0
 add eax,p
@@ -431,8 +443,10 @@ mov eax,0
 mov heap[t40],t37
 etWhile_1:
 mov edx,offset mensaje170
-call writestringmov edx,offset mensaje171
-call writestringmov eax,0
+call writestring
+mov edx,offset mensaje171
+call writestring
+mov eax,0
 add eax,p
 add eax,0
 mov t41,eax
@@ -474,8 +488,10 @@ mov t51,eax
 mov eax,0
 mov t52,heap[t51]
 mov edx,offset mensaje185
-call writestringmov edx,offset mensaje186
-call writestringmov eax,0
+call writestring
+mov edx,offset mensaje186
+call writestring
+mov eax,0
 add eax,p
 add eax,0
 mov t53,eax
@@ -550,10 +566,14 @@ ret
 JV_OperacionAlgebraica_Cuadrado_Integer endp
 JV_OperacionAlgebraica_ElevarCuadrado proc
 mov edx,offset mensaje216
-call writestringmov edx,offset mensaje217
-call writestringmov edx,offset mensaje218
-call writestringmov edx,offset mensaje219
-call writestringcall readdec
+call writestring
+mov edx,offset mensaje217
+call writestring
+mov edx,offset mensaje218
+call writestring
+mov edx,offset mensaje219
+call writestring
+call readdec
 mov t70,eax
 mov eax,0
 add eax,p
@@ -568,17 +588,25 @@ mov t73,eax
 mov eax,0
 mov heap[t73],t70
 mov edx,offset mensaje225
-call writestringmov edx,offset mensaje226
-call writestringmov edx,offset mensaje227
-call writestringmov edx,offset mensaje228
-call writestringret
+call writestring
+mov edx,offset mensaje226
+call writestring
+mov edx,offset mensaje227
+call writestring
+mov edx,offset mensaje228
+call writestring
+ret
 JV_OperacionAlgebraica_ElevarCuadrado endp
 PY_Continuar proc
 mov edx,offset mensaje231
-call writestringmov edx,offset mensaje232
-call writestringmov edx,offset mensaje233
-call writestringmov edx,offset mensaje234
-call writestringcall readdec
+call writestring
+mov edx,offset mensaje232
+call writestring
+mov edx,offset mensaje233
+call writestring
+mov edx,offset mensaje234
+call writestring
+call readdec
 mov t75,eax
 mov eax,0
 add eax,p

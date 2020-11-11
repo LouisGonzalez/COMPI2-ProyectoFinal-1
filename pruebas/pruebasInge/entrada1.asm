@@ -180,6 +180,9 @@ mensaje207 BYTE t17,0
 mensaje208 BYTE "\n",0
 mensaje438 BYTE " fin",0
 mensaje439 BYTE "\n",0
+mensaje440 BYTE "null",0
+mensaje441 BYTE "\n",0
+mensaje442 BYTE "\n",0
 .code
 main proc
 mov p,0
@@ -844,8 +847,16 @@ jmp etFor_4
 et_17:
 etFin_8:
 mov edx,offset mensaje438
-call writestringmov edx,offset mensaje439
-call writestringcall readdec
+call writestring
+mov edx,offset mensaje439
+call writestring
+mov edx,offset mensaje440
+call writestring
+mov edx,offset mensaje441
+call writestring
+mov edx,offset mensaje442
+call writestring
+call readdec
 mov t160,eax
 mov eax,0
 add eax,p
@@ -900,8 +911,10 @@ jmp et_3
 jmp et_4
 et_3:
 mov edx,offset mensaje179
-call writestringmov edx,offset mensaje180
-call writestringjmp etFin_2
+call writestring
+mov edx,offset mensaje180
+call writestring
+jmp etFin_2
 et_4:
 mov eax,0
 add eax,p
@@ -915,35 +928,46 @@ jmp et_5
 jmp et_6
 et_5:
 mov edx,offset mensaje188
-call writestringmov edx,offset mensaje189
-call writestringjmp etFin_2
+call writestring
+mov edx,offset mensaje189
+call writestring
+jmp etFin_2
 et_6:
 mov edx,offset mensaje192
-call writestringmov edx,offset mensaje193
-call writestringjmp etFin_2
+call writestring
+mov edx,offset mensaje193
+call writestring
+jmp etFin_2
 etFin_2:
 mov edx,offset mensaje196
-call writestringmov edx,offset mensaje197
-call writestringret
+call writestring
+mov edx,offset mensaje197
+call writestring
+ret
 PY_Mensaje endp
 PY_Mostrar proc
 mov edx,offset mensaje200
-call writestringmov eax,0
+call writestring
+mov eax,0
 add eax,p
 add eax,1
 mov t14,eax
 mov eax,0
 mov t15,stack[t14]
 mov edx,offset mensaje203
-call writestringmov edx,offset mensaje204
-call writestringmov eax,0
+call writestring
+mov edx,offset mensaje204
+call writestring
+mov eax,0
 add eax,p
 add eax,2
 mov t16,eax
 mov eax,0
 mov t17,stack[t16]
 mov edx,offset mensaje207
-call writestringmov edx,offset mensaje208
-call writestringret
+call writestring
+mov edx,offset mensaje208
+call writestring
+ret
 PY_Mostrar endp
 END main

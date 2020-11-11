@@ -75,6 +75,13 @@ def pruebaFor():
 		print("hola mundo",a)
 	print("fin metodo")
 
+def otraPrueba(a1, a2):
+	if a1 > a2:
+		return 23
+	else:
+		return 12
+	print("fin metodo")
+
 %%PROGRAMA
 
 #include "JAVA.*"
@@ -88,6 +95,7 @@ void main()
 	//JAVA.clase id();
 
 	//JAVA.id.llamarSuma();
-	VB.llamarSuma();
-
+	//	VB.llamarSuma();
+	int valor = PY.otraPrueba(12, 43);
+	printf("el valor es: ",valor);
 }

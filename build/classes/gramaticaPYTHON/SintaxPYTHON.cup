@@ -209,7 +209,7 @@ parser code {:
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-    RETURN ::= TAB:h                        {:  parser.op.verificarTabs(hright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, h, true, parser.tipoInstruccion); :} 
+    RETURN ::= TAB:h                        {:  parser.op.verificarTabs(hright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, h, false, parser.tipoInstruccion); :} 
                condReturn RETORNO:a ENTER   {:  parser.exe.agregarReturn(parser.tabla, parser.metodo, a.getTipo());
                                                 parser.manejoPY.agregarReturn(parser.tabla, a.getId(), parser.metodo); 
                                                 parser.op.agregarRetornoMetodo(parser.tabla.getObPython(), a.getTipo()); :}
@@ -453,7 +453,7 @@ parser code {:
 /*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
     ELSE ::= TAB:a condElse                             {:  parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, true, parser.tipoInstruccion);    
-                                                            parser.tipoInstruccion.add("ELSE");   :} 
+                                                            parser.tipoInstruccion.add("ELSE");  :} 
              dosPuntos ENTER                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
     |        TAB:a condElif                             {:  parser.op.verificarTabs(aright, parser.tabla.getObPython(), parser.pilaFor, parser.usoPila, parser.pilaCuarpeta, parser.pilaFalsas, parser.instrucciones, parser.lineasGuias, a, true, parser.tipoInstruccion); 
                                                             parser.usoPila.add(false); 

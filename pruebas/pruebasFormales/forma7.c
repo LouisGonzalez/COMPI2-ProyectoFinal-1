@@ -129,6 +129,22 @@ float t121;
 float t122;
 float t123;
 float t124;
+float t125;
+float t126;
+float t127;
+float t128;
+float t129;
+float t130;
+float t131;
+float t132;
+float t133;
+float t134;
+float t135;
+float t136;
+float t137;
+float t138;
+float t139;
+float t140;
 void VB_pruebaForVb() {
 printf( " Ingrese primer numero :");
 printf( "\n");
@@ -368,11 +384,47 @@ printf( " fin metodo");
 printf( "\n");
 printf("");
 }
+void PY_otraPrueba() {
+t124 = p + 1;
+t125 = stack[(int) t124];
+t126 = p + 2;
+t127 = stack[(int) t126];
+if(t125 > t127) { goto et_10; }
+goto et_11;
+et_10:
+t128 = p + 0;
+stack[(int) t128] = 23;
+goto etFin_6;
+et_11:
+t129 = p + 0;
+stack[(int) t129] = 12;
+goto etFin_6;
+etFin_6:
+printf( " fin metodo");
+printf( "\n");
+printf("");
+}
 int main() {
 p = 0;
 h = 0;
-p = p + 2;
-VB_llamarSuma();
-p = p - 2;
+t131 = p + 3;
+t132 = t131 + 1;
+stack[(int)t132] = 156;
+t133 = p + 3;
+t134 = t133 + 2;
+stack[(int)t134] = 43;
+p = p + 3;
+PY_otraPrueba();
+p = p - 3;
+t135 = p + 3;
+t136 = t135 + 0;
+t137 = stack[(int)t136];
+t138 = p + 2;
+stack[(int)t138] = t137;
+printf( " el valor es :");
+t139 = p + 2;
+t140 = stack[(int)t139];
+printf("%f", t140);
+printf( "\n");
 return 0;
 }

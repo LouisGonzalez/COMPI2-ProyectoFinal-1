@@ -128,55 +128,127 @@ t121 DWORD 0
 t122 DWORD 0
 t123 DWORD 0
 t124 DWORD 0
-mensaje126 BYTE " Ingrese primer numero :",0
-mensaje127 BYTE "\n",0
-mensaje131 BYTE " Ingrese segundo numero :",0
-mensaje132 BYTE "\n",0
-mensaje170 BYTE " Ingrese primer numero :",0
-mensaje171 BYTE "\n",0
-mensaje175 BYTE " Ingrese segundo numero :",0
-mensaje176 BYTE "\n",0
-mensaje198 BYTE " la suma es :",0
-mensaje201 BYTE t43,0
-mensaje202 BYTE "\n",0
-mensaje252 BYTE t74,0
-mensaje253 BYTE "",0
-mensaje254 BYTE "\n",0
-mensaje255 BYTE "",0
-mensaje256 BYTE "\n",0
-mensaje278 BYTE " Ingrese primer numero :",0
-mensaje279 BYTE "\n",0
-mensaje283 BYTE " Ingrese segundo numero :",0
-mensaje284 BYTE "\n",0
-mensaje311 BYTE " El resultado de la suma es :",0
-mensaje314 BYTE t106,0
-mensaje315 BYTE "\n",0
-mensaje341 BYTE " hola mundo",0
-mensaje344 BYTE t123,0
-mensaje345 BYTE "\n",0
-mensaje353 BYTE " fin metodo",0
-mensaje354 BYTE "\n",0
+t125 DWORD 0
+t126 DWORD 0
+t127 DWORD 0
+t128 DWORD 0
+t129 DWORD 0
+t130 DWORD 0
+t131 DWORD 0
+t132 DWORD 0
+t133 DWORD 0
+t134 DWORD 0
+t135 DWORD 0
+t136 DWORD 0
+t137 DWORD 0
+t138 DWORD 0
+t139 DWORD 0
+t140 DWORD 0
+mensaje142 BYTE " Ingrese primer numero :",0
+mensaje143 BYTE "\n",0
+mensaje147 BYTE " Ingrese segundo numero :",0
+mensaje148 BYTE "\n",0
+mensaje186 BYTE " Ingrese primer numero :",0
+mensaje187 BYTE "\n",0
+mensaje191 BYTE " Ingrese segundo numero :",0
+mensaje192 BYTE "\n",0
+mensaje214 BYTE " la suma es :",0
+mensaje217 BYTE t43,0
+mensaje218 BYTE "\n",0
+mensaje268 BYTE t74,0
+mensaje269 BYTE "",0
+mensaje270 BYTE "\n",0
+mensaje271 BYTE "",0
+mensaje272 BYTE "\n",0
+mensaje294 BYTE " Ingrese primer numero :",0
+mensaje295 BYTE "\n",0
+mensaje299 BYTE " Ingrese segundo numero :",0
+mensaje300 BYTE "\n",0
+mensaje327 BYTE " El resultado de la suma es :",0
+mensaje330 BYTE t106,0
+mensaje331 BYTE "\n",0
+mensaje357 BYTE " hola mundo",0
+mensaje360 BYTE t123,0
+mensaje361 BYTE "\n",0
+mensaje369 BYTE " fin metodo",0
+mensaje370 BYTE "\n",0
+mensaje388 BYTE " fin metodo",0
+mensaje389 BYTE "\n",0
+mensaje408 BYTE " el valor es :",0
+mensaje411 BYTE t140,0
+mensaje412 BYTE "\n",0
 .code
 main proc
 mov p,0
 mov h,0
 mov eax,0
 add eax,p
-add eax,2
-mov p,eax
+add eax,3
+mov t131,eax
 mov eax,0
-call VB_llamarSuma
+mov eax,0
+add eax,t131
+add eax,1
+mov t132,eax
+mov eax,0
+mov stack[t132],156
 mov eax,0
 add eax,p
-sub eax,2
+add eax,3
+mov t133,eax
+mov eax,0
+mov eax,0
+add eax,t133
+add eax,2
+mov t134,eax
+mov eax,0
+mov stack[t134],43
+mov eax,0
+add eax,p
+add eax,3
 mov p,eax
 mov eax,0
+call PY_otraPrueba
+mov eax,0
+add eax,p
+sub eax,3
+mov p,eax
+mov eax,0
+mov eax,0
+add eax,p
+add eax,3
+mov t135,eax
+mov eax,0
+mov eax,0
+add eax,t135
+add eax,0
+mov t136,eax
+mov eax,0
+mov t137,stack[t136]
+mov eax,0
+add eax,p
+add eax,2
+mov t138,eax
+mov eax,0
+mov stack[t138],t137
+mov edx,offset mensaje408
+call writestring
+mov eax,0
+add eax,p
+add eax,2
+mov t139,eax
+mov eax,0
+mov t140,stack[t139]
+mov edx,offset mensaje411
+call writestring
+mov edx,offset mensaje412
+call writestring
 EXIT
 main ENDP
 VB_pruebaForVb proc
-mov edx,offset mensaje126
+mov edx,offset mensaje142
 call writestring
-mov edx,offset mensaje127
+mov edx,offset mensaje143
 call writestring
 call readdec
 mov t1,eax
@@ -186,9 +258,9 @@ add eax,1
 mov t2,eax
 mov eax,0
 mov stack[t2],t1
-mov edx,offset mensaje131
+mov edx,offset mensaje147
 call writestring
-mov edx,offset mensaje132
+mov edx,offset mensaje148
 call writestring
 call readdec
 mov t3,eax
@@ -284,9 +356,9 @@ mov stack[t24],t23
 ret
 VB_suma_Integer_Integer endp
 VB_llamarSuma proc
-mov edx,offset mensaje170
+mov edx,offset mensaje186
 call writestring
-mov edx,offset mensaje171
+mov edx,offset mensaje187
 call writestring
 call readdec
 mov t26,eax
@@ -296,9 +368,9 @@ add eax,2
 mov t27,eax
 mov eax,0
 mov stack[t27],t26
-mov edx,offset mensaje175
+mov edx,offset mensaje191
 call writestring
-mov edx,offset mensaje176
+mov edx,offset mensaje192
 call writestring
 call readdec
 mov t28,eax
@@ -370,7 +442,7 @@ add eax,1
 mov t41,eax
 mov eax,0
 mov stack[t41],t40
-mov edx,offset mensaje198
+mov edx,offset mensaje214
 call writestring
 mov eax,0
 add eax,p
@@ -378,9 +450,9 @@ add eax,1
 mov t42,eax
 mov eax,0
 mov t43,stack[t42]
-mov edx,offset mensaje201
+mov edx,offset mensaje217
 call writestring
-mov edx,offset mensaje202
+mov edx,offset mensaje218
 call writestring
 ret
 VB_llamarSuma endp
@@ -508,15 +580,15 @@ add eax,6
 mov t73,eax
 mov eax,0
 mov t74,stack[t73]
-mov edx,offset mensaje252
+mov edx,offset mensaje268
 call writestring
-mov edx,offset mensaje253
+mov edx,offset mensaje269
 call writestring
-mov edx,offset mensaje254
+mov edx,offset mensaje270
 call writestring
-mov edx,offset mensaje255
+mov edx,offset mensaje271
 call writestring
-mov edx,offset mensaje256
+mov edx,offset mensaje272
 call writestring
 mov eax,0
 add eax,t71
@@ -573,9 +645,9 @@ mov stack[t84],t83
 ret
 JV_clase_suma_Integer_Integer endp
 JV_clase_llamarSuma proc
-mov edx,offset mensaje278
+mov edx,offset mensaje294
 call writestring
-mov edx,offset mensaje279
+mov edx,offset mensaje295
 call writestring
 call readdec
 mov t85,eax
@@ -585,9 +657,9 @@ add eax,2
 mov t86,eax
 mov eax,0
 mov stack[t86],t85
-mov edx,offset mensaje283
+mov edx,offset mensaje299
 call writestring
-mov edx,offset mensaje284
+mov edx,offset mensaje300
 call writestring
 call readdec
 mov t87,eax
@@ -676,7 +748,7 @@ add eax,4
 mov t104,eax
 mov eax,0
 mov stack[t104],t103
-mov edx,offset mensaje311
+mov edx,offset mensaje327
 call writestring
 mov eax,0
 add eax,p
@@ -684,9 +756,9 @@ add eax,4
 mov t105,eax
 mov eax,0
 mov t106,stack[t105]
-mov edx,offset mensaje314
+mov edx,offset mensaje330
 call writestring
-mov edx,offset mensaje315
+mov edx,offset mensaje331
 call writestring
 ret
 JV_clase_llamarSuma endp
@@ -753,7 +825,7 @@ jmp et_9
 .ENDIF
 jmp et_10
 et_9:
-mov edx,offset mensaje341
+mov edx,offset mensaje357
 call writestring
 mov eax,0
 add eax,p
@@ -761,9 +833,9 @@ add eax,4
 mov t122,eax
 mov eax,0
 mov t123,stack[t122]
-mov edx,offset mensaje344
+mov edx,offset mensaje360
 call writestring
-mov edx,offset mensaje345
+mov edx,offset mensaje361
 call writestring
 mov eax,0
 add eax,p
@@ -784,10 +856,50 @@ mov stack[t117],t118
 jmp etFor_3
 et_10:
 etFin_5:
-mov edx,offset mensaje353
+mov edx,offset mensaje369
 call writestring
-mov edx,offset mensaje354
+mov edx,offset mensaje370
 call writestring
 ret
 PY_pruebaFor endp
+PY_otraPrueba proc
+mov eax,0
+add eax,p
+add eax,1
+mov t124,eax
+mov eax,0
+mov t125,stack[t124]
+mov eax,0
+add eax,p
+add eax,2
+mov t126,eax
+mov eax,0
+mov t127,stack[t126]
+.IF(t125 > t127)
+jmp et_10
+.ENDIF
+jmp et_11
+et_10:
+mov eax,0
+add eax,p
+add eax,0
+mov t128,eax
+mov eax,0
+mov stack[t128],23
+jmp etFin_6
+et_11:
+mov eax,0
+add eax,p
+add eax,0
+mov t129,eax
+mov eax,0
+mov stack[t129],12
+jmp etFin_6
+etFin_6:
+mov edx,offset mensaje388
+call writestring
+mov edx,offset mensaje389
+call writestring
+ret
+PY_otraPrueba endp
 END main
